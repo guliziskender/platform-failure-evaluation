@@ -385,3 +385,29 @@ diagnosis. Mutation check: each of five fixes, undone, makes a test fail.
 **Not covered yet:** a YAML value on the line after its key with no `|` (`password:` then an
 indented value), and secrets split across log lines in other ways.
 
+## 2026-11-10: Fix the two eval misses
+
+Goal: fix the two cases the rules missed. The eval measures the result: 13/15 before.
+
+**Fixed**
+- Init containers. A crash-looping or OOMKilled init container keeps the pod Pending, and the
+  Pending check ran first, so it was reported as "containers have not started". Pending now
+  steps aside for a failing init container, so the crash and OOM checks handle it. Messages say
+  "Init container migrate ..." and that the other containers never start.
+- Registry mirror errors. The registry rule only knew network errors. It now also recognises a
+  5xx from a registry or proxy. When the failing request went to a mirror (`?ns=<registry>` in
+  its URL), the cause names both the mirror and the registry the image comes from.
+
+**Result:** rules 15/15 on replay and on live, 0 confident and wrong. `pfa eval` printed "Fixed
+since then: crashloop-init-migration, imagepull-unknown-registry" against the saved baseline.
+
+**Decisions**
+- The init case stays at low confidence: the rules point at the error line in its logs, but not
+  at why the migration fails. The mirror case is medium: a mirror's 500 does not say whether the
+  registry name or the network is wrong. Both are in `rules_confidence`.
+- Tests of misses, `--fail-under` and history no longer depend on what the rules get wrong today.
+  They use a copy of the cases with one answer key broken on purpose.
+
+**Caveat:** the rules were changed with these two cases in view, so 15/15 is partly a score on
+the training set. New cases from real failures are what keep the number honest.
+

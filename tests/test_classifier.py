@@ -157,3 +157,62 @@ def test_old_oom_on_recovered_container_is_healthy():
 def test_old_crash_on_recovered_container_is_healthy():
     result = classify(make_view(_up_after(1, "Error", _ago(hours=3), restarts=2)))
     assert result.failure_type is FailureType.NONE
+
+
+# --- init containers: a failing one keeps the pod Pending, but it is a crash or an OOM -------
+
+
+def _init(container: dict, logs: str = ""):
+    """The target `app` is an init container; the main container waits behind it."""
+    main = {"name": "web", **waiting("PodInitializing")}
+    pod = {
+        "phase": "Pending",
+        "init_containers": [{"name": "app", **container}],
+        "containers": [main],
+    }
+    return make_view(container, pod=pod, logs=logs)
+
+
+def test_crash_looping_init_container_is_a_crash_not_pending():
+    result = classify(_init(crashed(1)))
+    assert result.failure_type is FailureType.CRASH_LOOP
+    assert result.problem.startswith("Init container app is in CrashLoopBackOff")
+    assert "other containers never start" in result.problem
+
+
+def test_init_container_between_restarts_is_a_crash():
+    # The snapshot's shape: terminated now, not yet back-off waiting.
+    container = {"state": {"terminated": {"reason": "Error", "exit_code": 1}}, "restart_count": 3}
+    assert classify(_init(container)).failure_type is FailureType.CRASH_LOOP
+
+
+def test_oomkilled_init_container_is_oom():
+    result = classify(_init(crashed(137, reason="OOMKilled")))
+    assert result.failure_type is FailureType.OOM_KILLED
+    assert result.problem.startswith("Init container app was OOMKilled")
+
+
+def test_init_container_still_running_is_pending():
+    container = {"state": {"running": {}}, "restart_count": 0}
+    assert classify(_init(container)).failure_type is FailureType.PENDING
+
+
+def test_real_init_container_crash_loop_from_kind():
+    from pfa.collectors.k8s_state import summarize_pod
+    from pfa.models import Evidence, Target, WorkloadKind
+    from pfa.view import EvidenceView
+
+    from .conftest import pod
+
+    summary = summarize_pod(pod("crashloop_init_migration"))
+    target = Target(
+        namespace="pfa-lab",
+        name="orders-api",
+        kind=WorkloadKind.POD,
+        pod=summary["name"],
+        container="migrate",
+    )
+    view = EvidenceView(target, [Evidence(source="k8s_state", summary={"pod": summary})])
+    result = classify(view)
+    assert result.failure_type is FailureType.CRASH_LOOP
+    assert result.problem.startswith("Init container migrate is in CrashLoopBackOff")

@@ -394,3 +394,45 @@ def test_parse_quantity_rejects_garbage():
 def test_format_bytes():
     assert format_bytes(256 * 2**20) == "256Mi"
     assert format_bytes(2**30) == "1Gi"
+
+
+MIRROR_500 = (
+    'failed to resolve reference "registry.pfa-lab.invalid/billing/ui:3.2.0": unexpected status '
+    "from HEAD request to http://registry-mirror:1273/v2/billing/ui/manifests/3.2.0"
+    "?ns=registry.pfa-lab.invalid: 500 Internal Server Error"
+)
+
+
+def test_mirror_server_error_names_the_mirror_and_the_registry():
+    hit = best(_pull(MIRROR_500))
+    assert (hit.rule, hit.certainty) == ("image_registry_unreachable", "medium")
+    assert "registry mirror registry-mirror:1273" in hit.cause
+    assert "registry registry.pfa-lab.invalid" in hit.cause
+    assert '"500 Internal Server Error"' in hit.cause
+    assert "registry.pfa-lab.invalid" in hit.fix[0]
+
+
+def test_registry_server_error_without_a_mirror():
+    message = "unexpected status from GET request to https://reg.example.com/v2/: "
+    hit = best(_pull(message + "503 Service Unavailable"))
+    assert hit.rule == "image_registry_unreachable"
+    assert hit.cause.startswith('The registry answered "503 Service Unavailable"')
+
+
+def test_not_found_is_not_mistaken_for_a_server_error():
+    assert best(_pull("failed to resolve reference: x:1: not found")).rule == "image_not_found"
+
+
+def test_crash_log_rule_names_a_failing_init_container():
+    container = crashed(1)
+    main = {"name": "web", **waiting("PodInitializing")}
+    pod = {
+        "phase": "Pending",
+        "init_containers": [{"name": "app", **container}],
+        "containers": [main],
+    }
+    view = make_view(container, pod=pod, logs='ERROR: relation "orders_idx" already exists')
+    hit = best(view)
+    assert hit.rule == "crash_log_error"
+    assert hit.cause.startswith("Init container app fails, so the app containers never start")
+    assert "already exists" in hit.cause

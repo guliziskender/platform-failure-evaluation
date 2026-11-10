@@ -58,6 +58,17 @@ class EvidenceView:
     def container_name(self) -> str:
         return self.container.get("name", "?")
 
+    @property
+    def is_init_container(self) -> bool:
+        names = {c["name"] for c in (self.pod or {}).get("init_containers", [])}
+        return self.container_name in names
+
+    @property
+    def container_label(self) -> str:
+        """'container api' or 'init container migrate', for messages."""
+        kind = "init container" if self.is_init_container else "container"
+        return f"{kind} {self.container_name}"
+
     def condition(self, type_: str) -> dict[str, Any] | None:
         for c in (self.pod or {}).get("conditions", []):
             if c["type"] == type_:

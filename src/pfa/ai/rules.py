@@ -96,7 +96,7 @@ def oom_memory_limit(v: EvidenceView) -> RuleHit | None:
         return _hit(
             "oom_no_limit",
             FailureType.OOM_KILLED,
-            finding=f"Container {v.container_name} was OOMKilled but has no memory limit.",
+            finding=f"{v.container_label.capitalize()} was OOMKilled but has no memory limit.",
             cause="With no memory limit, the container was killed because the node itself ran "
             "out of memory; this pod (or its neighbours) used more than the node could give.",
             fix=[
@@ -125,7 +125,7 @@ def oom_memory_limit(v: EvidenceView) -> RuleHit | None:
     return _hit(
         "oom_memory_limit",
         FailureType.OOM_KILLED,
-        finding=f"Container {v.container_name} was OOMKilled {v.restarts} times; its memory "
+        finding=f"{v.container_label.capitalize()} was OOMKilled {v.restarts} times; its memory "
         f"limit is {limit}.",
         cause=f"The process needs more memory than its {limit} memory limit, so the kernel "
         "kills it each time it reaches the limit. Either the limit is too low for the workload "
@@ -239,28 +239,72 @@ def image_pull_rate_limited(v: EvidenceView) -> RuleHit | None:
     )
 
 
+# A registry, or a mirror/proxy in front of it, failing: `unexpected status from HEAD request to
+# http://registry-mirror:1273/v2/billing/ui/manifests/3.2.0?ns=registry.example.com: 500 ...`
+_SERVER_ERROR = re.compile(
+    r"(?:request to (?P<url>\S+?): )?(?P<status>5\d\d [A-Z][A-Za-z ]+?)(?=\s*$|[,;\"\n])", re.M
+)
+
+
 @rule
 def image_registry_unreachable(v: EvidenceView) -> RuleHit | None:
+    messages = _pull_messages(v)
     m = re.search(
         r"no such host|i/o timeout|connection refused|TLS handshake timeout|"
         r"x509: certificate|context deadline exceeded",
-        _pull_messages(v),
+        messages,
     )
+    if m:
+        return _hit(
+            "image_registry_unreachable",
+            FailureType.IMAGE_PULL,
+            finding=f"Pulling the image failed with a network error ({m.group(0)}).",
+            cause="The node cannot reach the registry: wrong registry hostname, DNS, firewall or "
+            "proxy rules, or an untrusted TLS certificate.",
+            fix=[
+                "Check the registry hostname in the image reference",
+                "From a node, test reachability of the registry (DNS, proxy, firewall)",
+                "For a private CA, add it to the container runtime's trusted certificates",
+            ],
+            certainty="medium",
+            evidence=_pull_evidence(v, m.group(0)),
+        )
+    m = _SERVER_ERROR.search(messages)
     if not m:
         return None
+    status, url = m.group("status").strip(), m.group("url") or ""
+    mirror = re.match(r"https?://([^/]+)/v2/", url)
+    upstream = re.search(r"[?&]ns=([^&\s]+)", url)
+    if mirror and upstream and mirror.group(1) != upstream.group(1):
+        # The node pulled through a mirror, which could not get the image from the registry.
+        cause = (
+            f"Pulls go through the registry mirror {mirror.group(1)}, which answered "
+            f'"{status}" for an image from registry {upstream.group(1)}: the mirror could not '
+            "fetch it. Usually that registry hostname is wrong or unreachable from the mirror; "
+            "otherwise the mirror itself is failing."
+        )
+        fix = [
+            f"Check the registry hostname {upstream.group(1)} in the image reference",
+            f"Check that the mirror {mirror.group(1)} can reach that registry (its logs and "
+            "upstream settings)",
+        ]
+    else:
+        cause = (
+            f'The registry answered "{status}": it, or a proxy in front of it, is failing. '
+            "Retrying may help if it is a temporary outage."
+        )
+        fix = [
+            "Check the registry hostname in the image reference and the registry's status",
+            "If a proxy or mirror sits in front of the registry, check its logs",
+        ]
     return _hit(
         "image_registry_unreachable",
         FailureType.IMAGE_PULL,
-        finding=f"Pulling the image failed with a network error ({m.group(0)}).",
-        cause="The node cannot reach the registry: wrong registry hostname, DNS, firewall or "
-        "proxy rules, or an untrusted TLS certificate.",
-        fix=[
-            "Check the registry hostname in the image reference",
-            "From a node, test reachability of the registry (DNS, proxy, firewall)",
-            "For a private CA, add it to the container runtime's trusted certificates",
-        ],
+        finding=f"Pulling the image failed with a server error ({status}).",
+        cause=cause,
+        fix=fix,
         certainty="medium",
-        evidence=_pull_evidence(v, m.group(0)),
+        evidence=_pull_evidence(v, status),
     )
 
 
@@ -861,9 +905,9 @@ def crash_log_error(v: EvidenceView) -> RuleHit | None:
         return _hit(
             "crash_log_error",
             FailureType.CRASH_LOOP,
-            finding=f"The container exits with code {code}; its logs report an error.",
-            cause=f"The application fails at startup and exits with code {code}. Last error in "
-            f'its logs: "{errors[-1][:300]}"',
+            finding=f"The {v.container_label} exits with code {code}; its logs report an error.",
+            cause=f"{_who_fails(v)} and exits with code {code}. Last error in its logs: "
+            f'"{errors[-1][:300]}"',
             fix=[
                 "Fix the error the log line names (configuration, dependency, or code)",
                 f"Full logs: kubectl logs {v.target.pod} -c {v.container_name} --previous",
@@ -875,7 +919,7 @@ def crash_log_error(v: EvidenceView) -> RuleHit | None:
         return _hit(
             "crash_no_output",
             FailureType.CRASH_LOOP,
-            finding=f"The container exits with code {code} without writing any logs.",
+            finding=f"The {v.container_label} exits with code {code} without writing any logs.",
             cause="The process fails before it logs anything: a wrong command or arguments, a "
             "missing file it needs, or an app that logs to a file instead of stdout.",
             fix=[
@@ -926,6 +970,15 @@ def workload_failed_create(v: EvidenceView) -> RuleHit | None:
 
 
 # --- helpers ------------------------------------------------------------------------------
+
+
+def _who_fails(v: EvidenceView) -> str:
+    if v.is_init_container:
+        return (
+            f"Init container {v.container_name} fails, so the app containers never start. It "
+            "fails at startup"
+        )
+    return "The application fails at startup"
 
 
 def _hit(rule_id: str, failure_type: FailureType, **kwargs) -> RuleHit:

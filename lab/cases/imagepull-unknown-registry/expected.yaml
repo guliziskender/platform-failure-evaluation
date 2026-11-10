@@ -9,6 +9,5 @@ fix: Correct the registry hostname in the image reference, or fix DNS/network ac
 fix_keywords: [[registry, hostname, dns, network]]
 ready_when: {waiting_reason: [ErrImagePull, ImagePullBackOff]}
 evidence_must_contain: ["registry.pfa-lab.invalid", "ErrImagePull"]
-known_gap: >-
-  No rule recognises a pull error relayed by a registry mirror (Docker Desktop's answers
-  "500 Internal Server Error" instead of "no such host"), so the rules answer unsure.
+# A mirror's 500 does not say whether the registry name or the network is wrong.
+rules_confidence: medium

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import shutil
 from pathlib import Path
 
 import pytest
@@ -49,6 +50,18 @@ def case(**overrides) -> EvalCase:
 
 def report():
     return analyze(*load_evidence(CASES_DIR / CRASH / "evidence.json"))
+
+
+@pytest.fixture
+def one_miss(tmp_path) -> Path:
+    """A copy of the lab cases where one answer key is deliberately wrong, so tests of misses
+    don't depend on what the rules get wrong today."""
+    cases = tmp_path / "cases"
+    shutil.copytree(CASES_DIR, cases)
+    expected = cases / CRASH / "expected.yaml"
+    text = expected.read_text().replace("cause_keywords: [DATABASE_URL]", "cause_keywords: [nope]")
+    expected.write_text(text + "known_gap: deliberate, for the test\n")
+    return cases
 
 
 # --- keywords ------------------------------------------------------------------------------
@@ -202,11 +215,11 @@ def test_live_case_needs_a_workload():
     assert "names no workload" in run.results[0].error
 
 
-def test_breakdown_by_failure_type():
-    types = by_failure_type(run_eval(load_cases(CASES_DIR), replay(CASES_DIR)))
+def test_breakdown_by_failure_type(one_miss):
+    types = by_failure_type(run_eval(load_cases(one_miss), replay(one_miss)))
     assert types["crash_loop_backoff"] == (2, 3)
-    assert types["image_pull_backoff"] == (2, 3)
     assert types["pending"] == (3, 3)
+    assert sum(total for _, total in types.values()) == 15
 
 
 # --- saved runs ------------------------------------------------------------------------------
@@ -240,10 +253,9 @@ def test_runs_saved_in_the_same_second_are_both_kept(tmp_path):
 def test_changes_names_what_got_fixed_and_what_broke():
     now = run_eval(load_cases(CASES_DIR), replay(CASES_DIR))
     before = now.model_copy(deep=True)
-    flipped = {r.case: r for r in before.results}
-    flipped["crashloop-init-migration"].correct = True  # was right, now wrong: broke
-    flipped[CRASH].correct = False  # was wrong, now right: fixed
-    assert changes(now, before) == ([CRASH], ["crashloop-init-migration"])
+    {r.case: r for r in before.results}[CRASH].correct = False  # was wrong, now right: fixed
+    {r.case: r for r in now.results}["pending-cpu-units"].correct = False  # now wrong: broke
+    assert changes(now, before) == ([CRASH], ["pending-cpu-units"])
 
 
 def test_a_case_new_since_last_run_is_neither_fixed_nor_broken():
@@ -271,22 +283,21 @@ def test_runs_from_before_live_mode_still_load(tmp_path):
 # --- pfa eval --------------------------------------------------------------------------------
 
 
-def invoke(tmp_path, *args: str):
-    base = ["eval", "--cases", str(CASES_DIR), "--results", str(tmp_path)]
+def invoke(tmp_path, *args: str, cases: Path = CASES_DIR):
+    base = ["eval", "--cases", str(cases), "--results", str(tmp_path / "results")]
     return CliRunner().invoke(cli.app, [*base, *args])
 
 
-def test_eval_prints_saves_and_compares(tmp_path):
-    first = invoke(tmp_path, "--no-llm")
+def test_eval_prints_saves_and_compares(tmp_path, one_miss):
+    first = invoke(tmp_path, "--no-llm", cases=one_miss)
     assert first.exit_code == 0, first.output
-    assert "Correct: 13/15" in first.stdout
-    assert "crashloop-init-migration" in first.stdout
-    assert "known gap" in first.stdout
-    assert len(list(tmp_path.glob("*-rules-replay.json"))) == 1
+    assert "Correct: 14/15" in first.stdout
+    assert f"{CRASH}: missing cause: nope; known gap: deliberate" in first.stdout
+    assert len(list((tmp_path / "results").glob("*-rules-replay.json"))) == 1
     assert "previous run" not in first.stdout
 
-    assert "previous run" in invoke(tmp_path, "--no-llm", "--no-save").stdout
-    assert len(list(tmp_path.glob("*.json"))) == 1
+    assert "previous run" in invoke(tmp_path, "--no-llm", "--no-save", cases=one_miss).stdout
+    assert len(list((tmp_path / "results").glob("*.json"))) == 1
 
 
 def test_eval_json(tmp_path):
@@ -298,7 +309,7 @@ def test_eval_json(tmp_path):
 def test_partial_run_is_not_saved(tmp_path):
     result = invoke(tmp_path, "--no-llm", "--case", CRASH)
     assert "Correct: 1/1" in result.stdout
-    assert not list(tmp_path.glob("*"))
+    assert not list((tmp_path / "results").glob("*"))
 
 
 def test_unknown_case_is_a_usage_error(tmp_path):
@@ -313,7 +324,7 @@ def test_blocked_provider_stops_instead_of_scoring_the_rules(tmp_path, monkeypat
     result = invoke(tmp_path)
     assert result.exit_code == 2
     assert "send_data is off" in result.output
-    assert not list(tmp_path.glob("*"))
+    assert not list((tmp_path / "results").glob("*"))
 
 
 def test_no_llm_ignores_a_configured_provider(tmp_path, monkeypatch):
@@ -330,7 +341,7 @@ def test_a_send_is_announced_before_it_happens(tmp_path, monkeypatch):
 
 def test_comparison_shows_what_changed(tmp_path):
     invoke(tmp_path, "--no-llm")
-    path = next(tmp_path.glob("*.json"))
+    path = next((tmp_path / "results").glob("*.json"))
     old = json.loads(path.read_text())
     for r in old["results"]:
         if r["case"] == "crashloop-missing-env":
@@ -339,10 +350,10 @@ def test_comparison_shows_what_changed(tmp_path):
     assert "Fixed since then: crashloop-missing-env" in invoke(tmp_path, "--no-llm").stdout
 
 
-@pytest.mark.parametrize(("percent", "code"), [(86, 0), (87, 1), (100, 1)])
-def test_fail_under(tmp_path, percent, code):  # 13/15 is 86.67%
+@pytest.mark.parametrize(("percent", "code"), [(93, 0), (94, 1), (100, 1)])
+def test_fail_under(tmp_path, one_miss, percent, code):  # 14/15 is 93.3%
     args = ("--no-llm", "--no-save", "--fail-under", str(percent))
-    assert invoke(tmp_path, *args).exit_code == code
+    assert invoke(tmp_path, *args, cases=one_miss).exit_code == code
 
 
 def test_run_with_no_answers_is_a_failure_and_never_the_baseline(tmp_path, monkeypatch):
@@ -352,7 +363,7 @@ def test_run_with_no_answers_is_a_failure_and_never_the_baseline(tmp_path, monke
     result = invoke(tmp_path)
     assert result.exit_code == 2
     assert "no case got an answer" in result.output
-    assert not list(tmp_path.glob("*"))
+    assert not list((tmp_path / "results").glob("*"))
 
 
 def test_some_failed_answers_are_still_saved(tmp_path, monkeypatch):
@@ -370,7 +381,7 @@ def test_some_failed_answers_are_still_saved(tmp_path, monkeypatch):
     result = invoke(tmp_path, "--no-llm")
     assert result.exit_code == 0
     assert "No answer: 1" in result.stdout
-    assert len(list(tmp_path.glob("*.json"))) == 1
+    assert len(list((tmp_path / "results").glob("*.json"))) == 1
 
 
 def test_live_flag_uses_the_cluster_and_is_recorded(tmp_path, monkeypatch):
@@ -386,7 +397,7 @@ def test_live_flag_uses_the_cluster_and_is_recorded(tmp_path, monkeypatch):
     assert result.exit_code == 0, result.output
     assert calls == ["other"]
     assert json.loads(result.stdout)["evidence"] == "live"
-    assert next(tmp_path.glob("*.json")).exists()
+    assert next((tmp_path / "results").glob("*.json")).exists()
 
 
 def test_live_without_a_cluster_is_a_clean_error(tmp_path, monkeypatch):
@@ -401,12 +412,12 @@ def test_live_without_a_cluster_is_a_clean_error(tmp_path, monkeypatch):
     assert "no kubeconfig" in result.output
 
 
-def test_history(tmp_path):
+def test_history(tmp_path, one_miss):
     assert "No saved runs" in invoke(tmp_path, "--history").stdout
-    invoke(tmp_path, "--no-llm")
+    invoke(tmp_path, "--no-llm", cases=one_miss)
     text = invoke(tmp_path, "--history").stdout
-    assert "13/15" in text
+    assert "14/15" in text
     assert "replay" in text
     summary = json.loads(invoke(tmp_path, "--history", "-o", "json").stdout)
-    assert summary[0]["correct"] == 13
+    assert summary[0]["correct"] == 14
     assert "results" not in summary[0]

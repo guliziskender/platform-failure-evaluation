@@ -160,8 +160,10 @@ the same answerer on the same evidence names the cases that got fixed or broke. 
 AI or the cluster gave no answer counts as wrong. A run with no answers at all exits 2 and is not
 saved, because it would say the provider is down, not how good the answers are.
 
-Current baseline, rules only: **13/15 correct, 0 confident and wrong**, on both replay and live.
-Both misses are known gaps, listed in the cases' `expected.yaml`. No model has been scored yet.
+Current baseline, rules only: **15/15 correct, 0 confident and wrong**, on both replay and live
+(13/15 until the init-container and registry-mirror cases were fixed). No model has been scored
+yet. The rules were tuned with these cases in view, so a perfect score here says less than a
+score on cases nobody has tuned against; every real failure is a candidate for a new case.
 
 The cause and fix checks look for keywords, so they show an answer states the key facts, not that
 its fix would work.

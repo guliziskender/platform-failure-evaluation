@@ -40,7 +40,8 @@ uv run ruff check . && uv run ruff format .
   type-specific evidence, analyze) and `analyze` (pure: evidence in, `Report` out). No K8s- or
   LLM-specific code here.
 - `src/pfa/engine/classifier.py`: evidence -> `FailureType` + problem sentence. Check order matters
-  (probe kills look like crashes with exit 137; OOM is checked before both). "Running and ready"
+  (probe kills look like crashes with exit 137; OOM is checked before both; a failing init
+  container keeps the pod Pending, so Pending steps aside for it). "Running and ready"
   is not healthy if the container failed recently (`EvidenceView.failed_recently`, measured
   from evidence collection time, never the wall clock, so replays stay deterministic).
 - `src/pfa/ai/redact.py`: secret patterns -> typed placeholders (`<REDACTED:jwt>`).

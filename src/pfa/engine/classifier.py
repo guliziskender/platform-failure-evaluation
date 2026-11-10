@@ -2,7 +2,8 @@
 
 Order matters. A container killed by a failing liveness probe also shows CrashLoopBackOff
 and exit code 137, so probe kills are checked before generic crashes, and OOMKilled (the
-most specific termination reason) before both.
+most specific termination reason) before both. A failing init container keeps the pod Pending,
+so the Pending check leaves those to the OOM and crash checks.
 """
 
 from __future__ import annotations
@@ -42,7 +43,7 @@ def _image_pull(v: EvidenceView) -> Classification | None:
     signals += [_event_signal(e) for e in pull_failures[:1]]
     return Classification(
         failure_type=FailureType.IMAGE_PULL,
-        problem=f'Container {v.container_name} cannot start: image "{image}" fails to pull '
+        problem=f'{v.container_label.capitalize()} cannot start: image "{image}" fails to pull '
         f"({shown}).",
         signals=signals,
     )
@@ -63,6 +64,8 @@ def _pending(v: EvidenceView) -> Classification | None:
     reason = v.waiting.get("reason", "no container status yet")
     if reason in START_ERROR_REASONS:
         return None  # a config problem, handled as a crash below
+    if v.is_init_container and _init_failing(v):
+        return None  # the pod waits on a crashing init container: an OOM or a crash below
     return Classification(
         failure_type=FailureType.PENDING,
         problem=f"Pod {v.pod['name']} is scheduled but its containers have not started ({reason}).",
@@ -80,7 +83,7 @@ def _oom(v: EvidenceView) -> Classification | None:
             limit_text = f"; memory limit {limit}" if limit else "; no memory limit set"
             return Classification(
                 failure_type=FailureType.OOM_KILLED,
-                problem=f"Container {v.container_name} was OOMKilled (exit code "
+                problem=f"{v.container_label.capitalize()} was OOMKilled (exit code "
                 f"{term.get('exit_code', 137)}) and has restarted {v.restarts} times"
                 f"{limit_text}.",
                 signals=[f"termination: OOMKilled, exit {term.get('exit_code')}"],
@@ -131,7 +134,7 @@ def _crash(v: EvidenceView) -> Classification | None:
     if reason in START_ERROR_REASONS:
         return Classification(
             failure_type=FailureType.CRASH_LOOP,
-            problem=f"Container {v.container_name} cannot be started: {reason}: "
+            problem=f"{v.container_label.capitalize()} cannot be started: {reason}: "
             f"{v.waiting.get('message', '')}".rstrip(": "),
             signals=[f"container waiting: {reason}"],
         )
@@ -148,10 +151,11 @@ def _crash(v: EvidenceView) -> Classification | None:
         state = "keeps crashing (it is up right now, but restarts again)"
     else:
         state = "keeps exiting"
+    blocked = ", so the pod's other containers never start" if v.is_init_container else ""
     return Classification(
         failure_type=FailureType.CRASH_LOOP,
-        problem=f"Container {v.container_name} {state}: last exit code {exit_code} "
-        f"({term.get('reason', 'no reason')}), {v.restarts} restarts.",
+        problem=f"{v.container_label.capitalize()} {state}: last exit code {exit_code} "
+        f"({term.get('reason', 'no reason')}), {v.restarts} restarts{blocked}.",
         signals=[f"termination: {term.get('reason')}, exit {exit_code}"]
         + ([f"container waiting: {reason}"] if reason else []),
     )
@@ -185,6 +189,15 @@ _CHECKS: list[Callable[[EvidenceView], Classification | None]] = [
 
 
 # --- fallbacks --------------------------------------------------------------------------
+
+
+def _init_failing(v: EvidenceView) -> bool:
+    term = v.termination()
+    return (
+        v.waiting.get("reason") == "CrashLoopBackOff"
+        or term.get("exit_code", 0) != 0
+        or term.get("reason") == "OOMKilled"
+    )
 
 
 def _up_and_recovered(v: EvidenceView) -> bool:
