@@ -29,9 +29,14 @@ _SECRET_WORD = (
 )
 _SECRET_KEY = rf"[A-Za-z0-9_.-]*(?:{_SECRET_WORD})[A-Za-z0-9_.-]*"
 # Values that say nothing secret; redacting them would only remove context.
-_HARMLESS_VALUES = {"", "true", "false", "null", "none", "nil", "yes", "no", "required"}
-# References to a value, not the value: $VAR, ${VAR}, Kubernetes $(VAR), {{ template }}, <your-key>
-_REFERENCE = re.compile(r"^(?:\$\{?\w+\}?|\$\(\w+\)|\{\{.*\}\}|<[^>]*>|\*+|x+)$", re.I)
+# "not set" and "missing" are what apps print about a missing variable, which the rules read.
+_HARMLESS_VALUES = {
+    *("", "true", "false", "null", "none", "nil", "yes", "no", "required", "missing"),
+    *("not set", "unset", "empty", "undefined", "not found", "invalid"),
+}
+# Not a value itself: references ($VAR, ${VAR}, Kubernetes $(VAR), {{ template }}, <your-key>),
+# masks (***, xxx), and YAML's block markers (| or >), whose value is on the next lines.
+_REFERENCE = re.compile(r"^(?:\$\{?\w+\}?|\$\(\w+\)|\{\{.*\}\}|<[^>]*>|\*+|x+|[|>][-+0-9]*)$", re.I)
 
 _Replacer = Callable[[re.Match[str]], str]
 
@@ -72,13 +77,50 @@ def _keep_prefix(kind: str) -> _Replacer:
     return lambda m: m.group(1) + _placeholder(kind)
 
 
+_QUOTES = {"edq": '\\"', "dq": '"', "sq": "'"}
+
+
 def _key_value(m: re.Match[str]) -> str:
-    quote = m.group("quote") or ""
-    value = m.group("quoted") if quote else m.group("bare")
+    quote = next((q for group, q in _QUOTES.items() if m.group(group) is not None), "")
+    if quote:
+        value, trailing = m.group(next(g for g, q in _QUOTES.items() if q == quote)), ""
+    else:
+        bare = m.group("bare")
+        value = bare.rstrip()
+        trailing = bare[len(value) :]
     if not _is_secret_value(value):
         return m.group(0)
     key = m.group("key")
-    return f"{key}{m.group('sep')}{quote}{_placeholder(_key_kind(key))}{quote}"
+    return f"{key}{m.group('sep')}{quote}{_placeholder(_key_kind(key))}{quote}{trailing}"
+
+
+def _block_value(m: re.Match[str]) -> str:
+    body = m.group("body")
+    if not _is_secret_value(body.strip()):
+        return m.group(0)
+    indent = body[: len(body) - len(body.lstrip(" \t"))]
+    newline = "\n" if body.endswith("\n") else ""
+    return f"{m.group('head')}{indent}{_placeholder(_key_kind(m.group('key')))}{newline}"
+
+
+# A quoted value: \"x\" (JSON escaped inside a log line's string), "x" (may contain ' and \"),
+# or 'x'. The escaped form comes first: it starts with a backslash, the others with a quote.
+_QUOTED = (
+    r'\\"(?P<edq>(?:[^"\\\n]|\\[^"\n])*)\\"'
+    r'|"(?P<dq>(?:[^"\\\n]|\\.)*)"'
+    r"|'(?P<sq>[^'\n]*)'"
+)
+# A comma, & or ; continues a value unless the next key=value starts there: so `pw=ab;cd` loses
+# all of `ab;cd`, while `user=a&token=b` and `id=sa;Password=x` keep their other pairs.
+_NEXT_PAIR = r"(?![ \t]*[\w.-]+[ \t]*[:=])"
+
+
+def _key_value_pattern(sep: str, bare: str) -> re.Pattern[str]:
+    # Separators stay on one line: a key at the end of a line has no value, and must not take
+    # the next line's first word.
+    return re.compile(
+        rf"(?<![\w.-])(?P<key>{_SECRET_KEY})(?P<sep>{sep})(?:{_QUOTED}|(?P<bare>{bare}))", re.I
+    )
 
 
 def _auth_header(m: re.Match[str]) -> str:
@@ -117,7 +159,8 @@ _PATTERNS: list[tuple[str, re.Pattern[str], _Replacer]] = [
     # postgres://user:pass@host -> postgres://user:<REDACTED:password>@host (host stays: useful)
     (
         "password",
-        re.compile(r"(\b[a-z][a-z0-9+.-]*://[^\s:/@<]*:)([^\s@/]+)(?=@)", re.I),
+        # Scheme length is bounded: unbounded, long hyphenated text made this quadratic.
+        re.compile(r"(\b[a-z][a-z0-9+.-]{0,30}://[^\s:/@<]*:)([^\s@/]+)(?=@)", re.I),
         _keep_prefix("password"),
     ),
     (
@@ -169,14 +212,34 @@ _PATTERNS: list[tuple[str, re.Pattern[str], _Replacer]] = [
         re.compile(r"(\bbasic\s+)((?=[A-Za-z0-9+/]*[\d=])[A-Za-z0-9+/]{8,}={0,2})", re.I),
         _keep_prefix("basic_auth"),
     ),
-    # password=x, "api_key": "x", DB_PASSWORD=x, ?token=x&. A space before ":" does not count:
-    # kubelet writes `volume "db-password" : secret "db" not found`, which rules depend on.
+    # client_secret: |  followed by indented lines (a YAML block value): the lines go.
+    (
+        "block_value",
+        re.compile(
+            rf"^(?P<head>(?P<indent>[ \t]*)(?P<key>{_SECRET_KEY})[\"']?:[ \t]*[|>][-+0-9]*[ \t]*\n)"
+            r"(?P<body>(?:(?P=indent)[ \t]+\S[^\n]*(?:\n|$))+)",
+            re.I | re.M,
+        ),
+        _block_value,
+    ),
+    # password=x, DB_PASSWORD=x, ?token=x&a=b, Password=x; (connection strings). The value ends
+    # at whitespace, so `password=x user=y` keeps the user.
     (
         "key_value",
-        re.compile(
-            rf"(?<![\w.-])(?P<key>{_SECRET_KEY})(?P<sep>[\"']?\s*=\s*|[\"']?:\s*)"
-            r"(?:(?P<quote>[\"'])(?P<quoted>[^\"'\n]*)(?P=quote)|(?P<bare>[^\s\"',;&]+))",
-            re.I,
+        _key_value_pattern(
+            r"(?:\\?[\"'])?[ \t]*=[ \t]*",
+            rf"[^\s\"',&;](?:[^\s\",&;]|[,&;](?=[^\s,&;]){_NEXT_PAIR})*",
+        ),
+        _key_value,
+    ),
+    # password: x, "api_key": "x", \"password\":\"x\". Unquoted, the value runs to the end of
+    # the line: `password: correct horse battery` is one value. A space before ":" does not
+    # count: kubelet writes `volume "db-password" : secret "db" not found`, which rules read.
+    (
+        "key_value",
+        _key_value_pattern(
+            r"(?:\\?[\"'])?:[ \t]*",
+            rf"[^\s\"',}}](?:[^\n\",}}]|,{_NEXT_PAIR})*",
         ),
         _key_value,
     ),

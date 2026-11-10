@@ -111,6 +111,25 @@ LEAKS: list[Leak] = [
     ),
     Leak("flag_eq", "starting with --db-password=pfaFakeFlagPw", "pfaFakeFlagPw", "password"),
     Leak("flag_space", "exec app --api-token pfaFakeFlagTok --port 80", "pfaFakeFlagTok", "token"),
+    # Shapes that leaked before (code review, 2026-11): each one is a real logging habit.
+    Leak("quote_inside_quotes", 'password="it\'s-pfaFakeQuoted1"', "pfaFakeQuoted1", "password"),
+    Leak(
+        "escaped_json_in_log",
+        r'level=error msg="{\"user\":\"a\",\"password\":\"pfaFakeEscaped2\"}"',
+        "pfaFakeEscaped2",
+        "password",
+    ),
+    Leak(
+        "value_with_spaces", "password: correct horse pfaFakeSpaces3", "pfaFakeSpaces3", "password"
+    ),
+    Leak("value_with_semicolon", "DB_PASSWORD=ab;pfaFakeSemi4", "pfaFakeSemi4", "password"),
+    Leak("value_with_ampersand", "password=ab&pfaFakeAmp5 user=x", "pfaFakeAmp5", "password"),
+    Leak(
+        "yaml_block_scalar",
+        "config:\n  client_secret: |\n    pfaFakeBlock6\n    pfaFakeBlockMore\n  port: 80",
+        "pfaFakeBlock6",
+        "secret",
+    ),
 ]
 
 # Real messages the rules depend on. Redaction must leave them exactly as they are.
@@ -139,4 +158,8 @@ BENIGN: list[str] = [
     "require_auth_token=true",
     "secret/app-secrets",
     "HTTP /healthz port=8080",
+    # A key at the end of a line must not take the next line as its value.
+    "token:\nFATAL: database connection refused",
+    "password: not set",
+    "API_TOKEN: missing",
 ]

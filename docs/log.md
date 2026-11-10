@@ -354,3 +354,34 @@ Goal: turn the scorer from Task 7 into something that tracks accuracy over time 
 
 **Next:** fix the two gaps and the redaction leaks, then score a real model.
 
+## 2026-11-10: Redaction fixes from the code review
+
+Goal: close the redaction leaks the code review found before any real evidence goes to a hosted
+model.
+
+**Fixed** (each is now a case in `tests/fixtures/fake_secrets.py`, and failed before the fix)
+- Leaked completely: a quoted value containing the other quote (`password="it's-x"`), JSON
+  escaped inside a log line's string (`msg="{\"password\":\"x\"}"`, what structured
+  loggers write), and a YAML block value (`client_secret: |` and indented lines).
+- Leaked in part: unquoted values with spaces (`password: correct horse battery`) and values
+  containing `;` or `&` (`password=ab;cd`).
+- Over-redacted: a key at the end of a line took the next line's first word. `password: not set`
+  and `API_TOKEN: missing` were mangled, and those are what the missing-env-var rule reads.
+- The URL password pattern was quadratic on long hyphenated text (about 11 s per 100KB, and
+  container args have no size cap). The scheme length is now bounded. A test times six hostile
+  inputs at 100KB; all now take well under a second.
+
+**Decisions**
+- After `key: ` an unquoted value runs to the end of the line. After `key=` it ends at
+  whitespace, as in env dumps and logfmt, so `password=x user=y` keeps the user. A `,`, `&` or
+  `;` ends the value only where the next `key=` starts, so connection strings, query strings
+  and comma lists keep their other pairs.
+- Over-redaction is the accepted cost: `Set-Cookie: session_id=x; Path=/` now loses the whole
+  cookie, attributes included.
+
+**Checked:** the eval score is unchanged (rules 13/15), so the stricter patterns cost no
+diagnosis. Mutation check: each of five fixes, undone, makes a test fail.
+
+**Not covered yet:** a YAML value on the line after its key with no `|` (`password:` then an
+indented value), and secrets split across log lines in other ways.
+

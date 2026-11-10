@@ -7,6 +7,7 @@ Kubernetes message must come through untouched, or the rules stop working.
 from __future__ import annotations
 
 import json
+import time
 from pathlib import Path
 
 import pytest
@@ -60,6 +61,59 @@ def test_url_keeps_user_and_host():
 def test_quotes_and_neighbours_survive():
     text, _ = redact_text('{"user": "a", "password": "pfa-fake-json-pw", "port": 5432}')
     assert json.loads(text) == {"user": "a", "password": "<REDACTED:password>", "port": 5432}
+
+
+@pytest.mark.parametrize(
+    ("text", "expected"),
+    [
+        # Neighbouring pairs survive, however the value is delimited.
+        (
+            "Server=sql;User Id=sa;Password=pw1;Timeout=5",
+            "Server=sql;User Id=sa;Password=<REDACTED:password>;Timeout=5",
+        ),
+        ("GET /cb?code=1&token=tok&x=2", "GET /cb?code=1&token=<REDACTED:token>&x=2"),
+        ("user=a, password=pw2, port=5432", "user=a, password=<REDACTED:password>, port=5432"),
+        ("password: pw3, user: bob", "password: <REDACTED:password>, user: bob"),
+        # Escaped JSON inside a log line stays escaped JSON.
+        (
+            r'msg="{\"password\":\"pw4\"}" ts=1',
+            r'msg="{\"password\":\"<REDACTED:password>\"}" ts=1',
+        ),
+        # A YAML block value: its lines go, the marker and the next key stay.
+        (
+            "client_secret: |\n    line1\n    line2\nport: 80",
+            "client_secret: |\n    <REDACTED:secret>\nport: 80",
+        ),
+        # An unquoted value after ":" is the rest of the line, and only that line.
+        ("password: a b c  \nnext", "password: <REDACTED:password>  \nnext"),
+    ],
+)
+def test_exact_redaction(text, expected):
+    assert redact_text(text)[0] == expected
+
+
+def test_redacted_json_is_still_json():
+    text, _ = redact_text(r'{"password": "a\"b' + "'" + r'c", "port": 1}')
+    assert json.loads(text) == {"password": "<REDACTED:password>", "port": 1}
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "a-" * 50_000,  # was quadratic in the URL pattern: ~11 s per 100KB
+        "a" * 100_000,
+        "password=a&" * 10_000,
+        "token: " * 15_000,
+        "x://" * 25_000,
+        'password="' + "\\" * 25_000,
+    ],
+    ids=["hyphens", "one_word", "ampersands", "colons", "schemes", "backslashes"],
+)
+def test_large_hostile_input_is_fast(text):
+    # Container args and event messages have no size cap, so redaction must stay linear.
+    started = time.perf_counter()
+    redact_text(text)
+    assert time.perf_counter() - started < 1.0
 
 
 def test_every_leak_in_one_log_is_caught():
