@@ -1,0 +1,315 @@
+{
+  "apiVersion": "v1",
+  "kind": "Pod",
+  "metadata": {
+    "creationTimestamp": "2026-11-02T15:26:39Z",
+    "generateName": "search-api-76f496fc59-",
+    "generation": 1,
+    "labels": {
+      "app": "search-api",
+      "pod-template-hash": "76f496fc59"
+    },
+    "name": "search-api-76f496fc59-w6z2f",
+    "namespace": "pfa-lab",
+    "ownerReferences": [
+      {
+        "apiVersion": "apps/v1",
+        "blockOwnerDeletion": true,
+        "controller": true,
+        "kind": "ReplicaSet",
+        "name": "search-api-76f496fc59",
+        "uid": "c3196509-5602-4e12-b290-14c15e539f49"
+      }
+    ],
+    "resourceVersion": "906628",
+    "uid": "89252cf4-e97f-4c3f-80b9-ec448ba92426"
+  },
+  "spec": {
+    "containers": [
+      {
+        "command": [
+          "sleep",
+          "3600"
+        ],
+        "image": "busybox:1.36",
+        "imagePullPolicy": "IfNotPresent",
+        "name": "api",
+        "resources": {},
+        "terminationMessagePath": "/dev/termination-log",
+        "terminationMessagePolicy": "File",
+        "volumeMounts": [
+          {
+            "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+            "name": "kube-api-access-4fjlb",
+            "readOnly": true
+          }
+        ]
+      },
+      {
+        "args": [
+          "echo \"log-shipper starting, buffering 200MB of logs in memory\"\nexec stress --vm 1 --vm-bytes 200M --vm-hang 0\n"
+        ],
+        "command": [
+          "sh",
+          "-c"
+        ],
+        "image": "polinux/stress",
+        "imagePullPolicy": "Always",
+        "name": "log-shipper",
+        "resources": {
+          "limits": {
+            "memory": "64Mi"
+          },
+          "requests": {
+            "memory": "64Mi"
+          }
+        },
+        "terminationMessagePath": "/dev/termination-log",
+        "terminationMessagePolicy": "File",
+        "volumeMounts": [
+          {
+            "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+            "name": "kube-api-access-4fjlb",
+            "readOnly": true
+          }
+        ]
+      }
+    ],
+    "dnsPolicy": "ClusterFirst",
+    "enableServiceLinks": true,
+    "nodeName": "desktop-control-plane",
+    "preemptionPolicy": "PreemptLowerPriority",
+    "priority": 0,
+    "restartPolicy": "Always",
+    "schedulerName": "default-scheduler",
+    "securityContext": {},
+    "serviceAccount": "default",
+    "serviceAccountName": "default",
+    "terminationGracePeriodSeconds": 30,
+    "tolerations": [
+      {
+        "effect": "NoExecute",
+        "key": "node.kubernetes.io/not-ready",
+        "operator": "Exists",
+        "tolerationSeconds": 300
+      },
+      {
+        "effect": "NoExecute",
+        "key": "node.kubernetes.io/unreachable",
+        "operator": "Exists",
+        "tolerationSeconds": 300
+      }
+    ],
+    "volumes": [
+      {
+        "name": "kube-api-access-4fjlb",
+        "projected": {
+          "defaultMode": 420,
+          "sources": [
+            {
+              "serviceAccountToken": {
+                "expirationSeconds": 3607,
+                "path": "token"
+              }
+            },
+            {
+              "configMap": {
+                "items": [
+                  {
+                    "key": "ca.crt",
+                    "path": "ca.crt"
+                  }
+                ],
+                "name": "kube-root-ca.crt"
+              }
+            },
+            {
+              "downwardAPI": {
+                "items": [
+                  {
+                    "fieldRef": {
+                      "apiVersion": "v1",
+                      "fieldPath": "metadata.namespace"
+                    },
+                    "path": "namespace"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "status": {
+    "allocatedResources": {
+      "memory": "64Mi"
+    },
+    "conditions": [
+      {
+        "lastProbeTime": null,
+        "lastTransitionTime": "2026-11-02T15:26:40Z",
+        "observedGeneration": 1,
+        "status": "True",
+        "type": "PodReadyToStartContainers"
+      },
+      {
+        "lastProbeTime": null,
+        "lastTransitionTime": "2026-11-02T15:26:39Z",
+        "observedGeneration": 1,
+        "status": "True",
+        "type": "Initialized"
+      },
+      {
+        "lastProbeTime": null,
+        "lastTransitionTime": "2026-11-02T15:29:52Z",
+        "message": "containers with unready status: [log-shipper]",
+        "observedGeneration": 1,
+        "reason": "ContainersNotReady",
+        "status": "False",
+        "type": "Ready"
+      },
+      {
+        "lastProbeTime": null,
+        "lastTransitionTime": "2026-11-02T15:29:52Z",
+        "message": "containers with unready status: [log-shipper]",
+        "observedGeneration": 1,
+        "reason": "ContainersNotReady",
+        "status": "False",
+        "type": "ContainersReady"
+      },
+      {
+        "lastProbeTime": null,
+        "lastTransitionTime": "2026-11-02T15:26:39Z",
+        "observedGeneration": 1,
+        "status": "True",
+        "type": "PodScheduled"
+      }
+    ],
+    "containerStatuses": [
+      {
+        "containerID": "containerd://6b17a0a43b56f28a99979eddfebfaf38aa962a1954a98ab0a1d0478433ee6caa",
+        "image": "docker.io/library/busybox:1.36",
+        "imageID": "docker.io/library/busybox@sha256:73aaf090f3d85aa34ee199857f03fa3a95c8ede2ffd4cc2cdb5b94e566b11662",
+        "lastState": {},
+        "name": "api",
+        "ready": true,
+        "resources": {},
+        "restartCount": 0,
+        "started": true,
+        "state": {
+          "running": {
+            "startedAt": "2026-11-02T15:26:40Z"
+          }
+        },
+        "user": {
+          "linux": {
+            "gid": 0,
+            "supplementalGroups": [
+              0,
+              10
+            ],
+            "uid": 0
+          }
+        },
+        "volumeMounts": [
+          {
+            "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+            "name": "kube-api-access-4fjlb",
+            "readOnly": true,
+            "recursiveReadOnly": "Disabled"
+          }
+        ]
+      },
+      {
+        "allocatedResources": {
+          "memory": "64Mi"
+        },
+        "containerID": "containerd://21229d181fbe58fd1cd017bd8d0c02273808014f1f09cd671babd5a786d63cfc",
+        "image": "docker.io/polinux/stress:latest",
+        "imageID": "docker.io/polinux/stress@sha256:b6144f84f9c15dac80deb48d3a646b55c7043ab1d83ea0a697c09097aaad21aa",
+        "lastState": {
+          "terminated": {
+            "containerID": "containerd://600c78c67f3ad29499443317a4373cf70fe2942de5a79ea6eef53b4ad530e393",
+            "exitCode": 137,
+            "finishedAt": "2026-11-02T15:28:26Z",
+            "reason": "OOMKilled",
+            "startedAt": "2026-11-02T15:28:26Z"
+          }
+        },
+        "name": "log-shipper",
+        "ready": false,
+        "resources": {
+          "limits": {
+            "memory": "64Mi"
+          },
+          "requests": {
+            "memory": "64Mi"
+          }
+        },
+        "restartCount": 5,
+        "started": false,
+        "state": {
+          "terminated": {
+            "containerID": "containerd://21229d181fbe58fd1cd017bd8d0c02273808014f1f09cd671babd5a786d63cfc",
+            "exitCode": 137,
+            "finishedAt": "2026-11-02T15:29:51Z",
+            "reason": "OOMKilled",
+            "startedAt": "2026-11-02T15:29:51Z"
+          }
+        },
+        "user": {
+          "linux": {
+            "gid": 0,
+            "supplementalGroups": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              6,
+              10,
+              11,
+              20,
+              26,
+              27
+            ],
+            "uid": 0
+          }
+        },
+        "volumeMounts": [
+          {
+            "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+            "name": "kube-api-access-4fjlb",
+            "readOnly": true,
+            "recursiveReadOnly": "Disabled"
+          }
+        ]
+      }
+    ],
+    "hostIP": "172.18.0.3",
+    "hostIPs": [
+      {
+        "ip": "172.18.0.3"
+      }
+    ],
+    "observedGeneration": 1,
+    "phase": "Running",
+    "podIP": "10.244.0.21",
+    "podIPs": [
+      {
+        "ip": "10.244.0.21"
+      }
+    ],
+    "qosClass": "Burstable",
+    "resources": {
+      "limits": {
+        "memory": "64Mi"
+      },
+      "requests": {
+        "memory": "64Mi"
+      }
+    },
+    "startTime": "2026-11-02T15:26:39Z"
+  }
+}

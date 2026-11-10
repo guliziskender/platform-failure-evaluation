@@ -1,0 +1,11 @@
+workload: {kind: deployment, name: ml-trainer}
+failure_type: pending
+symptom: Pod stays Pending and is never scheduled.
+root_cause: >-
+  The container requests 4000 CPU cores (written "4000" instead of "4000m"), more than any
+  node has, so the scheduler reports Insufficient cpu.
+cause_keywords: [cpu, request]
+fix: Change the CPU request to "4000m" (4 cores) or lower, within node capacity.
+fix_keywords: ["4000m"]
+ready_when: {pod_condition_reason: Unschedulable}
+evidence_must_contain: ["Unschedulable", "Insufficient cpu", "4k"]

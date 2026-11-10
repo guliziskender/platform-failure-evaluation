@@ -1,0 +1,149 @@
+{
+  "target": {
+    "namespace": "pfa-lab",
+    "name": "ml-trainer",
+    "kind": "deployment",
+    "pod": "ml-trainer-78779f9958-2xjj2",
+    "container": "trainer",
+    "owners": [
+      {
+        "kind": "ReplicaSet",
+        "name": "ml-trainer-78779f9958"
+      },
+      {
+        "kind": "Deployment",
+        "name": "ml-trainer"
+      }
+    ]
+  },
+  "evidence": [
+    {
+      "source": "k8s_state",
+      "summary": {
+        "workload": {
+          "kind": "deployment",
+          "name": "ml-trainer",
+          "replicas_desired": 1,
+          "replicas_ready": 0,
+          "replicas_updated": 1,
+          "replicas_available": 0,
+          "generation": 1,
+          "observed_generation": 1,
+          "conditions": [
+            {
+              "type": "Available",
+              "status": "False",
+              "reason": "MinimumReplicasUnavailable",
+              "message": "Deployment does not have minimum availability.",
+              "last_update": "2026-10-18T16:46:29+00:00"
+            },
+            {
+              "type": "Progressing",
+              "status": "True",
+              "reason": "ReplicaSetUpdated",
+              "message": "ReplicaSet \"ml-trainer-78779f9958\" is progressing.",
+              "last_update": "2026-10-18T16:46:29+00:00"
+            }
+          ]
+        },
+        "pod": {
+          "name": "ml-trainer-78779f9958-2xjj2",
+          "phase": "Pending",
+          "qos_class": "Burstable",
+          "created": "2026-10-18T16:46:29+00:00",
+          "conditions": [
+            {
+              "type": "PodScheduled",
+              "status": "False",
+              "reason": "Unschedulable",
+              "message": "0/1 nodes are available: 1 Insufficient cpu. preemption: 0/1 nodes are available: 1 Preemption is not helpful for scheduling."
+            }
+          ],
+          "containers": [
+            {
+              "name": "trainer",
+              "image": "busybox:1.36",
+              "command": [
+                "sh",
+                "-c",
+                "echo training; exec sleep 3600"
+              ],
+              "resources": {
+                "requests": {
+                  "cpu": "4k",
+                  "memory": "256Mi"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "raw_excerpt": null,
+      "error": null,
+      "collected_at": "2026-10-18T16:47:34.984515Z"
+    },
+    {
+      "source": "k8s_events",
+      "summary": {
+        "window_minutes": 60,
+        "objects": [
+          "Pod/ml-trainer-78779f9958-2xjj2",
+          "ReplicaSet/ml-trainer-78779f9958",
+          "Deployment/ml-trainer"
+        ],
+        "total": 3,
+        "events": [
+          {
+            "type": "Warning",
+            "reason": "FailedScheduling",
+            "object": "Pod/ml-trainer-78779f9958-2xjj2",
+            "message": "0/1 nodes are available: 1 Insufficient cpu. preemption: 0/1 nodes are available: 1 Preemption is not helpful for scheduling.",
+            "count": 1,
+            "first_seen": "2026-10-18T16:46:29+00:00",
+            "last_seen": "2026-10-18T16:46:29+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "SuccessfulCreate",
+            "object": "ReplicaSet/ml-trainer-78779f9958",
+            "message": "Created pod: ml-trainer-78779f9958-2xjj2",
+            "count": 1,
+            "first_seen": "2026-10-18T16:46:29+00:00",
+            "last_seen": "2026-10-18T16:46:29+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "ScalingReplicaSet",
+            "object": "Deployment/ml-trainer",
+            "message": "Scaled up replica set ml-trainer-78779f9958 from 0 to 1",
+            "count": 1,
+            "first_seen": "2026-10-18T16:46:29+00:00",
+            "last_seen": "2026-10-18T16:46:29+00:00"
+          }
+        ]
+      },
+      "raw_excerpt": null,
+      "error": null,
+      "collected_at": "2026-10-18T16:47:34.985556Z"
+    },
+    {
+      "source": "logs",
+      "summary": {
+        "container": "trainer",
+        "previous": {
+          "available": true,
+          "lines": 0,
+          "empty": true
+        },
+        "current": {
+          "available": true,
+          "lines": 0,
+          "empty": true
+        }
+      },
+      "raw_excerpt": null,
+      "error": null,
+      "collected_at": "2026-10-18T16:47:34.985386Z"
+    }
+  ]
+}

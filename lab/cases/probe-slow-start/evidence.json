@@ -1,0 +1,239 @@
+{
+  "target": {
+    "namespace": "pfa-lab",
+    "name": "ledger-api",
+    "kind": "deployment",
+    "pod": "ledger-api-8d6995d7f-tx28s",
+    "container": "api",
+    "owners": [
+      {
+        "kind": "ReplicaSet",
+        "name": "ledger-api-8d6995d7f"
+      },
+      {
+        "kind": "Deployment",
+        "name": "ledger-api"
+      }
+    ]
+  },
+  "evidence": [
+    {
+      "source": "k8s_state",
+      "summary": {
+        "workload": {
+          "kind": "deployment",
+          "name": "ledger-api",
+          "replicas_desired": 1,
+          "replicas_ready": 1,
+          "replicas_updated": 1,
+          "replicas_available": 1,
+          "generation": 1,
+          "observed_generation": 1,
+          "conditions": [
+            {
+              "type": "Available",
+              "status": "True",
+              "reason": "MinimumReplicasAvailable",
+              "message": "Deployment has minimum availability.",
+              "last_update": "2026-11-02T15:26:40+00:00"
+            },
+            {
+              "type": "Progressing",
+              "status": "True",
+              "reason": "NewReplicaSetAvailable",
+              "message": "ReplicaSet \"ledger-api-8d6995d7f\" has successfully progressed.",
+              "last_update": "2026-11-02T15:26:40+00:00"
+            }
+          ]
+        },
+        "pod": {
+          "name": "ledger-api-8d6995d7f-tx28s",
+          "phase": "Running",
+          "node": "desktop-control-plane",
+          "qos_class": "BestEffort",
+          "created": "2026-11-02T15:26:39+00:00",
+          "started": "2026-11-02T15:26:39+00:00",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "api",
+              "image": "busybox:1.36",
+              "command": [
+                "sh",
+                "-c"
+              ],
+              "args": [
+                "mkdir -p /www && echo ok > /www/healthz\necho \"ledger-api replaying journal, this takes about 45 seconds\"\nsleep 45\necho \"ledger-api listening on :80\"\nexec httpd -f -p 80 -h /www\n"
+              ],
+              "ports": [
+                "http=80/TCP"
+              ],
+              "probes": {
+                "liveness": {
+                  "http_get": "HTTP /healthz port=http",
+                  "initial_delay_seconds": 2,
+                  "period_seconds": 3,
+                  "timeout_seconds": 1,
+                  "failure_threshold": 2
+                }
+              },
+              "ready": true,
+              "started": true,
+              "restart_count": 1,
+              "state": {
+                "running": {
+                  "started_at": "2026-11-02T15:27:16+00:00"
+                }
+              },
+              "last_state": {
+                "terminated": {
+                  "reason": "Error",
+                  "exit_code": 137,
+                  "started_at": "2026-11-02T15:26:40+00:00",
+                  "finished_at": "2026-11-02T15:27:16+00:00"
+                }
+              },
+              "image_id": "docker.io/library/busybox@sha256:73aaf090f3d85aa34ee199857f03fa3a95c8ede2ffd4cc2cdb5b94e566b11662"
+            }
+          ]
+        }
+      },
+      "raw_excerpt": null,
+      "error": null,
+      "collected_at": "2026-11-02T15:27:28.535976Z",
+      "redacted": true,
+      "redactions": {}
+    },
+    {
+      "source": "k8s_events",
+      "summary": {
+        "window_minutes": 60,
+        "objects": [
+          "Pod/ledger-api-8d6995d7f-tx28s",
+          "ReplicaSet/ledger-api-8d6995d7f",
+          "Deployment/ledger-api"
+        ],
+        "total": 8,
+        "events": [
+          {
+            "type": "Warning",
+            "reason": "Unhealthy",
+            "object": "Pod/ledger-api-8d6995d7f-tx28s",
+            "message": "Liveness probe failed: Get \"http://10.244.0.16:80/healthz\": dial tcp 10.244.0.16:80: connect: connection refused",
+            "count": 4,
+            "first_seen": "2026-11-02T15:26:43+00:00",
+            "last_seen": "2026-11-02T15:27:22+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "Killing",
+            "object": "Pod/ledger-api-8d6995d7f-tx28s",
+            "message": "Container api failed liveness probe, will be restarted",
+            "count": 2,
+            "first_seen": "2026-11-02T15:26:46+00:00",
+            "last_seen": "2026-11-02T15:27:22+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "Pulled",
+            "object": "Pod/ledger-api-8d6995d7f-tx28s",
+            "message": "Container image \"busybox:1.36\" already present on machine and can be accessed by the pod",
+            "count": 2,
+            "first_seen": "2026-11-02T15:26:40+00:00",
+            "last_seen": "2026-11-02T15:27:16+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "Created",
+            "object": "Pod/ledger-api-8d6995d7f-tx28s",
+            "message": "Container created",
+            "count": 2,
+            "first_seen": "2026-11-02T15:26:40+00:00",
+            "last_seen": "2026-11-02T15:27:16+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "Started",
+            "object": "Pod/ledger-api-8d6995d7f-tx28s",
+            "message": "Container started",
+            "count": 2,
+            "first_seen": "2026-11-02T15:26:40+00:00",
+            "last_seen": "2026-11-02T15:27:16+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "Scheduled",
+            "object": "Pod/ledger-api-8d6995d7f-tx28s",
+            "message": "Successfully assigned pfa-lab/ledger-api-8d6995d7f-tx28s to desktop-control-plane",
+            "count": 1,
+            "first_seen": "2026-11-02T15:26:39.696094+00:00",
+            "last_seen": "2026-11-02T15:26:39.696094+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "SuccessfulCreate",
+            "object": "ReplicaSet/ledger-api-8d6995d7f",
+            "message": "Created pod: ledger-api-8d6995d7f-tx28s",
+            "count": 1,
+            "first_seen": "2026-11-02T15:26:39+00:00",
+            "last_seen": "2026-11-02T15:26:39+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "ScalingReplicaSet",
+            "object": "Deployment/ledger-api",
+            "message": "Scaled up replica set ledger-api-8d6995d7f from 0 to 1",
+            "count": 1,
+            "first_seen": "2026-11-02T15:26:39+00:00",
+            "last_seen": "2026-11-02T15:26:39+00:00"
+          }
+        ]
+      },
+      "raw_excerpt": null,
+      "error": null,
+      "collected_at": "2026-11-02T15:27:28.537906Z",
+      "redacted": true,
+      "redactions": {}
+    },
+    {
+      "source": "logs",
+      "summary": {
+        "container": "api",
+        "previous": {
+          "available": true,
+          "lines": 1
+        },
+        "current": {
+          "available": true,
+          "lines": 1
+        }
+      },
+      "raw_excerpt": "=== previous container ===\nledger-api replaying journal, this takes about 45 seconds\n\n=== current container ===\nledger-api replaying journal, this takes about 45 seconds\n",
+      "error": null,
+      "collected_at": "2026-11-02T15:27:28.536718Z",
+      "redacted": true,
+      "redactions": {}
+    }
+  ]
+}

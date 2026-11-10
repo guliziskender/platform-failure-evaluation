@@ -1,0 +1,189 @@
+{
+  "target": {
+    "namespace": "pfa-lab",
+    "name": "notify-worker",
+    "kind": "deployment",
+    "pod": "notify-worker-6f454f8d9-jl2ft",
+    "container": "worker",
+    "owners": [
+      {
+        "kind": "ReplicaSet",
+        "name": "notify-worker-6f454f8d9"
+      },
+      {
+        "kind": "Deployment",
+        "name": "notify-worker"
+      }
+    ]
+  },
+  "evidence": [
+    {
+      "source": "k8s_state",
+      "summary": {
+        "workload": {
+          "kind": "deployment",
+          "name": "notify-worker",
+          "replicas_desired": 1,
+          "replicas_ready": 0,
+          "replicas_updated": 1,
+          "replicas_available": 0,
+          "generation": 1,
+          "observed_generation": 1,
+          "conditions": [
+            {
+              "type": "Available",
+              "status": "False",
+              "reason": "MinimumReplicasUnavailable",
+              "message": "Deployment does not have minimum availability.",
+              "last_update": "2026-11-02T15:26:39+00:00"
+            },
+            {
+              "type": "Progressing",
+              "status": "True",
+              "reason": "ReplicaSetUpdated",
+              "message": "ReplicaSet \"notify-worker-6f454f8d9\" is progressing.",
+              "last_update": "2026-11-02T15:26:39+00:00"
+            }
+          ]
+        },
+        "pod": {
+          "name": "notify-worker-6f454f8d9-jl2ft",
+          "phase": "Pending",
+          "node": "desktop-control-plane",
+          "qos_class": "BestEffort",
+          "created": "2026-11-02T15:26:39+00:00",
+          "started": "2026-11-02T15:26:39+00:00",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "False",
+              "reason": "ContainersNotReady",
+              "message": "containers with unready status: [worker]"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "False",
+              "reason": "ContainersNotReady",
+              "message": "containers with unready status: [worker]"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "worker",
+              "image": "busybox:1.36:latest",
+              "ready": false,
+              "started": false,
+              "restart_count": 0,
+              "state": {
+                "waiting": {
+                  "reason": "InvalidImageName",
+                  "message": "Failed to apply default image tag \"busybox:1.36:latest\": couldn't parse image name \"busybox:1.36:latest\": invalid reference format"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "raw_excerpt": null,
+      "error": null,
+      "collected_at": "2026-11-02T15:27:28.460147Z",
+      "redacted": true,
+      "redactions": {}
+    },
+    {
+      "source": "k8s_events",
+      "summary": {
+        "window_minutes": 60,
+        "objects": [
+          "Pod/notify-worker-6f454f8d9-jl2ft",
+          "ReplicaSet/notify-worker-6f454f8d9",
+          "Deployment/notify-worker"
+        ],
+        "total": 5,
+        "events": [
+          {
+            "type": "Warning",
+            "reason": "InspectFailed",
+            "object": "Pod/notify-worker-6f454f8d9-jl2ft",
+            "message": "Failed to apply default image tag \"busybox:1.36:latest\": couldn't parse image name \"busybox:1.36:latest\": invalid reference format",
+            "count": 5,
+            "first_seen": "2026-11-02T15:26:40+00:00",
+            "last_seen": "2026-11-02T15:27:20+00:00"
+          },
+          {
+            "type": "Warning",
+            "reason": "Failed",
+            "object": "Pod/notify-worker-6f454f8d9-jl2ft",
+            "message": "Error: InvalidImageName",
+            "count": 5,
+            "first_seen": "2026-11-02T15:26:40+00:00",
+            "last_seen": "2026-11-02T15:27:20+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "Scheduled",
+            "object": "Pod/notify-worker-6f454f8d9-jl2ft",
+            "message": "Successfully assigned pfa-lab/notify-worker-6f454f8d9-jl2ft to desktop-control-plane",
+            "count": 1,
+            "first_seen": "2026-11-02T15:26:39.710216+00:00",
+            "last_seen": "2026-11-02T15:26:39.710216+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "SuccessfulCreate",
+            "object": "ReplicaSet/notify-worker-6f454f8d9",
+            "message": "Created pod: notify-worker-6f454f8d9-jl2ft",
+            "count": 1,
+            "first_seen": "2026-11-02T15:26:39+00:00",
+            "last_seen": "2026-11-02T15:26:39+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "ScalingReplicaSet",
+            "object": "Deployment/notify-worker",
+            "message": "Scaled up replica set notify-worker-6f454f8d9 from 0 to 1",
+            "count": 1,
+            "first_seen": "2026-11-02T15:26:39+00:00",
+            "last_seen": "2026-11-02T15:26:39+00:00"
+          }
+        ]
+      },
+      "raw_excerpt": null,
+      "error": null,
+      "collected_at": "2026-11-02T15:27:28.461826Z",
+      "redacted": true,
+      "redactions": {}
+    },
+    {
+      "source": "logs",
+      "summary": {
+        "container": "worker",
+        "previous": {
+          "available": false,
+          "note": "previous terminated container \"worker\" in pod \"notify-worker-6f454f8d9-jl2ft\" not found"
+        },
+        "current": {
+          "available": false,
+          "note": "container \"worker\" in pod \"notify-worker-6f454f8d9-jl2ft\" is waiting to start: InvalidImageName"
+        }
+      },
+      "raw_excerpt": null,
+      "error": null,
+      "collected_at": "2026-11-02T15:27:28.460440Z",
+      "redacted": true,
+      "redactions": {}
+    }
+  ]
+}

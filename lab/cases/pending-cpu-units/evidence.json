@@ -1,0 +1,137 @@
+{
+  "target": {
+    "namespace": "pfa-lab",
+    "name": "ml-trainer",
+    "kind": "deployment",
+    "pod": "ml-trainer-8558d584bb-c7vtm",
+    "container": "trainer",
+    "owners": [
+      {
+        "kind": "ReplicaSet",
+        "name": "ml-trainer-8558d584bb"
+      },
+      {
+        "kind": "Deployment",
+        "name": "ml-trainer"
+      }
+    ]
+  },
+  "evidence": [
+    {
+      "source": "k8s_state",
+      "summary": {
+        "workload": {
+          "kind": "deployment",
+          "name": "ml-trainer",
+          "replicas_desired": 1,
+          "replicas_ready": 0,
+          "replicas_updated": 1,
+          "replicas_available": 0,
+          "generation": 1,
+          "observed_generation": 1,
+          "conditions": [
+            {
+              "type": "Available",
+              "status": "False",
+              "reason": "MinimumReplicasUnavailable",
+              "message": "Deployment does not have minimum availability.",
+              "last_update": "2026-10-26T14:46:59+00:00"
+            },
+            {
+              "type": "Progressing",
+              "status": "False",
+              "reason": "ProgressDeadlineExceeded",
+              "message": "ReplicaSet \"ml-trainer-8558d584bb\" has timed out progressing.",
+              "last_update": "2026-10-26T14:59:39+00:00"
+            }
+          ]
+        },
+        "pod": {
+          "name": "ml-trainer-8558d584bb-c7vtm",
+          "phase": "Pending",
+          "qos_class": "Burstable",
+          "created": "2026-10-26T14:46:59+00:00",
+          "conditions": [
+            {
+              "type": "PodScheduled",
+              "status": "False",
+              "reason": "Unschedulable",
+              "message": "0/1 nodes are available: 1 Insufficient cpu. no new claims to deallocate, preemption: 0/1 nodes are available: 1 Preemption is not helpful for scheduling."
+            }
+          ],
+          "containers": [
+            {
+              "name": "trainer",
+              "image": "busybox:1.36",
+              "command": [
+                "sh",
+                "-c",
+                "echo training; exec sleep 3600"
+              ],
+              "resources": {
+                "requests": {
+                  "cpu": "4k",
+                  "memory": "256Mi"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "raw_excerpt": null,
+      "error": null,
+      "collected_at": "2026-11-02T15:27:28.504528Z",
+      "redacted": true,
+      "redactions": {}
+    },
+    {
+      "source": "k8s_events",
+      "summary": {
+        "window_minutes": 60,
+        "objects": [
+          "Pod/ml-trainer-8558d584bb-c7vtm",
+          "ReplicaSet/ml-trainer-8558d584bb",
+          "Deployment/ml-trainer"
+        ],
+        "total": 1,
+        "events": [
+          {
+            "type": "Warning",
+            "reason": "FailedScheduling",
+            "object": "Pod/ml-trainer-8558d584bb-c7vtm",
+            "message": "0/1 nodes are available: 1 Insufficient cpu. no new claims to deallocate, preemption: 0/1 nodes are available: 1 Preemption is not helpful for scheduling.",
+            "count": 102,
+            "first_seen": "2026-11-02T06:01:34.248078+00:00",
+            "last_seen": "2026-11-02T15:09:38.868149+00:00"
+          }
+        ]
+      },
+      "raw_excerpt": null,
+      "error": null,
+      "collected_at": "2026-11-02T15:27:28.506228Z",
+      "redacted": true,
+      "redactions": {}
+    },
+    {
+      "source": "logs",
+      "summary": {
+        "container": "trainer",
+        "previous": {
+          "available": true,
+          "lines": 0,
+          "empty": true
+        },
+        "current": {
+          "available": true,
+          "lines": 0,
+          "empty": true
+        }
+      },
+      "raw_excerpt": null,
+      "error": null,
+      "collected_at": "2026-11-02T15:27:28.504739Z",
+      "redacted": true,
+      "redactions": {}
+    }
+  ]
+}

@@ -1,0 +1,188 @@
+{
+  "target": {
+    "namespace": "pfa-fixture-quota",
+    "name": "billing-api",
+    "kind": "deployment",
+    "pod": null,
+    "container": null,
+    "owners": [
+      {
+        "kind": "ReplicaSet",
+        "name": "billing-api-9f84cf54c"
+      },
+      {
+        "kind": "Deployment",
+        "name": "billing-api"
+      }
+    ]
+  },
+  "evidence": [
+    {
+      "source": "k8s_state",
+      "summary": {
+        "workload": {
+          "kind": "deployment",
+          "name": "billing-api",
+          "replicas_desired": 1,
+          "replicas_ready": 0,
+          "replicas_updated": 0,
+          "replicas_available": 0,
+          "generation": 1,
+          "observed_generation": 1,
+          "conditions": [
+            {
+              "type": "Progressing",
+              "status": "True",
+              "reason": "NewReplicaSetCreated",
+              "message": "Created new replica set \"billing-api-9f84cf54c\"",
+              "last_update": "2026-10-18T16:47:12+00:00"
+            },
+            {
+              "type": "Available",
+              "status": "False",
+              "reason": "MinimumReplicasUnavailable",
+              "message": "Deployment does not have minimum availability.",
+              "last_update": "2026-10-18T16:47:12+00:00"
+            },
+            {
+              "type": "ReplicaFailure",
+              "status": "True",
+              "reason": "FailedCreate",
+              "message": "pods \"billing-api-9f84cf54c-mgtcb\" is forbidden: exceeded quota: compute, requested: pods=1, used: pods=0, limited: pods=0",
+              "last_update": "2026-10-18T16:47:12+00:00"
+            }
+          ]
+        },
+        "pod": null,
+        "note": "workload has no pods"
+      },
+      "raw_excerpt": null,
+      "error": null,
+      "collected_at": "2026-10-18T16:47:35.737523Z"
+    },
+    {
+      "source": "k8s_events",
+      "summary": {
+        "window_minutes": 60,
+        "objects": [
+          "ReplicaSet/billing-api-9f84cf54c",
+          "Deployment/billing-api"
+        ],
+        "total": 11,
+        "events": [
+          {
+            "type": "Warning",
+            "reason": "FailedCreate",
+            "object": "ReplicaSet/billing-api-9f84cf54c",
+            "message": "(combined from similar events): Error creating: pods \"billing-api-9f84cf54c-5tdns\" is forbidden: exceeded quota: compute, requested: pods=1, used: pods=0, limited: pods=0",
+            "count": 4,
+            "first_seen": "2026-10-18T16:47:14+00:00",
+            "last_seen": "2026-10-18T16:47:32+00:00"
+          },
+          {
+            "type": "Warning",
+            "reason": "FailedCreate",
+            "object": "ReplicaSet/billing-api-9f84cf54c",
+            "message": "Error creating: pods \"billing-api-9f84cf54c-njnqk\" is forbidden: exceeded quota: compute, requested: pods=1, used: pods=0, limited: pods=0",
+            "count": 1,
+            "first_seen": "2026-10-18T16:47:13+00:00",
+            "last_seen": "2026-10-18T16:47:13+00:00"
+          },
+          {
+            "type": "Warning",
+            "reason": "FailedCreate",
+            "object": "ReplicaSet/billing-api-9f84cf54c",
+            "message": "Error creating: pods \"billing-api-9f84cf54c-mgtcb\" is forbidden: exceeded quota: compute, requested: pods=1, used: pods=0, limited: pods=0",
+            "count": 1,
+            "first_seen": "2026-10-18T16:47:12+00:00",
+            "last_seen": "2026-10-18T16:47:12+00:00"
+          },
+          {
+            "type": "Warning",
+            "reason": "FailedCreate",
+            "object": "ReplicaSet/billing-api-9f84cf54c",
+            "message": "Error creating: pods \"billing-api-9f84cf54c-qrn5h\" is forbidden: exceeded quota: compute, requested: pods=1, used: pods=0, limited: pods=0",
+            "count": 1,
+            "first_seen": "2026-10-18T16:47:12+00:00",
+            "last_seen": "2026-10-18T16:47:12+00:00"
+          },
+          {
+            "type": "Warning",
+            "reason": "FailedCreate",
+            "object": "ReplicaSet/billing-api-9f84cf54c",
+            "message": "Error creating: pods \"billing-api-9f84cf54c-dxgxr\" is forbidden: exceeded quota: compute, requested: pods=1, used: pods=0, limited: pods=0",
+            "count": 1,
+            "first_seen": "2026-10-18T16:47:12+00:00",
+            "last_seen": "2026-10-18T16:47:12+00:00"
+          },
+          {
+            "type": "Warning",
+            "reason": "FailedCreate",
+            "object": "ReplicaSet/billing-api-9f84cf54c",
+            "message": "Error creating: pods \"billing-api-9f84cf54c-wjpfn\" is forbidden: exceeded quota: compute, requested: pods=1, used: pods=0, limited: pods=0",
+            "count": 1,
+            "first_seen": "2026-10-18T16:47:12+00:00",
+            "last_seen": "2026-10-18T16:47:12+00:00"
+          },
+          {
+            "type": "Warning",
+            "reason": "FailedCreate",
+            "object": "ReplicaSet/billing-api-9f84cf54c",
+            "message": "Error creating: pods \"billing-api-9f84cf54c-47698\" is forbidden: exceeded quota: compute, requested: pods=1, used: pods=0, limited: pods=0",
+            "count": 1,
+            "first_seen": "2026-10-18T16:47:12+00:00",
+            "last_seen": "2026-10-18T16:47:12+00:00"
+          },
+          {
+            "type": "Warning",
+            "reason": "FailedCreate",
+            "object": "ReplicaSet/billing-api-9f84cf54c",
+            "message": "Error creating: pods \"billing-api-9f84cf54c-6rmnz\" is forbidden: exceeded quota: compute, requested: pods=1, used: pods=0, limited: pods=0",
+            "count": 1,
+            "first_seen": "2026-10-18T16:47:12+00:00",
+            "last_seen": "2026-10-18T16:47:12+00:00"
+          },
+          {
+            "type": "Warning",
+            "reason": "FailedCreate",
+            "object": "ReplicaSet/billing-api-9f84cf54c",
+            "message": "Error creating: pods \"billing-api-9f84cf54c-xh4qm\" is forbidden: exceeded quota: compute, requested: pods=1, used: pods=0, limited: pods=0",
+            "count": 1,
+            "first_seen": "2026-10-18T16:47:12+00:00",
+            "last_seen": "2026-10-18T16:47:12+00:00"
+          },
+          {
+            "type": "Warning",
+            "reason": "FailedCreate",
+            "object": "ReplicaSet/billing-api-9f84cf54c",
+            "message": "Error creating: pods \"billing-api-9f84cf54c-g2ksq\" is forbidden: exceeded quota: compute, requested: pods=1, used: pods=0, limited: pods=0",
+            "count": 1,
+            "first_seen": "2026-10-18T16:47:12+00:00",
+            "last_seen": "2026-10-18T16:47:12+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "ScalingReplicaSet",
+            "object": "Deployment/billing-api",
+            "message": "Scaled up replica set billing-api-9f84cf54c from 0 to 1",
+            "count": 1,
+            "first_seen": "2026-10-18T16:47:12+00:00",
+            "last_seen": "2026-10-18T16:47:12+00:00"
+          }
+        ]
+      },
+      "raw_excerpt": null,
+      "error": null,
+      "collected_at": "2026-10-18T16:47:35.740440Z"
+    },
+    {
+      "source": "logs",
+      "summary": {
+        "note": "no pod or container to read logs from"
+      },
+      "raw_excerpt": null,
+      "error": null,
+      "collected_at": "2026-10-18T16:47:35.736434Z"
+    }
+  ]
+}

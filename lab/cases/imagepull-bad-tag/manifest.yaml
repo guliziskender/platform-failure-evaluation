@@ -1,0 +1,19 @@
+# storefront points at a tag that does not exist: "uclbic" is a typo of "uclibc".
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: storefront
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: storefront}
+  template:
+    metadata:
+      labels: {app: storefront}
+    spec:
+      containers:
+        - name: web
+          image: busybox:1.36.1-uclbic
+          command: ["httpd", "-f", "-p", "80"]
+          ports:
+            - {containerPort: 80}

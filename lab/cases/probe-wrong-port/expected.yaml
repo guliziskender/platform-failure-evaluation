@@ -1,0 +1,11 @@
+workload: {kind: statefulset, name: inventory-api}
+failure_type: probe_failure
+symptom: Pod runs, then gets restarted every few seconds; events show Liveness probe failed.
+root_cause: >-
+  The liveness probe checks port 8080, but the app listens on port 80, so every probe gets
+  "connection refused" and the kubelet restarts a healthy container.
+cause_keywords: ["8080", "80"]
+fix: Point the liveness probe at port 80 (or the named port "http").
+fix_keywords: ["80"]
+ready_when: {restarts_at_least: 1}
+evidence_must_contain: ["Liveness probe failed", "port=8080", "80/TCP"]

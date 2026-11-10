@@ -1,0 +1,13 @@
+workload: {kind: deployment, name: ledger-api}
+failure_type: probe_failure
+symptom: Container is restarted every few seconds and never finishes starting.
+root_cause: >-
+  The app needs about 45 seconds to start, but the liveness probe starts checking after 2
+  seconds and allows only 2 failures, so the kubelet kills it before it ever listens.
+cause_keywords: [[liveness, probe], [start, listening]]
+fix: Add a startupProbe, or raise initialDelaySeconds/failureThreshold to cover the startup time.
+fix_keywords: [[startupProbe, startup probe, initialDelaySeconds, failureThreshold]]
+ready_when: {restarts_at_least: 1}
+evidence_must_contain: ["Liveness probe failed", "replaying journal"]
+# Connection refused can also mean a wrong listening port, so "medium" is the honest level.
+rules_confidence: medium

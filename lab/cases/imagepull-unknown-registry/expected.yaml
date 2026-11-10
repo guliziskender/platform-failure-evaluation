@@ -1,0 +1,14 @@
+workload: {kind: deployment, name: billing-ui}
+failure_type: image_pull_backoff
+symptom: Pod never starts; status is ErrImagePull / ImagePullBackOff.
+root_cause: >-
+  The registry host registry.pfa-lab.invalid cannot be resolved or reached, so the image can
+  never be pulled. The tag itself is not the problem.
+cause_keywords: [registry]
+fix: Correct the registry hostname in the image reference, or fix DNS/network access to it.
+fix_keywords: [[registry, hostname, dns, network]]
+ready_when: {waiting_reason: [ErrImagePull, ImagePullBackOff]}
+evidence_must_contain: ["registry.pfa-lab.invalid", "ErrImagePull"]
+known_gap: >-
+  No rule recognises a pull error relayed by a registry mirror (Docker Desktop's answers
+  "500 Internal Server Error" instead of "no such host"), so the rules answer unsure.

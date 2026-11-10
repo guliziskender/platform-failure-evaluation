@@ -1,0 +1,11 @@
+workload: {kind: deployment, name: payment-gateway}
+failure_type: crash_loop_backoff
+symptom: Container never runs; it fails to start and goes into CrashLoopBackOff.
+root_cause: >-
+  The command /app/payment-gateway does not exist in the busybox:1.36 image, so the runtime
+  cannot start the container.
+cause_keywords: [/app/payment-gateway]
+fix: Correct the command path, or use the image that actually contains the binary.
+fix_keywords: [[command, image]]
+ready_when: {restarts_at_least: 2}
+evidence_must_contain: ["/app/payment-gateway", "no such file"]

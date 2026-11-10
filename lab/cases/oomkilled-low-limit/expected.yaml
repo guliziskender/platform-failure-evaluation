@@ -1,0 +1,11 @@
+workload: {kind: deployment, name: report-worker}
+failure_type: oom_killed
+symptom: Container is killed with exit code 137 (OOMKilled) and restarts.
+root_cause: >-
+  The worker loads about 250MB into memory but its memory limit is 128Mi, so the kernel
+  OOM-kills it every time it reaches the limit.
+cause_keywords: [128Mi, memory limit]
+fix: Raise the memory limit above the working set (e.g. 384Mi), or make the worker load less data at once.
+fix_keywords: [[limit, memory]]
+ready_when: {last_terminated_reason: OOMKilled}
+evidence_must_contain: ["OOMKilled", "137", "128Mi", "250"]

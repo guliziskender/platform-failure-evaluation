@@ -1,0 +1,187 @@
+{
+  "target": {
+    "namespace": "pfa-lab",
+    "name": "inventory-api",
+    "kind": "statefulset",
+    "pod": "inventory-api-0",
+    "container": "api",
+    "owners": [
+      {
+        "kind": "StatefulSet",
+        "name": "inventory-api"
+      }
+    ]
+  },
+  "evidence": [
+    {
+      "source": "k8s_state",
+      "summary": {
+        "workload": {
+          "kind": "statefulset",
+          "name": "inventory-api",
+          "replicas_desired": 1,
+          "replicas_ready": 0,
+          "replicas_updated": 1,
+          "replicas_available": 0,
+          "generation": 1,
+          "observed_generation": 1
+        },
+        "pod": {
+          "name": "inventory-api-0",
+          "phase": "Running",
+          "node": "desktop-control-plane",
+          "qos_class": "BestEffort",
+          "created": "2026-10-26T14:46:59+00:00",
+          "started": "2026-10-26T14:46:59+00:00",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "False",
+              "reason": "ContainersNotReady",
+              "message": "containers with unready status: [api]"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "False",
+              "reason": "ContainersNotReady",
+              "message": "containers with unready status: [api]"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "api",
+              "image": "busybox:1.36",
+              "command": [
+                "sh",
+                "-c"
+              ],
+              "args": [
+                "mkdir -p /www && echo ok > /www/healthz\necho \"inventory-api listening on :80\"\nexec httpd -f -p 80 -h /www\n"
+              ],
+              "ports": [
+                "http=80/TCP"
+              ],
+              "probes": {
+                "liveness": {
+                  "http_get": "HTTP /healthz port=8080",
+                  "initial_delay_seconds": 3,
+                  "period_seconds": 3,
+                  "timeout_seconds": 1,
+                  "failure_threshold": 2
+                }
+              },
+              "ready": false,
+              "started": false,
+              "restart_count": 816,
+              "state": {
+                "waiting": {
+                  "reason": "CrashLoopBackOff",
+                  "message": "back-off 5m0s restarting failed container=api pod=inventory-api-0_pfa-lab(1f1a50c2-9c6c-43f5-8ffe-06e3e66f10e9)"
+                }
+              },
+              "last_state": {
+                "terminated": {
+                  "reason": "Error",
+                  "exit_code": 137,
+                  "started_at": "2026-11-02T15:23:11+00:00",
+                  "finished_at": "2026-11-02T15:23:47+00:00"
+                }
+              },
+              "image_id": "docker.io/library/busybox@sha256:73aaf090f3d85aa34ee199857f03fa3a95c8ede2ffd4cc2cdb5b94e566b11662"
+            }
+          ]
+        }
+      },
+      "raw_excerpt": null,
+      "error": null,
+      "collected_at": "2026-11-02T15:27:28.543894Z",
+      "redacted": true,
+      "redactions": {}
+    },
+    {
+      "source": "k8s_events",
+      "summary": {
+        "window_minutes": 60,
+        "objects": [
+          "Pod/inventory-api-0",
+          "StatefulSet/inventory-api"
+        ],
+        "total": 4,
+        "events": [
+          {
+            "type": "Warning",
+            "reason": "BackOff",
+            "object": "Pod/inventory-api-0",
+            "message": "Back-off restarting failed container api in pod inventory-api-0_pfa-lab(1f1a50c2-9c6c-43f5-8ffe-06e3e66f10e9)",
+            "count": 1742,
+            "first_seen": "2026-10-26T14:49:59+00:00",
+            "last_seen": "2026-11-02T15:25:10+00:00"
+          },
+          {
+            "type": "Warning",
+            "reason": "Unhealthy",
+            "object": "Pod/inventory-api-0",
+            "message": "Liveness probe failed: Get \"http://10.244.0.12:8080/healthz\": dial tcp 10.244.0.12:8080: connect: connection refused",
+            "count": 1607,
+            "first_seen": "2026-10-26T14:47:02+00:00",
+            "last_seen": "2026-11-02T14:44:26+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "Pulled",
+            "object": "Pod/inventory-api-0",
+            "message": "Container image \"busybox:1.36\" already present on machine and can be accessed by the pod",
+            "count": 816,
+            "first_seen": "2026-10-26T14:46:59+00:00",
+            "last_seen": "2026-11-02T15:22:35+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "Created",
+            "object": "Pod/inventory-api-0",
+            "message": "Container created",
+            "count": 812,
+            "first_seen": "2026-10-26T14:46:59+00:00",
+            "last_seen": "2026-11-02T15:09:33+00:00"
+          }
+        ]
+      },
+      "raw_excerpt": null,
+      "error": null,
+      "collected_at": "2026-11-02T15:27:28.544278Z",
+      "redacted": true,
+      "redactions": {}
+    },
+    {
+      "source": "logs",
+      "summary": {
+        "container": "api",
+        "previous": {
+          "available": true,
+          "lines": 1
+        },
+        "current": {
+          "available": true,
+          "lines": 1
+        }
+      },
+      "raw_excerpt": "=== previous container ===\ninventory-api listening on :80\n\n=== current container ===\ninventory-api listening on :80\n",
+      "error": null,
+      "collected_at": "2026-11-02T15:27:28.545513Z",
+      "redacted": true,
+      "redactions": {}
+    }
+  ]
+}

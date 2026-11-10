@@ -1,0 +1,16 @@
+# Ground truth for this broken app, scored by `pfa eval`.
+workload: {kind: deployment, name: checkout-api}
+failure_type: crash_loop_backoff
+symptom: Pod restarts over and over and sits in CrashLoopBackOff.
+root_cause: >-
+  The container exits with code 1 right after starting because the required environment
+  variable DATABASE_URL is not set on the Deployment.
+cause_keywords: [DATABASE_URL]
+fix: Add DATABASE_URL to the container env (ideally from a Secret) and roll out again.
+fix_keywords: [DATABASE_URL]
+# When `make lab-up` considers this case ready to test against.
+ready_when: {restarts_at_least: 2}
+# Strings `pfa collect` output must contain, or the evidence is not enough to diagnose it.
+# The placeholder proves the leaked password line was collected and redacted, not just missed.
+evidence_must_contain:
+  ["DATABASE_URL is not set", "BackOff", "DB_PASSWORD", "password=<REDACTED:password>"]

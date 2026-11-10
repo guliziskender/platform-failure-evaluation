@@ -1,0 +1,780 @@
+{
+  "items": [
+    {
+      "apiVersion": "v1",
+      "count": 1,
+      "eventTime": null,
+      "firstTimestamp": "2026-10-09T11:27:30Z",
+      "involvedObject": {
+        "apiVersion": "v1",
+        "kind": "Pod",
+        "name": "memhog-664cdcf5c-tjt55",
+        "namespace": "default",
+        "resourceVersion": "603",
+        "uid": "969022de-957c-4111-9937-ce7e0234e7e1"
+      },
+      "kind": "Event",
+      "lastTimestamp": "2026-10-09T11:27:30Z",
+      "message": "Successfully assigned default/memhog-664cdcf5c-tjt55 to pfa-dev-control-plane",
+      "metadata": {
+        "creationTimestamp": "2026-10-09T11:27:30Z",
+        "name": "memhog-664cdcf5c-tjt55.18dcd8e9dc11dd91",
+        "namespace": "default",
+        "resourceVersion": "608",
+        "uid": "2898b4a0-7332-4c8d-8a31-4ebb58f17f54"
+      },
+      "reason": "Scheduled",
+      "reportingComponent": "default-scheduler",
+      "reportingInstance": "",
+      "source": {
+        "component": "default-scheduler"
+      },
+      "type": "Normal"
+    },
+    {
+      "apiVersion": "v1",
+      "count": 1,
+      "eventTime": null,
+      "firstTimestamp": "2026-10-09T11:27:31Z",
+      "involvedObject": {
+        "apiVersion": "v1",
+        "fieldPath": "spec.containers{stress}",
+        "kind": "Pod",
+        "name": "memhog-664cdcf5c-tjt55",
+        "namespace": "default",
+        "resourceVersion": "605",
+        "uid": "969022de-957c-4111-9937-ce7e0234e7e1"
+      },
+      "kind": "Event",
+      "lastTimestamp": "2026-10-09T11:27:31Z",
+      "message": "Pulling image \"polinux/stress\"",
+      "metadata": {
+        "creationTimestamp": "2026-10-09T11:27:31Z",
+        "name": "memhog-664cdcf5c-tjt55.18dcd8e9f23758f0",
+        "namespace": "default",
+        "resourceVersion": "612",
+        "uid": "243b42d1-b378-4fdd-8312-906244af4629"
+      },
+      "reason": "Pulling",
+      "reportingComponent": "kubelet",
+      "reportingInstance": "pfa-dev-control-plane",
+      "source": {
+        "component": "kubelet",
+        "host": "pfa-dev-control-plane"
+      },
+      "type": "Normal"
+    },
+    {
+      "apiVersion": "v1",
+      "count": 1,
+      "eventTime": null,
+      "firstTimestamp": "2026-10-09T11:27:33Z",
+      "involvedObject": {
+        "apiVersion": "v1",
+        "fieldPath": "spec.containers{stress}",
+        "kind": "Pod",
+        "name": "memhog-664cdcf5c-tjt55",
+        "namespace": "default",
+        "resourceVersion": "605",
+        "uid": "969022de-957c-4111-9937-ce7e0234e7e1"
+      },
+      "kind": "Event",
+      "lastTimestamp": "2026-10-09T11:27:33Z",
+      "message": "Successfully pulled image \"polinux/stress\" in 2.394s (2.394s including waiting). Image size: 4041495 bytes.",
+      "metadata": {
+        "creationTimestamp": "2026-10-09T11:27:33Z",
+        "name": "memhog-664cdcf5c-tjt55.18dcd8ea80f0f6ee",
+        "namespace": "default",
+        "resourceVersion": "617",
+        "uid": "759cdb48-b11b-40b0-bfdc-4c0513588e45"
+      },
+      "reason": "Pulled",
+      "reportingComponent": "kubelet",
+      "reportingInstance": "pfa-dev-control-plane",
+      "source": {
+        "component": "kubelet",
+        "host": "pfa-dev-control-plane"
+      },
+      "type": "Normal"
+    },
+    {
+      "apiVersion": "v1",
+      "count": 1,
+      "eventTime": null,
+      "firstTimestamp": "2026-10-09T11:27:33Z",
+      "involvedObject": {
+        "apiVersion": "v1",
+        "fieldPath": "spec.containers{stress}",
+        "kind": "Pod",
+        "name": "memhog-664cdcf5c-tjt55",
+        "namespace": "default",
+        "resourceVersion": "605",
+        "uid": "969022de-957c-4111-9937-ce7e0234e7e1"
+      },
+      "kind": "Event",
+      "lastTimestamp": "2026-10-09T11:27:33Z",
+      "message": "Container created",
+      "metadata": {
+        "creationTimestamp": "2026-10-09T11:27:33Z",
+        "name": "memhog-664cdcf5c-tjt55.18dcd8ea813e1e8f",
+        "namespace": "default",
+        "resourceVersion": "618",
+        "uid": "a38a9ada-f850-4c46-942c-77d8abb302d2"
+      },
+      "reason": "Created",
+      "reportingComponent": "kubelet",
+      "reportingInstance": "pfa-dev-control-plane",
+      "source": {
+        "component": "kubelet",
+        "host": "pfa-dev-control-plane"
+      },
+      "type": "Normal"
+    },
+    {
+      "apiVersion": "v1",
+      "count": 1,
+      "eventTime": null,
+      "firstTimestamp": "2026-10-09T11:27:33Z",
+      "involvedObject": {
+        "apiVersion": "v1",
+        "fieldPath": "spec.containers{stress}",
+        "kind": "Pod",
+        "name": "memhog-664cdcf5c-tjt55",
+        "namespace": "default",
+        "resourceVersion": "605",
+        "uid": "969022de-957c-4111-9937-ce7e0234e7e1"
+      },
+      "kind": "Event",
+      "lastTimestamp": "2026-10-09T11:27:33Z",
+      "message": "Container started",
+      "metadata": {
+        "creationTimestamp": "2026-10-09T11:27:33Z",
+        "name": "memhog-664cdcf5c-tjt55.18dcd8ea82d94983",
+        "namespace": "default",
+        "resourceVersion": "619",
+        "uid": "31483d9e-f6eb-4497-934a-fdcceb2b1ba9"
+      },
+      "reason": "Started",
+      "reportingComponent": "kubelet",
+      "reportingInstance": "pfa-dev-control-plane",
+      "source": {
+        "component": "kubelet",
+        "host": "pfa-dev-control-plane"
+      },
+      "type": "Normal"
+    },
+    {
+      "apiVersion": "v1",
+      "count": 1,
+      "eventTime": null,
+      "firstTimestamp": "2026-10-09T11:28:14Z",
+      "involvedObject": {
+        "apiVersion": "v1",
+        "fieldPath": "spec.containers{stress}",
+        "kind": "Pod",
+        "name": "memhog-664cdcf5c-tjt55",
+        "namespace": "default",
+        "resourceVersion": "605",
+        "uid": "969022de-957c-4111-9937-ce7e0234e7e1"
+      },
+      "kind": "Event",
+      "lastTimestamp": "2026-10-09T11:28:14Z",
+      "message": "Stopping container stress",
+      "metadata": {
+        "creationTimestamp": "2026-10-09T11:28:14Z",
+        "name": "memhog-664cdcf5c-tjt55.18dcd8f427cb4bc7",
+        "namespace": "default",
+        "resourceVersion": "707",
+        "uid": "d3976ae5-b0ea-490f-a415-841d520a7f35"
+      },
+      "reason": "Killing",
+      "reportingComponent": "kubelet",
+      "reportingInstance": "pfa-dev-control-plane",
+      "source": {
+        "component": "kubelet",
+        "host": "pfa-dev-control-plane"
+      },
+      "type": "Normal"
+    },
+    {
+      "apiVersion": "v1",
+      "count": 1,
+      "eventTime": null,
+      "firstTimestamp": "2026-10-09T11:27:30Z",
+      "involvedObject": {
+        "apiVersion": "apps/v1",
+        "kind": "ReplicaSet",
+        "name": "memhog-664cdcf5c",
+        "namespace": "default",
+        "resourceVersion": "600",
+        "uid": "06dddeac-629c-4a14-b49b-294bd7974206"
+      },
+      "kind": "Event",
+      "lastTimestamp": "2026-10-09T11:27:30Z",
+      "message": "Created pod: memhog-664cdcf5c-tjt55",
+      "metadata": {
+        "creationTimestamp": "2026-10-09T11:27:30Z",
+        "name": "memhog-664cdcf5c.18dcd8e9dbd8df8f",
+        "namespace": "default",
+        "resourceVersion": "604",
+        "uid": "d71b46f1-04fc-4f59-baad-3a6c5b097574"
+      },
+      "reason": "SuccessfulCreate",
+      "reportingComponent": "replicaset-controller",
+      "reportingInstance": "",
+      "source": {
+        "component": "replicaset-controller"
+      },
+      "type": "Normal"
+    },
+    {
+      "apiVersion": "v1",
+      "count": 1,
+      "eventTime": null,
+      "firstTimestamp": "2026-10-09T11:28:14Z",
+      "involvedObject": {
+        "apiVersion": "apps/v1",
+        "kind": "ReplicaSet",
+        "name": "memhog-664cdcf5c",
+        "namespace": "default",
+        "resourceVersion": "701",
+        "uid": "06dddeac-629c-4a14-b49b-294bd7974206"
+      },
+      "kind": "Event",
+      "lastTimestamp": "2026-10-09T11:28:14Z",
+      "message": "Deleted pod: memhog-664cdcf5c-tjt55",
+      "metadata": {
+        "creationTimestamp": "2026-10-09T11:28:14Z",
+        "name": "memhog-664cdcf5c.18dcd8f427ba23b0",
+        "namespace": "default",
+        "resourceVersion": "705",
+        "uid": "e9d653ed-1c81-4852-bab6-dd0d6666a872"
+      },
+      "reason": "SuccessfulDelete",
+      "reportingComponent": "replicaset-controller",
+      "reportingInstance": "",
+      "source": {
+        "component": "replicaset-controller"
+      },
+      "type": "Normal"
+    },
+    {
+      "apiVersion": "v1",
+      "count": 1,
+      "eventTime": null,
+      "firstTimestamp": "2026-10-09T11:28:13Z",
+      "involvedObject": {
+        "apiVersion": "v1",
+        "kind": "Pod",
+        "name": "memhog-7957d7d5c8-4gsr8",
+        "namespace": "default",
+        "resourceVersion": "684",
+        "uid": "bd7fde4e-7380-4d55-8fd7-c0f26137fec1"
+      },
+      "kind": "Event",
+      "lastTimestamp": "2026-10-09T11:28:13Z",
+      "message": "Successfully assigned default/memhog-7957d7d5c8-4gsr8 to pfa-dev-control-plane",
+      "metadata": {
+        "creationTimestamp": "2026-10-09T11:28:13Z",
+        "name": "memhog-7957d7d5c8-4gsr8.18dcd8f3e6580b36",
+        "namespace": "default",
+        "resourceVersion": "690",
+        "uid": "5513f79d-b1ee-4e43-8cd4-5c1dc213ef76"
+      },
+      "reason": "Scheduled",
+      "reportingComponent": "default-scheduler",
+      "reportingInstance": "",
+      "source": {
+        "component": "default-scheduler"
+      },
+      "type": "Normal"
+    },
+    {
+      "apiVersion": "v1",
+      "count": 10,
+      "eventTime": null,
+      "firstTimestamp": "2026-10-09T11:28:14Z",
+      "involvedObject": {
+        "apiVersion": "v1",
+        "fieldPath": "spec.containers{stress}",
+        "kind": "Pod",
+        "name": "memhog-7957d7d5c8-4gsr8",
+        "namespace": "default",
+        "resourceVersion": "688",
+        "uid": "bd7fde4e-7380-4d55-8fd7-c0f26137fec1"
+      },
+      "kind": "Event",
+      "lastTimestamp": "2026-10-09T11:49:18Z",
+      "message": "Pulling image \"polinux/stress\"",
+      "metadata": {
+        "creationTimestamp": "2026-10-09T11:28:14Z",
+        "name": "memhog-7957d7d5c8-4gsr8.18dcd8f3fba78420",
+        "namespace": "default",
+        "resourceVersion": "2694",
+        "uid": "2906c3db-b969-482e-a2d0-91427b425a70"
+      },
+      "reason": "Pulling",
+      "reportingComponent": "kubelet",
+      "reportingInstance": "pfa-dev-control-plane",
+      "source": {
+        "component": "kubelet",
+        "host": "pfa-dev-control-plane"
+      },
+      "type": "Normal"
+    },
+    {
+      "apiVersion": "v1",
+      "count": 1,
+      "eventTime": null,
+      "firstTimestamp": "2026-10-09T11:28:14Z",
+      "involvedObject": {
+        "apiVersion": "v1",
+        "fieldPath": "spec.containers{stress}",
+        "kind": "Pod",
+        "name": "memhog-7957d7d5c8-4gsr8",
+        "namespace": "default",
+        "resourceVersion": "688",
+        "uid": "bd7fde4e-7380-4d55-8fd7-c0f26137fec1"
+      },
+      "kind": "Event",
+      "lastTimestamp": "2026-10-09T11:28:14Z",
+      "message": "Successfully pulled image \"polinux/stress\" in 678ms (678ms including waiting). Image size: 4041495 bytes.",
+      "metadata": {
+        "creationTimestamp": "2026-10-09T11:28:14Z",
+        "name": "memhog-7957d7d5c8-4gsr8.18dcd8f4241a411d",
+        "namespace": "default",
+        "resourceVersion": "696",
+        "uid": "18092990-cfba-4cb2-8224-429c3b759bcc"
+      },
+      "reason": "Pulled",
+      "reportingComponent": "kubelet",
+      "reportingInstance": "pfa-dev-control-plane",
+      "source": {
+        "component": "kubelet",
+        "host": "pfa-dev-control-plane"
+      },
+      "type": "Normal"
+    },
+    {
+      "apiVersion": "v1",
+      "count": 6,
+      "eventTime": null,
+      "firstTimestamp": "2026-10-09T11:28:14Z",
+      "involvedObject": {
+        "apiVersion": "v1",
+        "fieldPath": "spec.containers{stress}",
+        "kind": "Pod",
+        "name": "memhog-7957d7d5c8-4gsr8",
+        "namespace": "default",
+        "resourceVersion": "688",
+        "uid": "bd7fde4e-7380-4d55-8fd7-c0f26137fec1"
+      },
+      "kind": "Event",
+      "lastTimestamp": "2026-10-09T11:31:10Z",
+      "message": "Container created",
+      "metadata": {
+        "creationTimestamp": "2026-10-09T11:28:14Z",
+        "name": "memhog-7957d7d5c8-4gsr8.18dcd8f4247afaff",
+        "namespace": "default",
+        "resourceVersion": "1017",
+        "uid": "308221e4-db64-4842-bdd0-ff5fcf8d155f"
+      },
+      "reason": "Created",
+      "reportingComponent": "kubelet",
+      "reportingInstance": "pfa-dev-control-plane",
+      "source": {
+        "component": "kubelet",
+        "host": "pfa-dev-control-plane"
+      },
+      "type": "Normal"
+    },
+    {
+      "apiVersion": "v1",
+      "count": 6,
+      "eventTime": null,
+      "firstTimestamp": "2026-10-09T11:28:14Z",
+      "involvedObject": {
+        "apiVersion": "v1",
+        "fieldPath": "spec.containers{stress}",
+        "kind": "Pod",
+        "name": "memhog-7957d7d5c8-4gsr8",
+        "namespace": "default",
+        "resourceVersion": "688",
+        "uid": "bd7fde4e-7380-4d55-8fd7-c0f26137fec1"
+      },
+      "kind": "Event",
+      "lastTimestamp": "2026-10-09T11:31:11Z",
+      "message": "Container started",
+      "metadata": {
+        "creationTimestamp": "2026-10-09T11:28:14Z",
+        "name": "memhog-7957d7d5c8-4gsr8.18dcd8f4260b9aba",
+        "namespace": "default",
+        "resourceVersion": "1018",
+        "uid": "c792fc8a-3719-4cf2-a213-5b7bda991bca"
+      },
+      "reason": "Started",
+      "reportingComponent": "kubelet",
+      "reportingInstance": "pfa-dev-control-plane",
+      "source": {
+        "component": "kubelet",
+        "host": "pfa-dev-control-plane"
+      },
+      "type": "Normal"
+    },
+    {
+      "apiVersion": "v1",
+      "count": 1,
+      "eventTime": null,
+      "firstTimestamp": "2026-10-09T11:28:16Z",
+      "involvedObject": {
+        "apiVersion": "v1",
+        "fieldPath": "spec.containers{stress}",
+        "kind": "Pod",
+        "name": "memhog-7957d7d5c8-4gsr8",
+        "namespace": "default",
+        "resourceVersion": "688",
+        "uid": "bd7fde4e-7380-4d55-8fd7-c0f26137fec1"
+      },
+      "kind": "Event",
+      "lastTimestamp": "2026-10-09T11:28:16Z",
+      "message": "Successfully pulled image \"polinux/stress\" in 667ms (667ms including waiting). Image size: 4041495 bytes.",
+      "metadata": {
+        "creationTimestamp": "2026-10-09T11:28:16Z",
+        "name": "memhog-7957d7d5c8-4gsr8.18dcd8f472016a02",
+        "namespace": "default",
+        "resourceVersion": "717",
+        "uid": "721fdf15-8932-4c56-ad4c-72f9ee2bdf6d"
+      },
+      "reason": "Pulled",
+      "reportingComponent": "kubelet",
+      "reportingInstance": "pfa-dev-control-plane",
+      "source": {
+        "component": "kubelet",
+        "host": "pfa-dev-control-plane"
+      },
+      "type": "Normal"
+    },
+    {
+      "apiVersion": "v1",
+      "count": 23,
+      "eventTime": null,
+      "firstTimestamp": "2026-10-09T11:28:16Z",
+      "involvedObject": {
+        "apiVersion": "v1",
+        "fieldPath": "spec.containers{stress}",
+        "kind": "Pod",
+        "name": "memhog-7957d7d5c8-4gsr8",
+        "namespace": "default",
+        "resourceVersion": "688",
+        "uid": "bd7fde4e-7380-4d55-8fd7-c0f26137fec1"
+      },
+      "kind": "Event",
+      "lastTimestamp": "2026-10-09T11:49:19Z",
+      "message": "Back-off restarting failed container stress in pod memhog-7957d7d5c8-4gsr8_default(bd7fde4e-7380-4d55-8fd7-c0f26137fec1)",
+      "metadata": {
+        "creationTimestamp": "2026-10-09T11:28:16Z",
+        "name": "memhog-7957d7d5c8-4gsr8.18dcd8f485f8d2d8",
+        "namespace": "default",
+        "resourceVersion": "2700",
+        "uid": "319d8c84-0434-4d53-a9d5-053ba4143df3"
+      },
+      "reason": "BackOff",
+      "reportingComponent": "kubelet",
+      "reportingInstance": "pfa-dev-control-plane",
+      "source": {
+        "component": "kubelet",
+        "host": "pfa-dev-control-plane"
+      },
+      "type": "Warning"
+    },
+    {
+      "apiVersion": "v1",
+      "count": 1,
+      "eventTime": null,
+      "firstTimestamp": "2026-10-09T11:28:30Z",
+      "involvedObject": {
+        "apiVersion": "v1",
+        "fieldPath": "spec.containers{stress}",
+        "kind": "Pod",
+        "name": "memhog-7957d7d5c8-4gsr8",
+        "namespace": "default",
+        "resourceVersion": "688",
+        "uid": "bd7fde4e-7380-4d55-8fd7-c0f26137fec1"
+      },
+      "kind": "Event",
+      "lastTimestamp": "2026-10-09T11:28:30Z",
+      "message": "Successfully pulled image \"polinux/stress\" in 666ms (666ms including waiting). Image size: 4041495 bytes.",
+      "metadata": {
+        "creationTimestamp": "2026-10-09T11:28:30Z",
+        "name": "memhog-7957d7d5c8-4gsr8.18dcd8f7dfe05586",
+        "namespace": "default",
+        "resourceVersion": "752",
+        "uid": "ca7cbf49-f2b1-4974-be85-01aa4ac942aa"
+      },
+      "reason": "Pulled",
+      "reportingComponent": "kubelet",
+      "reportingInstance": "pfa-dev-control-plane",
+      "source": {
+        "component": "kubelet",
+        "host": "pfa-dev-control-plane"
+      },
+      "type": "Normal"
+    },
+    {
+      "apiVersion": "v1",
+      "count": 1,
+      "eventTime": null,
+      "firstTimestamp": "2026-10-09T11:28:53Z",
+      "involvedObject": {
+        "apiVersion": "v1",
+        "fieldPath": "spec.containers{stress}",
+        "kind": "Pod",
+        "name": "memhog-7957d7d5c8-4gsr8",
+        "namespace": "default",
+        "resourceVersion": "688",
+        "uid": "bd7fde4e-7380-4d55-8fd7-c0f26137fec1"
+      },
+      "kind": "Event",
+      "lastTimestamp": "2026-10-09T11:28:53Z",
+      "message": "Successfully pulled image \"polinux/stress\" in 706ms (706ms including waiting). Image size: 4041495 bytes.",
+      "metadata": {
+        "creationTimestamp": "2026-10-09T11:28:53Z",
+        "name": "memhog-7957d7d5c8-4gsr8.18dcd8fd3d2b5d94",
+        "namespace": "default",
+        "resourceVersion": "800",
+        "uid": "f22cf793-ecee-491b-8678-a111cfc9f427"
+      },
+      "reason": "Pulled",
+      "reportingComponent": "kubelet",
+      "reportingInstance": "pfa-dev-control-plane",
+      "source": {
+        "component": "kubelet",
+        "host": "pfa-dev-control-plane"
+      },
+      "type": "Normal"
+    },
+    {
+      "apiVersion": "v1",
+      "count": 1,
+      "eventTime": null,
+      "firstTimestamp": "2026-10-09T11:29:42Z",
+      "involvedObject": {
+        "apiVersion": "v1",
+        "fieldPath": "spec.containers{stress}",
+        "kind": "Pod",
+        "name": "memhog-7957d7d5c8-4gsr8",
+        "namespace": "default",
+        "resourceVersion": "688",
+        "uid": "bd7fde4e-7380-4d55-8fd7-c0f26137fec1"
+      },
+      "kind": "Event",
+      "lastTimestamp": "2026-10-09T11:29:42Z",
+      "message": "Successfully pulled image \"polinux/stress\" in 1.137s (1.137s including waiting). Image size: 4041495 bytes.",
+      "metadata": {
+        "creationTimestamp": "2026-10-09T11:29:42Z",
+        "name": "memhog-7957d7d5c8-4gsr8.18dcd90883f2541f",
+        "namespace": "default",
+        "resourceVersion": "881",
+        "uid": "b9787cf3-2fa6-45ec-9d35-d0c3982143f7"
+      },
+      "reason": "Pulled",
+      "reportingComponent": "kubelet",
+      "reportingInstance": "pfa-dev-control-plane",
+      "source": {
+        "component": "kubelet",
+        "host": "pfa-dev-control-plane"
+      },
+      "type": "Normal"
+    },
+    {
+      "apiVersion": "v1",
+      "count": 1,
+      "eventTime": null,
+      "firstTimestamp": "2026-10-09T11:31:10Z",
+      "involvedObject": {
+        "apiVersion": "v1",
+        "fieldPath": "spec.containers{stress}",
+        "kind": "Pod",
+        "name": "memhog-7957d7d5c8-4gsr8",
+        "namespace": "default",
+        "resourceVersion": "688",
+        "uid": "bd7fde4e-7380-4d55-8fd7-c0f26137fec1"
+      },
+      "kind": "Event",
+      "lastTimestamp": "2026-10-09T11:31:10Z",
+      "message": "Successfully pulled image \"polinux/stress\" in 722ms (722ms including waiting). Image size: 4041495 bytes.",
+      "metadata": {
+        "creationTimestamp": "2026-10-09T11:31:10Z",
+        "name": "memhog-7957d7d5c8-4gsr8.18dcd91d23ee36a6",
+        "namespace": "default",
+        "resourceVersion": "1016",
+        "uid": "6d52cc3d-7b2b-4a49-bf61-7adb26883367"
+      },
+      "reason": "Pulled",
+      "reportingComponent": "kubelet",
+      "reportingInstance": "pfa-dev-control-plane",
+      "source": {
+        "component": "kubelet",
+        "host": "pfa-dev-control-plane"
+      },
+      "type": "Normal"
+    },
+    {
+      "apiVersion": "v1",
+      "count": 1,
+      "eventTime": null,
+      "firstTimestamp": "2026-10-09T11:33:58Z",
+      "involvedObject": {
+        "apiVersion": "v1",
+        "fieldPath": "spec.containers{stress}",
+        "kind": "Pod",
+        "name": "memhog-7957d7d5c8-4gsr8",
+        "namespace": "default",
+        "resourceVersion": "688",
+        "uid": "bd7fde4e-7380-4d55-8fd7-c0f26137fec1"
+      },
+      "kind": "Event",
+      "lastTimestamp": "2026-10-09T11:33:58Z",
+      "message": "Successfully pulled image \"polinux/stress\" in 813ms (813ms including waiting). Image size: 4041495 bytes.",
+      "metadata": {
+        "creationTimestamp": "2026-10-09T11:33:58Z",
+        "name": "memhog-7957d7d5c8-4gsr8.18dcd9440b4efa41",
+        "namespace": "default",
+        "resourceVersion": "1265",
+        "uid": "0e2d3583-1650-4b18-9b35-1317f435caf9"
+      },
+      "reason": "Pulled",
+      "reportingComponent": "kubelet",
+      "reportingInstance": "pfa-dev-control-plane",
+      "source": {
+        "component": "kubelet",
+        "host": "pfa-dev-control-plane"
+      },
+      "type": "Normal"
+    },
+    {
+      "apiVersion": "v1",
+      "count": 1,
+      "eventTime": null,
+      "firstTimestamp": "2026-10-09T11:28:13Z",
+      "involvedObject": {
+        "apiVersion": "apps/v1",
+        "kind": "ReplicaSet",
+        "name": "memhog-7957d7d5c8",
+        "namespace": "default",
+        "resourceVersion": "681",
+        "uid": "1e0658b4-5b85-4a74-891a-cc3abcf38652"
+      },
+      "kind": "Event",
+      "lastTimestamp": "2026-10-09T11:28:13Z",
+      "message": "Created pod: memhog-7957d7d5c8-4gsr8",
+      "metadata": {
+        "creationTimestamp": "2026-10-09T11:28:13Z",
+        "name": "memhog-7957d7d5c8.18dcd8f3e61e1fbd",
+        "namespace": "default",
+        "resourceVersion": "686",
+        "uid": "cf138d18-137a-4edc-b2a1-2a71b1a42d61"
+      },
+      "reason": "SuccessfulCreate",
+      "reportingComponent": "replicaset-controller",
+      "reportingInstance": "",
+      "source": {
+        "component": "replicaset-controller"
+      },
+      "type": "Normal"
+    },
+    {
+      "apiVersion": "v1",
+      "count": 1,
+      "eventTime": null,
+      "firstTimestamp": "2026-10-09T11:27:30Z",
+      "involvedObject": {
+        "apiVersion": "apps/v1",
+        "kind": "Deployment",
+        "name": "memhog",
+        "namespace": "default",
+        "resourceVersion": "599",
+        "uid": "4a81c296-12c7-4e69-bfbe-542e5c94fc5c"
+      },
+      "kind": "Event",
+      "lastTimestamp": "2026-10-09T11:27:30Z",
+      "message": "Scaled up replica set memhog-664cdcf5c from 0 to 1",
+      "metadata": {
+        "creationTimestamp": "2026-10-09T11:27:30Z",
+        "name": "memhog.18dcd8e9dba68b1f",
+        "namespace": "default",
+        "resourceVersion": "602",
+        "uid": "4c0df34a-534d-4e23-bd73-6c231451c1c7"
+      },
+      "reason": "ScalingReplicaSet",
+      "reportingComponent": "deployment-controller",
+      "reportingInstance": "",
+      "source": {
+        "component": "deployment-controller"
+      },
+      "type": "Normal"
+    },
+    {
+      "apiVersion": "v1",
+      "count": 1,
+      "eventTime": null,
+      "firstTimestamp": "2026-10-09T11:28:13Z",
+      "involvedObject": {
+        "apiVersion": "apps/v1",
+        "kind": "Deployment",
+        "name": "memhog",
+        "namespace": "default",
+        "resourceVersion": "680",
+        "uid": "4a81c296-12c7-4e69-bfbe-542e5c94fc5c"
+      },
+      "kind": "Event",
+      "lastTimestamp": "2026-10-09T11:28:13Z",
+      "message": "Scaled up replica set memhog-7957d7d5c8 from 0 to 1",
+      "metadata": {
+        "creationTimestamp": "2026-10-09T11:28:13Z",
+        "name": "memhog.18dcd8f3e5e04ede",
+        "namespace": "default",
+        "resourceVersion": "682",
+        "uid": "2e9f8d68-cc78-4bee-85d9-8aa98da72e66"
+      },
+      "reason": "ScalingReplicaSet",
+      "reportingComponent": "deployment-controller",
+      "reportingInstance": "",
+      "source": {
+        "component": "deployment-controller"
+      },
+      "type": "Normal"
+    },
+    {
+      "apiVersion": "v1",
+      "count": 1,
+      "eventTime": null,
+      "firstTimestamp": "2026-10-09T11:28:14Z",
+      "involvedObject": {
+        "apiVersion": "apps/v1",
+        "kind": "Deployment",
+        "name": "memhog",
+        "namespace": "default",
+        "resourceVersion": "691",
+        "uid": "4a81c296-12c7-4e69-bfbe-542e5c94fc5c"
+      },
+      "kind": "Event",
+      "lastTimestamp": "2026-10-09T11:28:14Z",
+      "message": "Scaled down replica set memhog-664cdcf5c from 1 to 0",
+      "metadata": {
+        "creationTimestamp": "2026-10-09T11:28:14Z",
+        "name": "memhog.18dcd8f4276c2702",
+        "namespace": "default",
+        "resourceVersion": "702",
+        "uid": "02922f0e-b0f9-4eca-8d91-de06b4c20be9"
+      },
+      "reason": "ScalingReplicaSet",
+      "reportingComponent": "deployment-controller",
+      "reportingInstance": "",
+      "source": {
+        "component": "deployment-controller"
+      },
+      "type": "Normal"
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+# inventory-api serves on port 80, but its liveness probe checks 8080, so the kubelet
+# keeps killing a healthy app. A StatefulSet, so the lab also covers that workload kind.
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: inventory-api
+spec:
+  replicas: 1
+  serviceName: inventory-api
+  selector:
+    matchLabels: {app: inventory-api}
+  template:
+    metadata:
+      labels: {app: inventory-api}
+    spec:
+      containers:
+        - name: api
+          image: busybox:1.36
+          command: ["sh", "-c"]
+          args:
+            - |
+              mkdir -p /www && echo ok > /www/healthz
+              echo "inventory-api listening on :80"
+              exec httpd -f -p 80 -h /www
+          ports:
+            - {name: http, containerPort: 80}
+          livenessProbe:
+            httpGet: {path: /healthz, port: 8080}
+            initialDelaySeconds: 3
+            periodSeconds: 3
+            failureThreshold: 2

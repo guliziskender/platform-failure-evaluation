@@ -1,0 +1,194 @@
+{
+  "target": {
+    "namespace": "pfa-lab",
+    "name": "checkout-api",
+    "kind": "deployment",
+    "pod": "checkout-api-754754fccd-gvm4g",
+    "container": "api",
+    "owners": [
+      {
+        "kind": "ReplicaSet",
+        "name": "checkout-api-754754fccd"
+      },
+      {
+        "kind": "Deployment",
+        "name": "checkout-api"
+      }
+    ]
+  },
+  "evidence": [
+    {
+      "source": "k8s_state",
+      "summary": {
+        "workload": {
+          "kind": "deployment",
+          "name": "checkout-api",
+          "replicas_desired": 1,
+          "replicas_ready": 0,
+          "replicas_updated": 1,
+          "replicas_available": 0,
+          "generation": 1,
+          "observed_generation": 1,
+          "conditions": [
+            {
+              "type": "Progressing",
+              "status": "True",
+              "reason": "NewReplicaSetAvailable",
+              "message": "ReplicaSet \"checkout-api-754754fccd\" has successfully progressed.",
+              "last_update": "2026-10-26T14:46:59+00:00"
+            },
+            {
+              "type": "Available",
+              "status": "False",
+              "reason": "MinimumReplicasUnavailable",
+              "message": "Deployment does not have minimum availability.",
+              "last_update": "2026-11-02T15:25:32+00:00"
+            }
+          ]
+        },
+        "pod": {
+          "name": "checkout-api-754754fccd-gvm4g",
+          "phase": "Running",
+          "node": "desktop-control-plane",
+          "qos_class": "BestEffort",
+          "created": "2026-10-26T14:46:59+00:00",
+          "started": "2026-10-26T14:46:59+00:00",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "False",
+              "reason": "ContainersNotReady",
+              "message": "containers with unready status: [api]"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "False",
+              "reason": "ContainersNotReady",
+              "message": "containers with unready status: [api]"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "api",
+              "image": "busybox:1.36",
+              "command": [
+                "sh",
+                "-c"
+              ],
+              "args": [
+                "echo \"checkout-api v2.4.1 starting\"\necho \"loading configuration from environment\"\necho \"db config: user=$DB_USER password=$DB_PASSWORD\"\nif [ -z \"$DATABASE_URL\" ]; then\n  echo \"FATAL: required environment variable DATABASE_URL is not set\" >&2\n  exit 1\nfi\nexec sleep 3600\n"
+              ],
+              "env_names": [
+                "DB_USER",
+                "DB_PASSWORD",
+                "LOG_LEVEL"
+              ],
+              "ready": false,
+              "started": false,
+              "restart_count": 522,
+              "state": {
+                "waiting": {
+                  "reason": "CrashLoopBackOff",
+                  "message": "back-off 5m0s restarting failed container=api pod=checkout-api-754754fccd-gvm4g_pfa-lab(8d5dff6f-1bc7-41c0-9161-c63f2d67a959)"
+                }
+              },
+              "last_state": {
+                "terminated": {
+                  "reason": "Error",
+                  "exit_code": 1,
+                  "started_at": "2026-11-02T15:25:32+00:00",
+                  "finished_at": "2026-11-02T15:25:32+00:00"
+                }
+              },
+              "image_id": "docker.io/library/busybox@sha256:73aaf090f3d85aa34ee199857f03fa3a95c8ede2ffd4cc2cdb5b94e566b11662"
+            }
+          ]
+        }
+      },
+      "raw_excerpt": null,
+      "error": null,
+      "collected_at": "2026-11-02T15:27:28.441071Z",
+      "redacted": true,
+      "redactions": {}
+    },
+    {
+      "source": "k8s_events",
+      "summary": {
+        "window_minutes": 60,
+        "objects": [
+          "Pod/checkout-api-754754fccd-gvm4g",
+          "ReplicaSet/checkout-api-754754fccd",
+          "Deployment/checkout-api"
+        ],
+        "total": 3,
+        "events": [
+          {
+            "type": "Warning",
+            "reason": "BackOff",
+            "object": "Pod/checkout-api-754754fccd-gvm4g",
+            "message": "Back-off restarting failed container api in pod checkout-api-754754fccd-gvm4g_pfa-lab(8d5dff6f-1bc7-41c0-9161-c63f2d67a959)",
+            "count": 1808,
+            "first_seen": "2026-10-26T14:47:00+00:00",
+            "last_seen": "2026-11-02T15:24:27+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "Pulled",
+            "object": "Pod/checkout-api-754754fccd-gvm4g",
+            "message": "Container image \"busybox:1.36\" already present on machine and can be accessed by the pod",
+            "count": 523,
+            "first_seen": "2026-10-26T14:46:59+00:00",
+            "last_seen": "2026-11-02T15:25:32+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "Created",
+            "object": "Pod/checkout-api-754754fccd-gvm4g",
+            "message": "Container created",
+            "count": 516,
+            "first_seen": "2026-10-26T14:46:59+00:00",
+            "last_seen": "2026-11-02T14:49:13+00:00"
+          }
+        ]
+      },
+      "raw_excerpt": null,
+      "error": null,
+      "collected_at": "2026-11-02T15:27:28.443715Z",
+      "redacted": true,
+      "redactions": {}
+    },
+    {
+      "source": "logs",
+      "summary": {
+        "container": "api",
+        "previous": {
+          "available": true,
+          "lines": 4
+        },
+        "current": {
+          "available": true,
+          "lines": 4
+        }
+      },
+      "raw_excerpt": "=== previous container ===\ncheckout-api v2.4.1 starting\nloading configuration from environment\ndb config: user=checkout password=<REDACTED:password>\nFATAL: required environment variable DATABASE_URL is not set\n\n=== current container ===\ncheckout-api v2.4.1 starting\nloading configuration from environment\ndb config: user=checkout password=<REDACTED:password>\nFATAL: required environment variable DATABASE_URL is not set\n",
+      "error": null,
+      "collected_at": "2026-11-02T15:27:28.442346Z",
+      "redacted": true,
+      "redactions": {
+        "password": 2
+      }
+    }
+  ]
+}

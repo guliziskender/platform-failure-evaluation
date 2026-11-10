@@ -1,0 +1,132 @@
+{
+  "apiVersion": "v1",
+  "kind": "Pod",
+  "metadata": {
+    "creationTimestamp": "2026-11-02T15:26:40Z",
+    "generateName": "video-encoder-bd66c676c-",
+    "generation": 1,
+    "labels": {
+      "app": "video-encoder",
+      "pod-template-hash": "bd66c676c"
+    },
+    "name": "video-encoder-bd66c676c-488dc",
+    "namespace": "pfa-lab",
+    "ownerReferences": [
+      {
+        "apiVersion": "apps/v1",
+        "blockOwnerDeletion": true,
+        "controller": true,
+        "kind": "ReplicaSet",
+        "name": "video-encoder-bd66c676c",
+        "uid": "8f78c3bf-13aa-4d8e-957d-255ef348baf9"
+      }
+    ],
+    "resourceVersion": "905955",
+    "uid": "c19e6724-cd2b-43b7-82ef-371c3ee179de"
+  },
+  "spec": {
+    "containers": [
+      {
+        "command": [
+          "sleep",
+          "3600"
+        ],
+        "image": "busybox:1.36",
+        "imagePullPolicy": "IfNotPresent",
+        "name": "encoder",
+        "resources": {},
+        "terminationMessagePath": "/dev/termination-log",
+        "terminationMessagePolicy": "File",
+        "volumeMounts": [
+          {
+            "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+            "name": "kube-api-access-8flnl",
+            "readOnly": true
+          }
+        ]
+      }
+    ],
+    "dnsPolicy": "ClusterFirst",
+    "enableServiceLinks": true,
+    "nodeSelector": {
+      "hardware": "gpu-a100"
+    },
+    "preemptionPolicy": "PreemptLowerPriority",
+    "priority": 0,
+    "restartPolicy": "Always",
+    "schedulerName": "default-scheduler",
+    "securityContext": {},
+    "serviceAccount": "default",
+    "serviceAccountName": "default",
+    "terminationGracePeriodSeconds": 30,
+    "tolerations": [
+      {
+        "effect": "NoExecute",
+        "key": "node.kubernetes.io/not-ready",
+        "operator": "Exists",
+        "tolerationSeconds": 300
+      },
+      {
+        "effect": "NoExecute",
+        "key": "node.kubernetes.io/unreachable",
+        "operator": "Exists",
+        "tolerationSeconds": 300
+      }
+    ],
+    "volumes": [
+      {
+        "name": "kube-api-access-8flnl",
+        "projected": {
+          "defaultMode": 420,
+          "sources": [
+            {
+              "serviceAccountToken": {
+                "expirationSeconds": 3607,
+                "path": "token"
+              }
+            },
+            {
+              "configMap": {
+                "items": [
+                  {
+                    "key": "ca.crt",
+                    "path": "ca.crt"
+                  }
+                ],
+                "name": "kube-root-ca.crt"
+              }
+            },
+            {
+              "downwardAPI": {
+                "items": [
+                  {
+                    "fieldRef": {
+                      "apiVersion": "v1",
+                      "fieldPath": "metadata.namespace"
+                    },
+                    "path": "namespace"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "status": {
+    "conditions": [
+      {
+        "lastProbeTime": null,
+        "lastTransitionTime": "2026-11-02T15:26:40Z",
+        "message": "0/1 nodes are available: 1 node(s) didn't match Pod's node affinity/selector. no new claims to deallocate, preemption: 0/1 nodes are available: 1 Preemption is not helpful for scheduling.",
+        "observedGeneration": 1,
+        "reason": "Unschedulable",
+        "status": "False",
+        "type": "PodScheduled"
+      }
+    ],
+    "phase": "Pending",
+    "qosClass": "BestEffort"
+  }
+}

@@ -1,0 +1,11 @@
+workload: {kind: deployment, name: catalog-api}
+failure_type: probe_failure
+symptom: Pod is Running but never Ready; events show Readiness probe failed with status 404.
+root_cause: >-
+  The readiness probe requests /ready, which the app does not serve (it serves /healthz), so
+  every check gets HTTP 404 and the pod never receives traffic.
+cause_keywords: [readiness, ["404", /ready]]
+fix: Point the readiness probe at /healthz, or add a /ready endpoint to the app.
+fix_keywords: [[/healthz, path, endpoint, /ready]]
+ready_when: {pod_condition_reason: ContainersNotReady}
+evidence_must_contain: ["Readiness probe failed", "404", "/ready"]

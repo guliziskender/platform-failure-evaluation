@@ -1,0 +1,11 @@
+workload: {kind: statefulset, name: session-cache}
+failure_type: oom_killed
+symptom: Container runs for a few seconds, then is killed with exit code 137 and restarts.
+root_cause: >-
+  The cache warms up to about 300MB but its memory limit is 200Mi, so it is OOM-killed
+  partway through every warmup.
+cause_keywords: [200Mi, [memory limit, limit]]
+fix: Raise the memory limit above the cache size (e.g. 512Mi), or cap the cache size.
+fix_keywords: [[limit, memory]]
+ready_when: {last_terminated_reason: OOMKilled}
+evidence_must_contain: ["OOMKilled", "200Mi", "cache warmup"]

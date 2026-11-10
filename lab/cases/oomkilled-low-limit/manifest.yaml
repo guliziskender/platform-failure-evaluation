@@ -1,0 +1,25 @@
+# report-worker needs ~250Mi for its working set but is limited to 128Mi.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: report-worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: report-worker}
+  template:
+    metadata:
+      labels: {app: report-worker}
+    spec:
+      containers:
+        - name: worker
+          image: polinux/stress
+          command: ["sh", "-c"]
+          args:
+            - |
+              echo "report-worker starting, building monthly report"
+              echo "loading 250MB of order history into memory"
+              exec stress --vm 1 --vm-bytes 250M --vm-hang 0
+          resources:
+            requests: {memory: 64Mi, cpu: 50m}
+            limits: {memory: 128Mi}

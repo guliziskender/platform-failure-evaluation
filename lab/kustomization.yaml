@@ -1,0 +1,25 @@
+# The broken-pod lab: three apps per pod failure type, all in namespace pfa-lab.
+# Use `make lab-up` / `make lab-down` (or: kubectl apply -k lab / kubectl delete ns pfa-lab).
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: pfa-lab
+labels:
+  - pairs:
+      app.kubernetes.io/part-of: pfa-lab
+resources:
+  - namespace.yaml
+  - cases/crashloop-missing-env/manifest.yaml
+  - cases/oomkilled-low-limit/manifest.yaml
+  - cases/imagepull-bad-tag/manifest.yaml
+  - cases/pending-cpu-units/manifest.yaml
+  - cases/probe-wrong-port/manifest.yaml
+  - cases/crashloop-bad-command/manifest.yaml
+  - cases/crashloop-init-migration/manifest.yaml
+  - cases/oomkilled-sidecar/manifest.yaml
+  - cases/oomkilled-growing-cache/manifest.yaml
+  - cases/imagepull-unknown-registry/manifest.yaml
+  - cases/imagepull-invalid-name/manifest.yaml
+  - cases/pending-node-selector/manifest.yaml
+  - cases/pending-missing-configmap/manifest.yaml
+  - cases/probe-readiness-404/manifest.yaml
+  - cases/probe-slow-start/manifest.yaml

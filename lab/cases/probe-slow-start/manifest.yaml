@@ -1,0 +1,31 @@
+# ledger-api needs 45 s to start, but its liveness probe gives it only a few seconds.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ledger-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: ledger-api}
+  template:
+    metadata:
+      labels: {app: ledger-api}
+    spec:
+      containers:
+        - name: api
+          image: busybox:1.36
+          command: ["sh", "-c"]
+          args:
+            - |
+              mkdir -p /www && echo ok > /www/healthz
+              echo "ledger-api replaying journal, this takes about 45 seconds"
+              sleep 45
+              echo "ledger-api listening on :80"
+              exec httpd -f -p 80 -h /www
+          ports:
+            - {name: http, containerPort: 80}
+          livenessProbe:
+            httpGet: {path: /healthz, port: http}
+            initialDelaySeconds: 2
+            periodSeconds: 3
+            failureThreshold: 2

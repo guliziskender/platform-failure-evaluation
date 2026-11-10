@@ -1,0 +1,11 @@
+workload: {kind: deployment, name: search-api}
+failure_type: oom_killed
+symptom: The pod is not ready; one of its two containers keeps getting OOMKilled.
+root_cause: >-
+  The log-shipper sidecar buffers about 200MB in memory with a 64Mi limit, so it is
+  OOM-killed. The main api container is healthy.
+cause_keywords: [64Mi, [memory limit, limit]]
+fix: Raise the log-shipper memory limit above its buffer size, or make it buffer less.
+fix_keywords: [[limit, memory]]
+ready_when: {last_terminated_reason: OOMKilled}
+evidence_must_contain: ["log-shipper", "OOMKilled", "64Mi"]

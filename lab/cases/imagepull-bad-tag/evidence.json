@@ -1,0 +1,171 @@
+{
+  "target": {
+    "namespace": "pfa-lab",
+    "name": "storefront",
+    "kind": "deployment",
+    "pod": "storefront-7ff696ddf6-mt2q7",
+    "container": "web",
+    "owners": [
+      {
+        "kind": "ReplicaSet",
+        "name": "storefront-7ff696ddf6"
+      },
+      {
+        "kind": "Deployment",
+        "name": "storefront"
+      }
+    ]
+  },
+  "evidence": [
+    {
+      "source": "k8s_state",
+      "summary": {
+        "workload": {
+          "kind": "deployment",
+          "name": "storefront",
+          "replicas_desired": 1,
+          "replicas_ready": 0,
+          "replicas_updated": 1,
+          "replicas_available": 0,
+          "generation": 1,
+          "observed_generation": 1,
+          "conditions": [
+            {
+              "type": "Available",
+              "status": "False",
+              "reason": "MinimumReplicasUnavailable",
+              "message": "Deployment does not have minimum availability.",
+              "last_update": "2026-10-26T14:46:59+00:00"
+            },
+            {
+              "type": "Progressing",
+              "status": "False",
+              "reason": "ProgressDeadlineExceeded",
+              "message": "ReplicaSet \"storefront-7ff696ddf6\" has timed out progressing.",
+              "last_update": "2026-10-26T14:59:39+00:00"
+            }
+          ]
+        },
+        "pod": {
+          "name": "storefront-7ff696ddf6-mt2q7",
+          "phase": "Pending",
+          "node": "desktop-control-plane",
+          "qos_class": "BestEffort",
+          "created": "2026-10-26T14:46:59+00:00",
+          "started": "2026-10-26T14:46:59+00:00",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "False",
+              "reason": "ContainersNotReady",
+              "message": "containers with unready status: [web]"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "False",
+              "reason": "ContainersNotReady",
+              "message": "containers with unready status: [web]"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "web",
+              "image": "busybox:1.36.1-uclbic",
+              "command": [
+                "httpd",
+                "-f",
+                "-p",
+                "80"
+              ],
+              "ports": [
+                "80/TCP"
+              ],
+              "ready": false,
+              "started": false,
+              "restart_count": 0,
+              "state": {
+                "waiting": {
+                  "reason": "ImagePullBackOff",
+                  "message": "Back-off pulling image \"busybox:1.36.1-uclbic\": ErrImagePull: rpc error: code = NotFound desc = failed to pull and unpack image \"docker.io/library/busybox:1.36.1-uclbic\": failed to resolve reference \"docker.io/library/busybox:1.36.1-uclbic\": docker.io/library/busybox:1.36.1-uclbic: not found"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "raw_excerpt": null,
+      "error": null,
+      "collected_at": "2026-11-02T15:27:28.451027Z",
+      "redacted": true,
+      "redactions": {}
+    },
+    {
+      "source": "k8s_events",
+      "summary": {
+        "window_minutes": 60,
+        "objects": [
+          "Pod/storefront-7ff696ddf6-mt2q7",
+          "ReplicaSet/storefront-7ff696ddf6",
+          "Deployment/storefront"
+        ],
+        "total": 2,
+        "events": [
+          {
+            "type": "Warning",
+            "reason": "Failed",
+            "object": "Pod/storefront-7ff696ddf6-mt2q7",
+            "message": "Error: ImagePullBackOff",
+            "count": 9302,
+            "first_seen": "2026-10-26T14:47:00+00:00",
+            "last_seen": "2026-11-02T15:24:23+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "BackOff",
+            "object": "Pod/storefront-7ff696ddf6-mt2q7",
+            "message": "Back-off pulling image \"busybox:1.36.1-uclbic\"",
+            "count": 9302,
+            "first_seen": "2026-10-26T14:47:00+00:00",
+            "last_seen": "2026-11-02T15:24:23+00:00"
+          }
+        ]
+      },
+      "raw_excerpt": null,
+      "error": null,
+      "collected_at": "2026-11-02T15:27:28.452898Z",
+      "redacted": true,
+      "redactions": {}
+    },
+    {
+      "source": "logs",
+      "summary": {
+        "container": "web",
+        "previous": {
+          "available": false,
+          "note": "previous terminated container \"web\" in pod \"storefront-7ff696ddf6-mt2q7\" not found"
+        },
+        "current": {
+          "available": false,
+          "note": "container \"web\" in pod \"storefront-7ff696ddf6-mt2q7\" is waiting to start: trying and failing to pull image"
+        }
+      },
+      "raw_excerpt": null,
+      "error": null,
+      "collected_at": "2026-11-02T15:27:28.451403Z",
+      "redacted": true,
+      "redactions": {}
+    }
+  ]
+}

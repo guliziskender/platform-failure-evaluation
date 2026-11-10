@@ -1,0 +1,27 @@
+# catalog-api runs fine, but its readiness probe asks for a path the app does not serve.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: catalog-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: catalog-api}
+  template:
+    metadata:
+      labels: {app: catalog-api}
+    spec:
+      containers:
+        - name: api
+          image: busybox:1.36
+          command: ["sh", "-c"]
+          args:
+            - |
+              mkdir -p /www && echo ok > /www/healthz
+              echo "catalog-api listening on :80, health at /healthz"
+              exec httpd -f -p 80 -h /www
+          ports:
+            - {name: http, containerPort: 80}
+          readinessProbe:
+            httpGet: {path: /ready, port: http}
+            periodSeconds: 3

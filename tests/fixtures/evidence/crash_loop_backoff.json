@@ -1,0 +1,224 @@
+{
+  "target": {
+    "namespace": "pfa-lab",
+    "name": "checkout-api",
+    "kind": "deployment",
+    "pod": "checkout-api-57647989fc-2fhhp",
+    "container": "api",
+    "owners": [
+      {
+        "kind": "ReplicaSet",
+        "name": "checkout-api-57647989fc"
+      },
+      {
+        "kind": "Deployment",
+        "name": "checkout-api"
+      }
+    ]
+  },
+  "evidence": [
+    {
+      "source": "k8s_state",
+      "summary": {
+        "workload": {
+          "kind": "deployment",
+          "name": "checkout-api",
+          "replicas_desired": 1,
+          "replicas_ready": 0,
+          "replicas_updated": 1,
+          "replicas_available": 0,
+          "generation": 1,
+          "observed_generation": 1,
+          "conditions": [
+            {
+              "type": "Progressing",
+              "status": "True",
+              "reason": "NewReplicaSetAvailable",
+              "message": "ReplicaSet \"checkout-api-57647989fc\" has successfully progressed.",
+              "last_update": "2026-10-18T16:46:29+00:00"
+            },
+            {
+              "type": "Available",
+              "status": "False",
+              "reason": "MinimumReplicasUnavailable",
+              "message": "Deployment does not have minimum availability.",
+              "last_update": "2026-10-18T16:47:06+00:00"
+            }
+          ]
+        },
+        "pod": {
+          "name": "checkout-api-57647989fc-2fhhp",
+          "phase": "Running",
+          "node": "pfa-dev-control-plane",
+          "qos_class": "BestEffort",
+          "created": "2026-10-18T16:46:29+00:00",
+          "started": "2026-10-18T16:46:29+00:00",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "False",
+              "reason": "ContainersNotReady",
+              "message": "containers with unready status: [api]"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "False",
+              "reason": "ContainersNotReady",
+              "message": "containers with unready status: [api]"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "api",
+              "image": "busybox:1.36",
+              "command": [
+                "sh",
+                "-c"
+              ],
+              "args": [
+                "echo \"checkout-api v2.4.1 starting\"\necho \"loading configuration from environment\"\nif [ -z \"$DATABASE_URL\" ]; then\n  echo \"FATAL: required environment variable DATABASE_URL is not set\" >&2\n  exit 1\nfi\nexec sleep 3600\n"
+              ],
+              "env_names": [
+                "DB_USER",
+                "DB_PASSWORD",
+                "LOG_LEVEL"
+              ],
+              "ready": false,
+              "started": false,
+              "restart_count": 3,
+              "state": {
+                "terminated": {
+                  "reason": "Error",
+                  "exit_code": 1,
+                  "started_at": "2026-10-18T16:47:05+00:00",
+                  "finished_at": "2026-10-18T16:47:05+00:00"
+                }
+              },
+              "last_state": {
+                "terminated": {
+                  "reason": "Error",
+                  "exit_code": 1,
+                  "started_at": "2026-10-18T16:46:41+00:00",
+                  "finished_at": "2026-10-18T16:46:41+00:00"
+                }
+              },
+              "image_id": "docker.io/library/busybox@sha256:73aaf090f3d85aa34ee199857f03fa3a95c8ede2ffd4cc2cdb5b94e566b11662"
+            }
+          ]
+        }
+      },
+      "raw_excerpt": null,
+      "error": null,
+      "collected_at": "2026-10-18T16:47:33.867214Z"
+    },
+    {
+      "source": "k8s_events",
+      "summary": {
+        "window_minutes": 60,
+        "objects": [
+          "Pod/checkout-api-57647989fc-2fhhp",
+          "ReplicaSet/checkout-api-57647989fc",
+          "Deployment/checkout-api"
+        ],
+        "total": 7,
+        "events": [
+          {
+            "type": "Warning",
+            "reason": "BackOff",
+            "object": "Pod/checkout-api-57647989fc-2fhhp",
+            "message": "Back-off restarting failed container api in pod checkout-api-57647989fc-2fhhp_pfa-lab(f81fe534-8c9c-4dfa-9e68-3be8f5433eb0)",
+            "count": 3,
+            "first_seen": "2026-10-18T16:46:30+00:00",
+            "last_seen": "2026-10-18T16:47:06+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "Pulled",
+            "object": "Pod/checkout-api-57647989fc-2fhhp",
+            "message": "Container image \"busybox:1.36\" already present on machine and can be accessed by the pod",
+            "count": 4,
+            "first_seen": "2026-10-18T16:46:29+00:00",
+            "last_seen": "2026-10-18T16:47:05+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "Created",
+            "object": "Pod/checkout-api-57647989fc-2fhhp",
+            "message": "Container created",
+            "count": 4,
+            "first_seen": "2026-10-18T16:46:29+00:00",
+            "last_seen": "2026-10-18T16:47:05+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "Started",
+            "object": "Pod/checkout-api-57647989fc-2fhhp",
+            "message": "Container started",
+            "count": 4,
+            "first_seen": "2026-10-18T16:46:29+00:00",
+            "last_seen": "2026-10-18T16:47:05+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "Scheduled",
+            "object": "Pod/checkout-api-57647989fc-2fhhp",
+            "message": "Successfully assigned pfa-lab/checkout-api-57647989fc-2fhhp to pfa-dev-control-plane",
+            "count": 1,
+            "first_seen": "2026-10-18T16:46:29+00:00",
+            "last_seen": "2026-10-18T16:46:29+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "SuccessfulCreate",
+            "object": "ReplicaSet/checkout-api-57647989fc",
+            "message": "Created pod: checkout-api-57647989fc-2fhhp",
+            "count": 1,
+            "first_seen": "2026-10-18T16:46:29+00:00",
+            "last_seen": "2026-10-18T16:46:29+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "ScalingReplicaSet",
+            "object": "Deployment/checkout-api",
+            "message": "Scaled up replica set checkout-api-57647989fc from 0 to 1",
+            "count": 1,
+            "first_seen": "2026-10-18T16:46:29+00:00",
+            "last_seen": "2026-10-18T16:46:29+00:00"
+          }
+        ]
+      },
+      "raw_excerpt": null,
+      "error": null,
+      "collected_at": "2026-10-18T16:47:33.866147Z"
+    },
+    {
+      "source": "logs",
+      "summary": {
+        "container": "api",
+        "previous": {
+          "available": false,
+          "note": "unable to retrieve container logs for containerd://550146f7b028096959578a17ca3d98199d65cca5c2711c0ceec7c1db6a4fea9a"
+        },
+        "current": {
+          "available": true,
+          "lines": 3
+        }
+      },
+      "raw_excerpt": "=== current container ===\nFATAL: required environment variable DATABASE_URL is not set\ncheckout-api v2.4.1 starting\nloading configuration from environment\n",
+      "error": null,
+      "collected_at": "2026-10-18T16:47:33.868515Z"
+    }
+  ]
+}

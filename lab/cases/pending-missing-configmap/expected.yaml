@@ -1,0 +1,11 @@
+workload: {kind: deployment, name: email-sender}
+failure_type: pending
+symptom: Pod is stuck in ContainerCreating; FailedMount events repeat.
+root_cause: >-
+  The pod mounts the ConfigMap email-templates, which does not exist in the namespace, so the
+  volume cannot be set up and the container never starts.
+cause_keywords: [email-templates, [configmap, config map]]
+fix: Create the ConfigMap email-templates, or correct its name in the pod's volumes.
+fix_keywords: [email-templates]
+ready_when: {waiting_reason: [ContainerCreating]}
+evidence_must_contain: ["FailedMount", "email-templates"]

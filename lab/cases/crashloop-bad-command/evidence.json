@@ -1,0 +1,223 @@
+{
+  "target": {
+    "namespace": "pfa-lab",
+    "name": "payment-gateway",
+    "kind": "deployment",
+    "pod": "payment-gateway-5b8fc899df-cc4kj",
+    "container": "gateway",
+    "owners": [
+      {
+        "kind": "ReplicaSet",
+        "name": "payment-gateway-5b8fc899df"
+      },
+      {
+        "kind": "Deployment",
+        "name": "payment-gateway"
+      }
+    ]
+  },
+  "evidence": [
+    {
+      "source": "k8s_state",
+      "summary": {
+        "workload": {
+          "kind": "deployment",
+          "name": "payment-gateway",
+          "replicas_desired": 1,
+          "replicas_ready": 0,
+          "replicas_updated": 1,
+          "replicas_available": 0,
+          "generation": 1,
+          "observed_generation": 1,
+          "conditions": [
+            {
+              "type": "Available",
+              "status": "False",
+              "reason": "MinimumReplicasUnavailable",
+              "message": "Deployment does not have minimum availability.",
+              "last_update": "2026-11-02T15:26:40+00:00"
+            },
+            {
+              "type": "Progressing",
+              "status": "True",
+              "reason": "ReplicaSetUpdated",
+              "message": "ReplicaSet \"payment-gateway-5b8fc899df\" is progressing.",
+              "last_update": "2026-11-02T15:26:40+00:00"
+            }
+          ]
+        },
+        "pod": {
+          "name": "payment-gateway-5b8fc899df-cc4kj",
+          "phase": "Running",
+          "node": "desktop-control-plane",
+          "qos_class": "BestEffort",
+          "created": "2026-11-02T15:26:39+00:00",
+          "started": "2026-11-02T15:26:39+00:00",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "False",
+              "reason": "ContainersNotReady",
+              "message": "containers with unready status: [gateway]"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "False",
+              "reason": "ContainersNotReady",
+              "message": "containers with unready status: [gateway]"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "gateway",
+              "image": "busybox:1.36",
+              "command": [
+                "/app/payment-gateway",
+                "--listen=:8443"
+              ],
+              "ready": false,
+              "started": false,
+              "restart_count": 3,
+              "state": {
+                "waiting": {
+                  "reason": "RunContainerError",
+                  "message": "failed to create containerd task: failed to create shim task: OCI runtime create failed: runc create failed: unable to start container process: error during container init: exec: \"/app/payment-gateway\": stat /app/payment-gateway: no such file or directory"
+                }
+              },
+              "last_state": {
+                "terminated": {
+                  "reason": "StartError",
+                  "exit_code": 128,
+                  "message": "failed to create containerd task: failed to create shim task: OCI runtime create failed: runc create failed: unable to start container process: error during container init: exec: \"/app/payment-gateway\": stat /app/payment-gateway: no such file or directory",
+                  "started_at": "1970-01-01T00:00:00+00:00",
+                  "finished_at": "2026-11-02T15:27:18+00:00"
+                }
+              },
+              "image_id": "docker.io/library/busybox@sha256:73aaf090f3d85aa34ee199857f03fa3a95c8ede2ffd4cc2cdb5b94e566b11662"
+            }
+          ]
+        }
+      },
+      "raw_excerpt": null,
+      "error": null,
+      "collected_at": "2026-11-02T15:27:28.407981Z",
+      "redacted": true,
+      "redactions": {}
+    },
+    {
+      "source": "k8s_events",
+      "summary": {
+        "window_minutes": 60,
+        "objects": [
+          "Pod/payment-gateway-5b8fc899df-cc4kj",
+          "ReplicaSet/payment-gateway-5b8fc899df",
+          "Deployment/payment-gateway"
+        ],
+        "total": 7,
+        "events": [
+          {
+            "type": "Warning",
+            "reason": "BackOff",
+            "object": "Pod/payment-gateway-5b8fc899df-cc4kj",
+            "message": "Back-off restarting failed container gateway in pod payment-gateway-5b8fc899df-cc4kj_pfa-lab(3904ba8b-e76d-40c1-abd5-d09b7d9dba8c)",
+            "count": 3,
+            "first_seen": "2026-11-02T15:26:42+00:00",
+            "last_seen": "2026-11-02T15:27:19+00:00"
+          },
+          {
+            "type": "Warning",
+            "reason": "Failed",
+            "object": "Pod/payment-gateway-5b8fc899df-cc4kj",
+            "message": "Error: failed to create containerd task: failed to create shim task: OCI runtime create failed: runc create failed: unable to start container process: error during container init: exec: \"/app/payment-gateway\": stat /app/payment-gateway: no such file or directory",
+            "count": 4,
+            "first_seen": "2026-11-02T15:26:40+00:00",
+            "last_seen": "2026-11-02T15:27:18+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "Pulled",
+            "object": "Pod/payment-gateway-5b8fc899df-cc4kj",
+            "message": "Container image \"busybox:1.36\" already present on machine and can be accessed by the pod",
+            "count": 4,
+            "first_seen": "2026-11-02T15:26:40+00:00",
+            "last_seen": "2026-11-02T15:27:18+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "Created",
+            "object": "Pod/payment-gateway-5b8fc899df-cc4kj",
+            "message": "Container created",
+            "count": 4,
+            "first_seen": "2026-11-02T15:26:40+00:00",
+            "last_seen": "2026-11-02T15:27:18+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "Scheduled",
+            "object": "Pod/payment-gateway-5b8fc899df-cc4kj",
+            "message": "Successfully assigned pfa-lab/payment-gateway-5b8fc899df-cc4kj to desktop-control-plane",
+            "count": 1,
+            "first_seen": "2026-11-02T15:26:39.911172+00:00",
+            "last_seen": "2026-11-02T15:26:39.911172+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "SuccessfulCreate",
+            "object": "ReplicaSet/payment-gateway-5b8fc899df",
+            "message": "Created pod: payment-gateway-5b8fc899df-cc4kj",
+            "count": 1,
+            "first_seen": "2026-11-02T15:26:39+00:00",
+            "last_seen": "2026-11-02T15:26:39+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "ScalingReplicaSet",
+            "object": "Deployment/payment-gateway",
+            "message": "Scaled up replica set payment-gateway-5b8fc899df from 0 to 1",
+            "count": 1,
+            "first_seen": "2026-11-02T15:26:39+00:00",
+            "last_seen": "2026-11-02T15:26:39+00:00"
+          }
+        ]
+      },
+      "raw_excerpt": null,
+      "error": null,
+      "collected_at": "2026-11-02T15:27:28.408549Z",
+      "redacted": true,
+      "redactions": {}
+    },
+    {
+      "source": "logs",
+      "summary": {
+        "container": "gateway",
+        "previous": {
+          "available": true,
+          "lines": 0,
+          "empty": true
+        },
+        "current": {
+          "available": true,
+          "lines": 0,
+          "empty": true
+        }
+      },
+      "raw_excerpt": null,
+      "error": null,
+      "collected_at": "2026-11-02T15:27:28.418638Z",
+      "redacted": true,
+      "redactions": {}
+    }
+  ]
+}

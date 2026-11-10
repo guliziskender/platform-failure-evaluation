@@ -1,0 +1,15 @@
+workload: {kind: deployment, name: orders-api}
+failure_type: crash_loop_backoff
+symptom: Pod shows Init:CrashLoopBackOff; the main container never starts.
+root_cause: >-
+  The migrate init container exits 1 because migration 0042 tries to create the index
+  orders_idx, which already exists, so the app container never starts.
+cause_keywords: [[migrate, init container], [already exists, migration]]
+fix: Make migration 0042 idempotent (CREATE INDEX IF NOT EXISTS) or repair the migration state.
+fix_keywords: [[migration, migrate, orders_idx]]
+ready_when: {restarts_at_least: 2}
+evidence_must_contain: ["migrate", "already exists"]
+known_gap: >-
+  The classifier checks Pending before crashes and only reads the main container's state, so a
+  crash-looping init container is reported as pending. On a live run that also skips its logs,
+  and the rules wrongly say it fails before logging anything.

@@ -1,0 +1,212 @@
+{
+  "target": {
+    "namespace": "pfa-lab",
+    "name": "session-cache",
+    "kind": "statefulset",
+    "pod": "session-cache-0",
+    "container": "cache",
+    "owners": [
+      {
+        "kind": "StatefulSet",
+        "name": "session-cache"
+      }
+    ]
+  },
+  "evidence": [
+    {
+      "source": "k8s_state",
+      "summary": {
+        "workload": {
+          "kind": "statefulset",
+          "name": "session-cache",
+          "replicas_desired": 1,
+          "replicas_ready": 0,
+          "replicas_updated": 1,
+          "replicas_available": 0,
+          "generation": 1,
+          "observed_generation": 1
+        },
+        "pod": {
+          "name": "session-cache-0",
+          "phase": "Running",
+          "node": "desktop-control-plane",
+          "qos_class": "Burstable",
+          "created": "2026-11-02T15:26:39+00:00",
+          "started": "2026-11-02T15:26:39+00:00",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "False",
+              "reason": "ContainersNotReady",
+              "message": "containers with unready status: [cache]"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "False",
+              "reason": "ContainersNotReady",
+              "message": "containers with unready status: [cache]"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "cache",
+              "image": "polinux/stress",
+              "command": [
+                "sh",
+                "-c"
+              ],
+              "args": [
+                "for mb in 50 100 150 200; do echo \"cache warmup: ${mb}MB loaded\"; sleep 2; done\necho \"cache warmup: loading remaining 100MB\"\nexec stress --vm 1 --vm-bytes 300M --vm-hang 0\n"
+              ],
+              "resources": {
+                "requests": {
+                  "memory": "200Mi"
+                },
+                "limits": {
+                  "memory": "200Mi"
+                }
+              },
+              "ready": false,
+              "started": false,
+              "restart_count": 2,
+              "state": {
+                "terminated": {
+                  "reason": "OOMKilled",
+                  "exit_code": 137,
+                  "started_at": "2026-11-02T15:27:12+00:00",
+                  "finished_at": "2026-11-02T15:27:20+00:00"
+                }
+              },
+              "last_state": {
+                "terminated": {
+                  "reason": "OOMKilled",
+                  "exit_code": 137,
+                  "started_at": "2026-11-02T15:26:51+00:00",
+                  "finished_at": "2026-11-02T15:26:59+00:00"
+                }
+              },
+              "image_id": "docker.io/polinux/stress@sha256:b6144f84f9c15dac80deb48d3a646b55c7043ab1d83ea0a697c09097aaad21aa"
+            }
+          ]
+        }
+      },
+      "raw_excerpt": null,
+      "error": null,
+      "collected_at": "2026-11-02T15:27:28.478201Z",
+      "redacted": true,
+      "redactions": {}
+    },
+    {
+      "source": "k8s_events",
+      "summary": {
+        "window_minutes": 60,
+        "objects": [
+          "Pod/session-cache-0",
+          "StatefulSet/session-cache"
+        ],
+        "total": 7,
+        "events": [
+          {
+            "type": "Warning",
+            "reason": "BackOff",
+            "object": "Pod/session-cache-0",
+            "message": "Back-off restarting failed container cache in pod session-cache-0_pfa-lab(ddfe4039-7039-41ea-9be2-951f0b8c2d28)",
+            "count": 2,
+            "first_seen": "2026-11-02T15:27:00+00:00",
+            "last_seen": "2026-11-02T15:27:21+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "Pulled",
+            "object": "Pod/session-cache-0",
+            "message": "Successfully pulled image \"polinux/stress\" in 956ms (956ms including waiting). Image size: 4041495 bytes.",
+            "count": 3,
+            "first_seen": "2026-11-02T15:26:41+00:00",
+            "last_seen": "2026-11-02T15:27:12+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "Created",
+            "object": "Pod/session-cache-0",
+            "message": "Container created",
+            "count": 3,
+            "first_seen": "2026-11-02T15:26:41+00:00",
+            "last_seen": "2026-11-02T15:27:12+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "Started",
+            "object": "Pod/session-cache-0",
+            "message": "Container started",
+            "count": 3,
+            "first_seen": "2026-11-02T15:26:41+00:00",
+            "last_seen": "2026-11-02T15:27:12+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "Pulling",
+            "object": "Pod/session-cache-0",
+            "message": "Pulling image \"polinux/stress\"",
+            "count": 3,
+            "first_seen": "2026-11-02T15:26:40+00:00",
+            "last_seen": "2026-11-02T15:27:11+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "Scheduled",
+            "object": "Pod/session-cache-0",
+            "message": "Successfully assigned pfa-lab/session-cache-0 to desktop-control-plane",
+            "count": 1,
+            "first_seen": "2026-11-02T15:26:39.769035+00:00",
+            "last_seen": "2026-11-02T15:26:39.769035+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "SuccessfulCreate",
+            "object": "StatefulSet/session-cache",
+            "message": "Create Pod session-cache-0 in StatefulSet session-cache successful",
+            "count": 1,
+            "first_seen": "2026-11-02T15:26:39+00:00",
+            "last_seen": "2026-11-02T15:26:39+00:00"
+          }
+        ]
+      },
+      "raw_excerpt": null,
+      "error": null,
+      "collected_at": "2026-11-02T15:27:28.479366Z",
+      "redacted": true,
+      "redactions": {}
+    },
+    {
+      "source": "logs",
+      "summary": {
+        "container": "cache",
+        "previous": {
+          "available": false,
+          "note": "unable to retrieve container logs for containerd://135aad880cbf647c5c9a1bc3b2506db8e3ee10ba70d4a692f4e16ad92aee94fa"
+        },
+        "current": {
+          "available": true,
+          "lines": 6
+        }
+      },
+      "raw_excerpt": "=== current container ===\ncache warmup: 50MB loaded\ncache warmup: 100MB loaded\ncache warmup: 150MB loaded\ncache warmup: 200MB loaded\ncache warmup: loading remaining 100MB\nstress: info: [1] dispatching hogs: 0 cpu, 0 io, 1 vm, 0 hdd\n",
+      "error": null,
+      "collected_at": "2026-11-02T15:27:28.480533Z",
+      "redacted": true,
+      "redactions": {}
+    }
+  ]
+}

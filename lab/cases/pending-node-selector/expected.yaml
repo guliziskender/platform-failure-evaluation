@@ -1,0 +1,11 @@
+workload: {kind: deployment, name: video-encoder}
+failure_type: pending
+symptom: Pod stays Pending and is never scheduled.
+root_cause: >-
+  The pod's nodeSelector hardware=gpu-a100 matches no node in the cluster, so the scheduler
+  has nowhere to put it.
+cause_keywords: [[nodeSelector, node selector, node affinity]]
+fix: Fix or remove the nodeSelector, or label a suitable node with hardware=gpu-a100.
+fix_keywords: [[nodeSelector, node selector, label]]
+ready_when: {pod_condition_reason: Unschedulable}
+evidence_must_contain: ["Unschedulable", "gpu-a100"]

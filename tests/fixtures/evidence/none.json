@@ -1,0 +1,185 @@
+{
+  "target": {
+    "namespace": "kube-system",
+    "name": "coredns",
+    "kind": "deployment",
+    "pod": "coredns-559f6c778d-5d6lk",
+    "container": "coredns",
+    "owners": [
+      {
+        "kind": "ReplicaSet",
+        "name": "coredns-559f6c778d"
+      },
+      {
+        "kind": "Deployment",
+        "name": "coredns"
+      }
+    ]
+  },
+  "evidence": [
+    {
+      "source": "k8s_state",
+      "summary": {
+        "workload": {
+          "kind": "deployment",
+          "name": "coredns",
+          "replicas_desired": 2,
+          "replicas_ready": 2,
+          "replicas_updated": 2,
+          "replicas_available": 2,
+          "generation": 1,
+          "observed_generation": 1,
+          "conditions": [
+            {
+              "type": "Available",
+              "status": "True",
+              "reason": "MinimumReplicasAvailable",
+              "message": "Deployment has minimum availability.",
+              "last_update": "2026-10-09T11:26:16+00:00"
+            },
+            {
+              "type": "Progressing",
+              "status": "True",
+              "reason": "NewReplicaSetAvailable",
+              "message": "ReplicaSet \"coredns-559f6c778d\" has successfully progressed.",
+              "last_update": "2026-10-09T11:26:16+00:00"
+            }
+          ]
+        },
+        "pod": {
+          "name": "coredns-559f6c778d-5d6lk",
+          "phase": "Running",
+          "node": "pfa-dev-control-plane",
+          "qos_class": "Burstable",
+          "created": "2026-10-09T11:26:04+00:00",
+          "started": "2026-10-09T11:26:14+00:00",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "coredns",
+              "image": "registry.k8s.io/coredns/coredns:v1.14.6",
+              "args": [
+                "-conf",
+                "/etc/coredns/Corefile"
+              ],
+              "ports": [
+                "dns=53/UDP",
+                "dns-tcp=53/TCP",
+                "metrics=9153/TCP",
+                "liveness-probe=8080/TCP",
+                "readiness-probe=8181/TCP"
+              ],
+              "resources": {
+                "requests": {
+                  "cpu": "100m",
+                  "memory": "70Mi"
+                },
+                "limits": {
+                  "memory": "170Mi"
+                }
+              },
+              "probes": {
+                "liveness": {
+                  "http_get": "HTTP /health port=liveness-probe",
+                  "initial_delay_seconds": 60,
+                  "period_seconds": 10,
+                  "timeout_seconds": 5,
+                  "failure_threshold": 5
+                },
+                "readiness": {
+                  "http_get": "HTTP /ready port=readiness-probe",
+                  "period_seconds": 10,
+                  "timeout_seconds": 1,
+                  "failure_threshold": 3
+                }
+              },
+              "ready": true,
+              "started": true,
+              "restart_count": 0,
+              "state": {
+                "running": {
+                  "started_at": "2026-10-09T11:26:15+00:00"
+                }
+              },
+              "image_id": "sha256:fbccbf70a429fb9ce1cdb13a40ed96b16272ef763dafe050b2c0d121dd29811b"
+            }
+          ],
+          "scheduling": {
+            "node_selector": {
+              "kubernetes.io/os": "linux"
+            },
+            "tolerations": [
+              {
+                "key": "CriticalAddonsOnly",
+                "operator": "Exists"
+              },
+              {
+                "key": "node-role.kubernetes.io/control-plane",
+                "effect": "NoSchedule"
+              }
+            ],
+            "has_affinity": true,
+            "priority_class": "system-cluster-critical"
+          }
+        }
+      },
+      "raw_excerpt": null,
+      "error": null,
+      "collected_at": "2026-10-18T16:47:36.074290Z"
+    },
+    {
+      "source": "k8s_events",
+      "summary": {
+        "window_minutes": 60,
+        "objects": [
+          "Pod/coredns-559f6c778d-5d6lk",
+          "ReplicaSet/coredns-559f6c778d",
+          "Deployment/coredns"
+        ],
+        "total": 0,
+        "events": []
+      },
+      "raw_excerpt": null,
+      "error": null,
+      "collected_at": "2026-10-18T16:47:36.073635Z"
+    },
+    {
+      "source": "logs",
+      "summary": {
+        "container": "coredns",
+        "previous": {
+          "available": false,
+          "note": "previous terminated container \"coredns\" in pod \"coredns-559f6c778d-5d6lk\" not found"
+        },
+        "current": {
+          "available": true,
+          "lines": 5
+        }
+      },
+      "raw_excerpt": "=== current container ===\nmaxprocs: Leaving GOMAXPROCS=10: CPU quota undefined\n.:53\n[INFO] plugin/reload: Running configuration SHA512 = 1b226df79860026c6a52e67daa10d7f0d57ec5b023288ec00c5e05f93523c894564e15b91770d3a07ae1cfbe861d15b37d4a0027e69c546ab112970993a3b03b\nCoreDNS-1.14.6\nlinux/arm64, go1.26.5, 424d125\n",
+      "error": null,
+      "collected_at": "2026-10-18T16:47:36.083186Z"
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+# notify-worker has a malformed image reference: two tags.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notify-worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: notify-worker}
+  template:
+    metadata:
+      labels: {app: notify-worker}
+    spec:
+      containers:
+        - name: worker
+          image: busybox:1.36:latest

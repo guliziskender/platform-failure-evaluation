@@ -1,0 +1,262 @@
+{
+  "apiVersion": "v1",
+  "kind": "Pod",
+  "metadata": {
+    "creationTimestamp": "2026-10-09T11:28:13Z",
+    "generateName": "memhog-7957d7d5c8-",
+    "generation": 1,
+    "labels": {
+      "app": "memhog",
+      "pod-template-hash": "7957d7d5c8"
+    },
+    "name": "memhog-7957d7d5c8-4gsr8",
+    "namespace": "default",
+    "ownerReferences": [
+      {
+        "apiVersion": "apps/v1",
+        "blockOwnerDeletion": true,
+        "controller": true,
+        "kind": "ReplicaSet",
+        "name": "memhog-7957d7d5c8",
+        "uid": "1e0658b4-5b85-4a74-891a-cc3abcf38652"
+      }
+    ],
+    "resourceVersion": "2701",
+    "uid": "bd7fde4e-7380-4d55-8fd7-c0f26137fec1"
+  },
+  "spec": {
+    "containers": [
+      {
+        "command": [
+          "stress",
+          "--vm",
+          "1",
+          "--vm-bytes",
+          "300M"
+        ],
+        "image": "polinux/stress",
+        "imagePullPolicy": "Always",
+        "name": "stress",
+        "resources": {
+          "limits": {
+            "memory": "100Mi"
+          },
+          "requests": {
+            "memory": "100Mi"
+          }
+        },
+        "terminationMessagePath": "/dev/termination-log",
+        "terminationMessagePolicy": "File",
+        "volumeMounts": [
+          {
+            "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+            "name": "kube-api-access-z22sn",
+            "readOnly": true
+          }
+        ]
+      }
+    ],
+    "dnsPolicy": "ClusterFirst",
+    "enableServiceLinks": true,
+    "nodeName": "pfa-dev-control-plane",
+    "preemptionPolicy": "PreemptLowerPriority",
+    "priority": 0,
+    "restartPolicy": "Always",
+    "schedulerName": "default-scheduler",
+    "securityContext": {},
+    "serviceAccount": "default",
+    "serviceAccountName": "default",
+    "terminationGracePeriodSeconds": 30,
+    "tolerations": [
+      {
+        "effect": "NoExecute",
+        "key": "node.kubernetes.io/not-ready",
+        "operator": "Exists",
+        "tolerationSeconds": 300
+      },
+      {
+        "effect": "NoExecute",
+        "key": "node.kubernetes.io/unreachable",
+        "operator": "Exists",
+        "tolerationSeconds": 300
+      }
+    ],
+    "volumes": [
+      {
+        "name": "kube-api-access-z22sn",
+        "projected": {
+          "defaultMode": 420,
+          "sources": [
+            {
+              "serviceAccountToken": {
+                "expirationSeconds": 3607,
+                "path": "token"
+              }
+            },
+            {
+              "configMap": {
+                "items": [
+                  {
+                    "key": "ca.crt",
+                    "path": "ca.crt"
+                  }
+                ],
+                "name": "kube-root-ca.crt"
+              }
+            },
+            {
+              "downwardAPI": {
+                "items": [
+                  {
+                    "fieldRef": {
+                      "apiVersion": "v1",
+                      "fieldPath": "metadata.namespace"
+                    },
+                    "path": "namespace"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "status": {
+    "allocatedResources": {
+      "memory": "100Mi"
+    },
+    "conditions": [
+      {
+        "lastProbeTime": null,
+        "lastTransitionTime": "2026-10-09T11:28:14Z",
+        "observedGeneration": 1,
+        "status": "True",
+        "type": "PodReadyToStartContainers"
+      },
+      {
+        "lastProbeTime": null,
+        "lastTransitionTime": "2026-10-09T11:28:13Z",
+        "observedGeneration": 1,
+        "status": "True",
+        "type": "Initialized"
+      },
+      {
+        "lastProbeTime": null,
+        "lastTransitionTime": "2026-10-09T11:49:19Z",
+        "message": "containers with unready status: [stress]",
+        "observedGeneration": 1,
+        "reason": "ContainersNotReady",
+        "status": "False",
+        "type": "Ready"
+      },
+      {
+        "lastProbeTime": null,
+        "lastTransitionTime": "2026-10-09T11:49:19Z",
+        "message": "containers with unready status: [stress]",
+        "observedGeneration": 1,
+        "reason": "ContainersNotReady",
+        "status": "False",
+        "type": "ContainersReady"
+      },
+      {
+        "lastProbeTime": null,
+        "lastTransitionTime": "2026-10-09T11:28:13Z",
+        "observedGeneration": 1,
+        "status": "True",
+        "type": "PodScheduled"
+      }
+    ],
+    "containerStatuses": [
+      {
+        "allocatedResources": {
+          "memory": "100Mi"
+        },
+        "containerID": "containerd://75fb9ad6040447249610cc44e3e8f70c603785f9ff812f08a5258891413e0630",
+        "image": "docker.io/polinux/stress:latest",
+        "imageID": "docker.io/polinux/stress@sha256:b6144f84f9c15dac80deb48d3a646b55c7043ab1d83ea0a697c09097aaad21aa",
+        "lastState": {
+          "terminated": {
+            "containerID": "containerd://3153ec11538d3cdc6e696ae8647ae266eaa567f7d107d041ad74c64c057772b2",
+            "exitCode": 137,
+            "finishedAt": "2026-10-09T11:44:08Z",
+            "reason": "OOMKilled",
+            "startedAt": "2026-10-09T11:44:08Z"
+          }
+        },
+        "name": "stress",
+        "ready": false,
+        "resources": {
+          "limits": {
+            "memory": "100Mi"
+          },
+          "requests": {
+            "memory": "100Mi"
+          }
+        },
+        "restartCount": 9,
+        "started": false,
+        "state": {
+          "terminated": {
+            "containerID": "containerd://75fb9ad6040447249610cc44e3e8f70c603785f9ff812f08a5258891413e0630",
+            "exitCode": 137,
+            "finishedAt": "2026-10-09T11:49:18Z",
+            "reason": "OOMKilled",
+            "startedAt": "2026-10-09T11:49:18Z"
+          }
+        },
+        "user": {
+          "linux": {
+            "gid": 0,
+            "supplementalGroups": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              6,
+              10,
+              11,
+              20,
+              26,
+              27
+            ],
+            "uid": 0
+          }
+        },
+        "volumeMounts": [
+          {
+            "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+            "name": "kube-api-access-z22sn",
+            "readOnly": true,
+            "recursiveReadOnly": "Disabled"
+          }
+        ]
+      }
+    ],
+    "hostIP": "172.18.0.5",
+    "hostIPs": [
+      {
+        "ip": "172.18.0.5"
+      }
+    ],
+    "observedGeneration": 1,
+    "phase": "Running",
+    "podIP": "10.244.0.6",
+    "podIPs": [
+      {
+        "ip": "10.244.0.6"
+      }
+    ],
+    "qosClass": "Burstable",
+    "resources": {
+      "limits": {
+        "memory": "100Mi"
+      },
+      "requests": {
+        "memory": "100Mi"
+      }
+    },
+    "startTime": "2026-10-09T11:28:13Z"
+  }
+}

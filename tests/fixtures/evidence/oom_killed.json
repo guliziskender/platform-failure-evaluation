@@ -1,0 +1,237 @@
+{
+  "target": {
+    "namespace": "pfa-lab",
+    "name": "report-worker",
+    "kind": "deployment",
+    "pod": "report-worker-7bff6855cf-xqfmk",
+    "container": "worker",
+    "owners": [
+      {
+        "kind": "ReplicaSet",
+        "name": "report-worker-7bff6855cf"
+      },
+      {
+        "kind": "Deployment",
+        "name": "report-worker"
+      }
+    ]
+  },
+  "evidence": [
+    {
+      "source": "k8s_state",
+      "summary": {
+        "workload": {
+          "kind": "deployment",
+          "name": "report-worker",
+          "replicas_desired": 1,
+          "replicas_ready": 0,
+          "replicas_updated": 1,
+          "replicas_available": 0,
+          "generation": 1,
+          "observed_generation": 1,
+          "conditions": [
+            {
+              "type": "Progressing",
+              "status": "True",
+              "reason": "NewReplicaSetAvailable",
+              "message": "ReplicaSet \"report-worker-7bff6855cf\" has successfully progressed.",
+              "last_update": "2026-10-18T16:46:31+00:00"
+            },
+            {
+              "type": "Available",
+              "status": "False",
+              "reason": "MinimumReplicasUnavailable",
+              "message": "Deployment does not have minimum availability.",
+              "last_update": "2026-10-18T16:47:17+00:00"
+            }
+          ]
+        },
+        "pod": {
+          "name": "report-worker-7bff6855cf-xqfmk",
+          "phase": "Running",
+          "node": "pfa-dev-control-plane",
+          "qos_class": "Burstable",
+          "created": "2026-10-18T16:46:29+00:00",
+          "started": "2026-10-18T16:46:29+00:00",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "False",
+              "reason": "ContainersNotReady",
+              "message": "containers with unready status: [worker]"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "False",
+              "reason": "ContainersNotReady",
+              "message": "containers with unready status: [worker]"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "worker",
+              "image": "polinux/stress",
+              "command": [
+                "sh",
+                "-c"
+              ],
+              "args": [
+                "echo \"report-worker starting, building monthly report\"\necho \"loading 250MB of order history into memory\"\nexec stress --vm 1 --vm-bytes 250M --vm-hang 0\n"
+              ],
+              "resources": {
+                "requests": {
+                  "cpu": "50m",
+                  "memory": "64Mi"
+                },
+                "limits": {
+                  "memory": "128Mi"
+                }
+              },
+              "ready": false,
+              "started": false,
+              "restart_count": 3,
+              "state": {
+                "terminated": {
+                  "reason": "OOMKilled",
+                  "exit_code": 137,
+                  "started_at": "2026-10-18T16:47:16+00:00",
+                  "finished_at": "2026-10-18T16:47:16+00:00"
+                }
+              },
+              "last_state": {
+                "terminated": {
+                  "reason": "OOMKilled",
+                  "exit_code": 137,
+                  "started_at": "2026-10-18T16:46:46+00:00",
+                  "finished_at": "2026-10-18T16:46:46+00:00"
+                }
+              },
+              "image_id": "docker.io/polinux/stress@sha256:b6144f84f9c15dac80deb48d3a646b55c7043ab1d83ea0a697c09097aaad21aa"
+            }
+          ]
+        }
+      },
+      "raw_excerpt": null,
+      "error": null,
+      "collected_at": "2026-10-18T16:47:34.228948Z"
+    },
+    {
+      "source": "k8s_events",
+      "summary": {
+        "window_minutes": 60,
+        "objects": [
+          "Pod/report-worker-7bff6855cf-xqfmk",
+          "ReplicaSet/report-worker-7bff6855cf",
+          "Deployment/report-worker"
+        ],
+        "total": 8,
+        "events": [
+          {
+            "type": "Warning",
+            "reason": "BackOff",
+            "object": "Pod/report-worker-7bff6855cf-xqfmk",
+            "message": "Back-off restarting failed container worker in pod report-worker-7bff6855cf-xqfmk_pfa-lab(7f38386a-12fa-410b-9cff-1ad31a8d2568)",
+            "count": 4,
+            "first_seen": "2026-10-18T16:46:32+00:00",
+            "last_seen": "2026-10-18T16:47:17+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "Pulled",
+            "object": "Pod/report-worker-7bff6855cf-xqfmk",
+            "message": "Successfully pulled image \"polinux/stress\" in 749ms (749ms including waiting). Image size: 4041495 bytes.",
+            "count": 4,
+            "first_seen": "2026-10-18T16:46:31+00:00",
+            "last_seen": "2026-10-18T16:47:16+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "Created",
+            "object": "Pod/report-worker-7bff6855cf-xqfmk",
+            "message": "Container created",
+            "count": 4,
+            "first_seen": "2026-10-18T16:46:31+00:00",
+            "last_seen": "2026-10-18T16:47:16+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "Started",
+            "object": "Pod/report-worker-7bff6855cf-xqfmk",
+            "message": "Container started",
+            "count": 4,
+            "first_seen": "2026-10-18T16:46:31+00:00",
+            "last_seen": "2026-10-18T16:47:16+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "Pulling",
+            "object": "Pod/report-worker-7bff6855cf-xqfmk",
+            "message": "Pulling image \"polinux/stress\"",
+            "count": 4,
+            "first_seen": "2026-10-18T16:46:30+00:00",
+            "last_seen": "2026-10-18T16:47:15+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "Scheduled",
+            "object": "Pod/report-worker-7bff6855cf-xqfmk",
+            "message": "Successfully assigned pfa-lab/report-worker-7bff6855cf-xqfmk to pfa-dev-control-plane",
+            "count": 1,
+            "first_seen": "2026-10-18T16:46:29+00:00",
+            "last_seen": "2026-10-18T16:46:29+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "SuccessfulCreate",
+            "object": "ReplicaSet/report-worker-7bff6855cf",
+            "message": "Created pod: report-worker-7bff6855cf-xqfmk",
+            "count": 1,
+            "first_seen": "2026-10-18T16:46:29+00:00",
+            "last_seen": "2026-10-18T16:46:29+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "ScalingReplicaSet",
+            "object": "Deployment/report-worker",
+            "message": "Scaled up replica set report-worker-7bff6855cf from 0 to 1",
+            "count": 1,
+            "first_seen": "2026-10-18T16:46:29+00:00",
+            "last_seen": "2026-10-18T16:46:29+00:00"
+          }
+        ]
+      },
+      "raw_excerpt": null,
+      "error": null,
+      "collected_at": "2026-10-18T16:47:34.229480Z"
+    },
+    {
+      "source": "logs",
+      "summary": {
+        "container": "worker",
+        "previous": {
+          "available": false,
+          "note": "unable to retrieve container logs for containerd://94bb386a51e2ee6ff217902ed0e7ffefdc866ddd9b490190c44c841c1cc9d9f1"
+        },
+        "current": {
+          "available": true,
+          "lines": 3
+        }
+      },
+      "raw_excerpt": "=== current container ===\nreport-worker starting, building monthly report\nloading 250MB of order history into memory\nstress: info: [1] dispatching hogs: 0 cpu, 0 io, 1 vm, 0 hdd\n",
+      "error": null,
+      "collected_at": "2026-10-18T16:47:34.231848Z"
+    }
+  ]
+}

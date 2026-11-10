@@ -1,0 +1,19 @@
+# ml-trainer meant to request 4000m (4 cores) but wrote "4000", which is 4000 cores.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ml-trainer
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: ml-trainer}
+  template:
+    metadata:
+      labels: {app: ml-trainer}
+    spec:
+      containers:
+        - name: trainer
+          image: busybox:1.36
+          command: ["sh", "-c", "echo training; exec sleep 3600"]
+          resources:
+            requests: {cpu: "4000", memory: 256Mi}

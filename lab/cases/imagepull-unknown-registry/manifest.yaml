@@ -1,0 +1,16 @@
+# billing-ui pulls from a registry hostname that does not resolve (.invalid never does).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: billing-ui
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: billing-ui}
+  template:
+    metadata:
+      labels: {app: billing-ui}
+    spec:
+      containers:
+        - name: web
+          image: registry.pfa-lab.invalid/billing/ui:3.2.0

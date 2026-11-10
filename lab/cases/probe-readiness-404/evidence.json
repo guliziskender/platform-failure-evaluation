@@ -1,0 +1,225 @@
+{
+  "target": {
+    "namespace": "pfa-lab",
+    "name": "catalog-api",
+    "kind": "deployment",
+    "pod": "catalog-api-fd88d7c75-mvd2q",
+    "container": "api",
+    "owners": [
+      {
+        "kind": "ReplicaSet",
+        "name": "catalog-api-fd88d7c75"
+      },
+      {
+        "kind": "Deployment",
+        "name": "catalog-api"
+      }
+    ]
+  },
+  "evidence": [
+    {
+      "source": "k8s_state",
+      "summary": {
+        "workload": {
+          "kind": "deployment",
+          "name": "catalog-api",
+          "replicas_desired": 1,
+          "replicas_ready": 0,
+          "replicas_updated": 1,
+          "replicas_available": 0,
+          "generation": 1,
+          "observed_generation": 1,
+          "conditions": [
+            {
+              "type": "Available",
+              "status": "False",
+              "reason": "MinimumReplicasUnavailable",
+              "message": "Deployment does not have minimum availability.",
+              "last_update": "2026-11-02T15:26:39+00:00"
+            },
+            {
+              "type": "Progressing",
+              "status": "True",
+              "reason": "ReplicaSetUpdated",
+              "message": "ReplicaSet \"catalog-api-fd88d7c75\" is progressing.",
+              "last_update": "2026-11-02T15:26:39+00:00"
+            }
+          ]
+        },
+        "pod": {
+          "name": "catalog-api-fd88d7c75-mvd2q",
+          "phase": "Running",
+          "node": "desktop-control-plane",
+          "qos_class": "BestEffort",
+          "created": "2026-11-02T15:26:39+00:00",
+          "started": "2026-11-02T15:26:39+00:00",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "False",
+              "reason": "ContainersNotReady",
+              "message": "containers with unready status: [api]"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "False",
+              "reason": "ContainersNotReady",
+              "message": "containers with unready status: [api]"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "api",
+              "image": "busybox:1.36",
+              "command": [
+                "sh",
+                "-c"
+              ],
+              "args": [
+                "mkdir -p /www && echo ok > /www/healthz\necho \"catalog-api listening on :80, health at /healthz\"\nexec httpd -f -p 80 -h /www\n"
+              ],
+              "ports": [
+                "http=80/TCP"
+              ],
+              "probes": {
+                "readiness": {
+                  "http_get": "HTTP /ready port=http",
+                  "period_seconds": 3,
+                  "timeout_seconds": 1,
+                  "failure_threshold": 3
+                }
+              },
+              "ready": false,
+              "started": true,
+              "restart_count": 0,
+              "state": {
+                "running": {
+                  "started_at": "2026-11-02T15:26:40+00:00"
+                }
+              },
+              "image_id": "docker.io/library/busybox@sha256:73aaf090f3d85aa34ee199857f03fa3a95c8ede2ffd4cc2cdb5b94e566b11662"
+            }
+          ]
+        }
+      },
+      "raw_excerpt": null,
+      "error": null,
+      "collected_at": "2026-11-02T15:27:28.527739Z",
+      "redacted": true,
+      "redactions": {}
+    },
+    {
+      "source": "k8s_events",
+      "summary": {
+        "window_minutes": 60,
+        "objects": [
+          "Pod/catalog-api-fd88d7c75-mvd2q",
+          "ReplicaSet/catalog-api-fd88d7c75",
+          "Deployment/catalog-api"
+        ],
+        "total": 7,
+        "events": [
+          {
+            "type": "Warning",
+            "reason": "Unhealthy",
+            "object": "Pod/catalog-api-fd88d7c75-mvd2q",
+            "message": "Readiness probe failed: HTTP probe failed with statuscode: 404",
+            "count": 17,
+            "first_seen": "2026-11-02T15:26:40+00:00",
+            "last_seen": "2026-11-02T15:27:26+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "Pulled",
+            "object": "Pod/catalog-api-fd88d7c75-mvd2q",
+            "message": "Container image \"busybox:1.36\" already present on machine and can be accessed by the pod",
+            "count": 1,
+            "first_seen": "2026-11-02T15:26:40+00:00",
+            "last_seen": "2026-11-02T15:26:40+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "Created",
+            "object": "Pod/catalog-api-fd88d7c75-mvd2q",
+            "message": "Container created",
+            "count": 1,
+            "first_seen": "2026-11-02T15:26:40+00:00",
+            "last_seen": "2026-11-02T15:26:40+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "Started",
+            "object": "Pod/catalog-api-fd88d7c75-mvd2q",
+            "message": "Container started",
+            "count": 1,
+            "first_seen": "2026-11-02T15:26:40+00:00",
+            "last_seen": "2026-11-02T15:26:40+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "Scheduled",
+            "object": "Pod/catalog-api-fd88d7c75-mvd2q",
+            "message": "Successfully assigned pfa-lab/catalog-api-fd88d7c75-mvd2q to desktop-control-plane",
+            "count": 1,
+            "first_seen": "2026-11-02T15:26:39.673731+00:00",
+            "last_seen": "2026-11-02T15:26:39.673731+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "SuccessfulCreate",
+            "object": "ReplicaSet/catalog-api-fd88d7c75",
+            "message": "Created pod: catalog-api-fd88d7c75-mvd2q",
+            "count": 1,
+            "first_seen": "2026-11-02T15:26:39+00:00",
+            "last_seen": "2026-11-02T15:26:39+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "ScalingReplicaSet",
+            "object": "Deployment/catalog-api",
+            "message": "Scaled up replica set catalog-api-fd88d7c75 from 0 to 1",
+            "count": 1,
+            "first_seen": "2026-11-02T15:26:39+00:00",
+            "last_seen": "2026-11-02T15:26:39+00:00"
+          }
+        ]
+      },
+      "raw_excerpt": null,
+      "error": null,
+      "collected_at": "2026-11-02T15:27:28.529477Z",
+      "redacted": true,
+      "redactions": {}
+    },
+    {
+      "source": "logs",
+      "summary": {
+        "container": "api",
+        "previous": {
+          "available": false,
+          "note": "previous terminated container \"api\" in pod \"catalog-api-fd88d7c75-mvd2q\" not found"
+        },
+        "current": {
+          "available": true,
+          "lines": 1
+        }
+      },
+      "raw_excerpt": "=== current container ===\ncatalog-api listening on :80, health at /healthz\n",
+      "error": null,
+      "collected_at": "2026-11-02T15:27:28.528683Z",
+      "redacted": true,
+      "redactions": {}
+    }
+  ]
+}
