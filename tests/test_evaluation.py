@@ -112,6 +112,12 @@ def test_any_wrong_part_makes_the_answer_wrong(overrides, failed):
     assert r.confident_wrong is True  # the rules said "high" about this
 
 
+def test_the_answer_is_kept_so_a_miss_can_be_read_later():
+    r = score(case(cause_keywords=["nope"]), report())
+    assert "DATABASE_URL" in r.cause
+    assert r.fix and "DATABASE_URL" in r.fix[0]
+
+
 def test_cause_keywords_must_be_in_the_cause_not_just_the_fix():
     rep = report()
     rep.diagnosis.likely_cause = "Something is wrong."
@@ -275,7 +281,8 @@ def test_runs_from_before_live_mode_still_load(tmp_path):
     run = run_eval(load_cases(CASES_DIR, [CRASH]), replay(CASES_DIR))
     old = json.loads(run.model_dump_json())
     del old["evidence"]
-    del old["results"][0]["seconds"]
+    for field in ("seconds", "cause", "fix"):
+        del old["results"][0][field]
     (tmp_path / "old.json").write_text(json.dumps(old))
     assert load_runs(tmp_path)[0].evidence == "replay"
 

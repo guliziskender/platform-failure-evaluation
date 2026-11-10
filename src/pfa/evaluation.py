@@ -82,6 +82,9 @@ class CaseResult(BaseModel):
     error: str | None = None  # no answer to score: the AI or the live collection failed
     known_gap: str | None = None
     seconds: float = 0.0
+    # What was answered, so a miss can be read (and a too-strict answer key spotted) later.
+    cause: str = ""
+    fix: list[str] = Field(default_factory=list)
 
 
 class EvalRun(BaseModel):
@@ -187,6 +190,8 @@ def score(case: EvalCase, report: Report, ai_expected: bool = False) -> CaseResu
         missing=[f"cause: {m}" for m in missing_cause] + [f"fix: {m}" for m in missing_fix],
         error=error,
         known_gap=case.known_gap,
+        cause=d.likely_cause,
+        fix=d.fix,
     )
 
 

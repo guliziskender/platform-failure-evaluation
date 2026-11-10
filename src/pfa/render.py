@@ -302,7 +302,7 @@ def print_eval_history(console: Console, runs: list[EvalRun]) -> None:
         return
     table = Table(box=None, padding=(0, 2), show_edge=False)
     table.add_column("date", no_wrap=True)
-    table.add_column("answered by", style="bold")
+    table.add_column("answered by", style="bold", no_wrap=True)
     table.add_column("evidence")
     for column in ("correct", "confident wrong", "no answer"):
         table.add_column(column, justify="right")
@@ -338,4 +338,6 @@ def _miss_reason(r: CaseResult) -> str:
     reasons += [f"missing {m}" for m in r.missing]
     if r.known_gap:
         reasons.append(f"known gap: {r.known_gap}")
+    if r.cause:
+        reasons.append(f'answered: "{r.cause[:200]}"')
     return "; ".join(reasons)

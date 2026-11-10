@@ -438,3 +438,29 @@ yet, and the problem text now says what happened.
 
 **Checked:** rules eval still 15/15; integration tests pass against the live lab.
 
+## 2026-11-10: First real model scored
+
+Goal: score a real model, so the AI path is measured and not just tested against fakes.
+
+**Result:** claude-opus-5-5 scored 14/15 on both replay and live evidence, then 15/15 on replay
+after an answer key fix (below). Every failure type and every fix was right. It answered the
+init-container case with high confidence, where the rules say low, and it used the exact
+numbers in the evidence ("250M is about 238Mi, nearly double the limit"). Six to eleven seconds
+per case. The redacted lab evidence (fake data only) was sent to api.anthropic.com.
+
+**What broke / surprised**
+- The one miss was the scorer's fault. The model wrote "resources.limits.memory is 128Mi", and
+  the answer key wanted the words "memory limit", so it scored a right answer as confident and
+  wrong. The other two OOM cases already accepted "limit"; this one now does too. The 14/15 runs
+  stay in `eval/results/`, as the record of what was scored at the time.
+- Finding that out took another API call, because runs did not save the answer itself. Each
+  case result now keeps the cause and fix text, and the misses list shows the answer.
+
+**Decisions**
+- Keyword scoring is the weak point, and a stronger model makes it weaker: it phrases things in
+  its own words. Answer keys should list the ways a correct answer can say a fact. A judge model
+  could score meaning instead of words, but it would cost a second call per case and needs its
+  own checks. Not now.
+- The default hosted model stays claude-opus-5-5 (one of the plan's open decisions). No local
+  model scored yet.
+

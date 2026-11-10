@@ -160,10 +160,22 @@ the same answerer on the same evidence names the cases that got fixed or broke. 
 AI or the cluster gave no answer counts as wrong. A run with no answers at all exits 2 and is not
 saved, because it would say the provider is down, not how good the answers are.
 
-Current baseline, rules only: **15/15 correct, 0 confident and wrong**, on both replay and live
-(13/15 until the init-container and registry-mirror cases were fixed). No model has been scored
-yet. The rules were tuned with these cases in view, so a perfect score here says less than a
-score on cases nobody has tuned against; every real failure is a candidate for a new case.
+Current results (2026-11-10):
+
+| Answered by | Evidence | Correct | Confident and wrong | Seconds per case |
+| --- | --- | --- | --- | --- |
+| rules (`--no-llm`) | replay and live | 15/15 | 0 | instant |
+| claude-opus-5-5 | replay | 15/15 | 0 | 6 to 10 |
+| claude-opus-5-5 | live | 14/15 * | 1 * | 6 to 11 |
+
+\* Scored with an answer key that was too strict: the model wrote "resources.limits.memory is
+128Mi", which is right, but the key wanted the words "memory limit". The key was widened and the
+replay run repeated; the live run was not repeated.
+
+The rules were tuned with these cases in view, so a perfect score here says less than a score on
+cases nobody has tuned against. The model was not tuned on them. Every real failure is a
+candidate for a new case. Misses show the answer's own words (saved in the run's JSON), so a
+too-strict answer key is easy to spot.
 
 The cause and fix checks look for keywords, so they show an answer states the key facts, not that
 its fix would work.

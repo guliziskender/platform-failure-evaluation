@@ -4,7 +4,8 @@ symptom: Container is killed with exit code 137 (OOMKilled) and restarts.
 root_cause: >-
   The worker loads about 250MB into memory but its memory limit is 128Mi, so the kernel
   OOM-kills it every time it reaches the limit.
-cause_keywords: [128Mi, memory limit]
+# "limit" alone counts: claude-opus-5-5 wrote "resources.limits.memory is 128Mi", which is right.
+cause_keywords: [128Mi, [memory limit, limits.memory, limit]]
 fix: Raise the memory limit above the working set (e.g. 384Mi), or make the worker load less data at once.
 fix_keywords: [[limit, memory]]
 ready_when: {last_terminated_reason: OOMKilled}
