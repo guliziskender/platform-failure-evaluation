@@ -9,6 +9,10 @@
 This is a dev tool, deliberately outside the `pfa` package: pfa itself never writes to a
 cluster. It refuses to run against anything but a local cluster (kind, minikube, Docker
 Desktop, k3d) unless PFA_LAB_ALLOW_CONTEXT=1 is set.
+
+Every command uses one kube context, the same one `pfa` uses: PFA_KUBE_CONTEXT or kube_context
+in pfa's config file if set, else kubectl's current context. So `up` and `snapshot` never look
+at different clusters.
 """
 
 from __future__ import annotations
@@ -20,6 +24,7 @@ import subprocess
 import sys
 import time
 from dataclasses import dataclass
+from functools import cache
 from pathlib import Path
 from typing import Any
 
@@ -65,8 +70,29 @@ def load_cases() -> list[Case]:
 # --- kubectl --------------------------------------------------------------------------------
 
 
+@cache
+def lab_context() -> str:
+    from pfa.config import ConfigError, Settings
+
+    try:
+        configured = Settings.load().kube_context
+    except ConfigError as exc:
+        console.print(f"[red]pfa config error:[/] {exc}")
+        sys.exit(2)
+    if configured:
+        return configured
+    result = subprocess.run(
+        ["kubectl", "config", "current-context"], capture_output=True, text=True, timeout=30
+    )
+    if result.returncode != 0:
+        console.print(f"[red]No current kube context:[/] {result.stderr.strip()}")
+        sys.exit(1)
+    return result.stdout.strip()
+
+
 def kubectl(*args: str, check: bool = True) -> str:
-    result = subprocess.run(["kubectl", *args], capture_output=True, text=True, timeout=120)
+    command = ["kubectl", "--context", lab_context(), *args]
+    result = subprocess.run(command, capture_output=True, text=True, timeout=120)
     if check and result.returncode != 0:
         console.print(f"[red]kubectl {' '.join(args)} failed:[/]\n{result.stderr.strip()}")
         sys.exit(1)
@@ -74,7 +100,7 @@ def kubectl(*args: str, check: bool = True) -> str:
 
 
 def guard_context() -> str:
-    context = kubectl("config", "current-context").strip()
+    context = lab_context()
     if (
         not context.startswith(LOCAL_CONTEXT_PREFIXES)
         and os.environ.get("PFA_LAB_ALLOW_CONTEXT") != "1"
@@ -218,7 +244,7 @@ def cmd_status(_: argparse.Namespace) -> int:
 
 def print_status(cases: list[Case]) -> None:
     pods, workloads = lab_pods(), lab_workloads()
-    table = Table(title=f"pfa lab ({NAMESPACE})")
+    table = Table(title=f"pfa lab ({NAMESPACE}, context {lab_context()})")
     for col in ("case", "workload", "failure type", "pod status", "ready"):
         table.add_column(col)
     for case in cases:
@@ -260,7 +286,7 @@ def cmd_snapshot(_: argparse.Namespace) -> int:
         console.print(f"[red]Not broken yet:[/] {', '.join(not_ready)}. Run `make lab-up` first.")
         return 1
     settings = Settings.load()
-    clients = load_clients(settings.kube_context, settings.api_timeout)
+    clients = load_clients(lab_context(), settings.api_timeout)
     for case in cases:
         target = resolve_target(clients, case.name, NAMESPACE)
         evidence = collect_evidence(target, default_collectors(clients, settings))

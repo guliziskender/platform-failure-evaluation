@@ -67,7 +67,8 @@ uv run ruff check . && uv run ruff format .
   evidence summaries, never live API objects, so saved evidence replays identically.
 - `src/pfa/collectors/`: deterministic evidence: `k8s_state`, `k8s_events`, `logs`.
 - `lab/`: broken-pod lab, three cases per failure type (`cases/<id>/manifest.yaml` + `expected.yaml`
-  ground truth). `lab/lab.py` writes to the cluster, so it is deliberately not part of `pfa`.
+  ground truth). `lab/lab.py` writes to the cluster, so it is deliberately not part of `pfa`. It uses
+  pfa's kube context for every kubectl call (`lab_context`), so lab and pfa see one cluster.
 
 ## Rules (non-negotiable)
 

@@ -105,6 +105,37 @@ def test_provider_none_and_empty_file(config_file, monkeypatch):
     assert Settings.load().provider is None
 
 
+@pytest.mark.parametrize("value", ["", "  "])
+def test_empty_config_path_means_unset(monkeypatch, value):
+    monkeypatch.setenv("PFA_CONFIG", value)
+    assert Settings.load().config_path is None
+
+
+def test_blank_value_in_file_means_unset(config_file):
+    config_file("provider: ollama\nmodel:\nsend_data:\n")
+    s = Settings.load()
+    assert (s.provider, s.model, s.send_data) == ("ollama", None, False)
+    assert s.source("model") == "default"
+
+
+@pytest.mark.parametrize(
+    ("value", "expected"),
+    [("http://gpu-box:11434/", "http://gpu-box:11434"), ("https://ollama.internal", None)],
+)
+def test_ollama_url(monkeypatch, value, expected):
+    monkeypatch.setenv("PFA_OLLAMA_URL", value)
+    assert Settings.load().ollama_url == (expected or value)
+
+
+@pytest.mark.parametrize("value", ["localhost:11434", "ftp://host", "http://"])
+def test_ollama_url_must_be_http(monkeypatch, value):
+    # Without a scheme, "localhost:11434" used to count as a remote host (send_data needed),
+    # then fail at request time with a confusing error.
+    monkeypatch.setenv("PFA_OLLAMA_URL", value)
+    with pytest.raises(ConfigError, match="expected an http\\(s\\) URL"):
+        Settings.load()
+
+
 def test_explicit_config_path_must_exist(monkeypatch, tmp_path):
     monkeypatch.setenv("PFA_CONFIG", str(tmp_path / "nope.yaml"))
     with pytest.raises(ConfigError, match="does not exist"):

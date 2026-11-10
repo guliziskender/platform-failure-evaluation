@@ -411,3 +411,30 @@ since then: crashloop-init-migration, imagepull-unknown-registry" against the sa
 **Caveat:** the rules were changed with these two cases in view, so 15/15 is partly a score on
 the training set. New cases from real failures are what keep the number honest.
 
+## 2026-11-10: Remaining code-review findings
+
+Goal: fix the smaller findings from the code review.
+
+**Fixed** (each has a test)
+- Config:
+  - An empty `PFA_CONFIG=` counts as unset, instead of "points to ..., which does not exist".
+  - A key with no value in the config file (`model:`) means not set, like an empty env var.
+  - `ollama_url` must be an http(s) URL. `localhost:11434` without a scheme was treated as a
+    remote host (send_data needed), then failed at request time with a confusing error.
+- Pod choice during a rollout: terminating pods rank last. After a fix rolls out, the old
+  crashing pod lingers while it shuts down, and pfa diagnosed it. An old-ReplicaSet pod that is
+  not terminating is left as is: it is still failing now.
+- Wording:
+  - A finished Job pod (phase Succeeded) is "completed successfully", not "all containers are
+    ready".
+  - A container that exited once without a restart (a failed Job) "exited and was not
+    restarted", not "keeps exiting ... 0 restarts".
+- `lab.py` uses pfa's kube context for every kubectl call and for `snapshot`. Before, `up`
+  used kubectl's current context and `snapshot` used `PFA_KUBE_CONTEXT`, so they could read
+  different clusters. The local-only guard now checks the context actually used.
+
+**Not changed:** a failed Job is still typed `crash_loop_backoff`. There is no job failure type
+yet, and the problem text now says what happened.
+
+**Checked:** rules eval still 15/15; integration tests pass against the live lab.
+

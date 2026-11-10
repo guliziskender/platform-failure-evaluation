@@ -13,7 +13,9 @@ make lab-snapshot # save each case's `pfa collect` output to cases/<id>/evidence
 ```
 
 Only runs against local clusters (context `kind-*`, `minikube`, `docker-desktop`, `k3d-*`);
-set `PFA_LAB_ALLOW_CONTEXT=1` to override. Uses only `busybox:1.36` and `polinux/stress`.
+set `PFA_LAB_ALLOW_CONTEXT=1` to override. It uses the same kube context as `pfa`
+(`PFA_KUBE_CONTEXT` or `kube_context` in pfa's config if set, else kubectl's current context),
+and `make lab-status` shows which one. Uses only `busybox:1.36` and `polinux/stress`.
 
 ## Cases
 

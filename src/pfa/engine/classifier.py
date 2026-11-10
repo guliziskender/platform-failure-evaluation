@@ -145,16 +145,20 @@ def _crash(v: EvidenceView) -> Classification | None:
     if reason != "CrashLoopBackOff" and not crashed:
         return None
     exit_code = term.get("exit_code", "?")
+    last = "last exit code"
     if reason == "CrashLoopBackOff":
         state = "is in CrashLoopBackOff"
     elif "running" in (v.container.get("state") or {}):
         state = "keeps crashing (it is up right now, but restarts again)"
+    elif v.restarts == 0:
+        # One exit and no restart: a Job pod (restartPolicy Never/OnFailure) that failed.
+        state, last = "exited and was not restarted", "exit code"
     else:
         state = "keeps exiting"
     blocked = ", so the pod's other containers never start" if v.is_init_container else ""
     return Classification(
         failure_type=FailureType.CRASH_LOOP,
-        problem=f"{v.container_label.capitalize()} {state}: last exit code {exit_code} "
+        problem=f"{v.container_label.capitalize()} {state}: {last} {exit_code} "
         f"({term.get('reason', 'no reason')}), {v.restarts} restarts{blocked}.",
         signals=[f"termination: {term.get('reason')}, exit {exit_code}"]
         + ([f"container waiting: {reason}"] if reason else []),
@@ -169,11 +173,14 @@ def _healthy(v: EvidenceView) -> Classification | None:
     if phase == "Succeeded" or (phase == "Running" and all(c.get("ready") for c in containers)):
         restarts = sum(c.get("restart_count", 0) for c in containers)
         note = f" It has restarted {restarts} times in the past." if restarts else ""
+        if phase == "Succeeded":  # a finished Job pod: nothing is running, and that is fine
+            state, signal = "completed successfully (phase Succeeded)", "all containers exited 0"
+        else:
+            state, signal = "Running and all containers are ready", "all containers ready"
         return Classification(
             failure_type=FailureType.NONE,
-            problem=f"No failure detected: pod {v.pod['name']} is {phase} and all containers "
-            f"are ready.{note}",
-            signals=[f"phase={phase}", "all containers ready"],
+            problem=f"No failure detected: pod {v.pod['name']} {state}.{note}",
+            signals=[f"phase={phase}", signal],
         )
     return None
 

@@ -216,3 +216,27 @@ def test_real_init_container_crash_loop_from_kind():
     result = classify(view)
     assert result.failure_type is FailureType.CRASH_LOOP
     assert result.problem.startswith("Init container migrate is in CrashLoopBackOff")
+
+
+# --- Job pods: they run once ------------------------------------------------------------------
+
+
+def test_finished_job_pod_is_healthy_and_says_completed():
+    container = {"state": {"terminated": {"reason": "Completed", "exit_code": 0}}, "ready": False}
+    result = classify(make_view(container, pod={"phase": "Succeeded"}))
+    assert result.failure_type is FailureType.NONE
+    assert "completed successfully" in result.problem
+    assert "ready" not in result.problem
+
+
+def test_job_pod_that_failed_once_does_not_say_keeps_exiting():
+    container = {"state": {"terminated": {"reason": "Error", "exit_code": 1}}, "restart_count": 0}
+    result = classify(make_view(container, pod={"phase": "Failed"}))
+    assert result.failure_type is FailureType.CRASH_LOOP
+    assert "exited and was not restarted: exit code 1 (Error)" in result.problem
+    assert "keeps" not in result.problem
+
+
+def test_container_that_exits_repeatedly_still_keeps_exiting():
+    container = {"state": {"terminated": {"reason": "Error", "exit_code": 1}}, "restart_count": 4}
+    assert "keeps exiting" in classify(make_view(container)).problem

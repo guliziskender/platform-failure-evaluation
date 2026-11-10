@@ -14,6 +14,7 @@ from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlsplit
 
 import yaml
 
@@ -65,10 +66,12 @@ class Settings:
 
         path = config_path(env)
         found = path if path.is_file() else None
-        if "PFA_CONFIG" in env and found is None:
+        if env.get("PFA_CONFIG", "").strip() and found is None:
             raise ConfigError(f"PFA_CONFIG points to {path}, which does not exist.")
         if found is not None:
             for name, raw in _read_file(found).items():
+                if raw is None:  # `model:` with no value means not set, like PFA_MODEL=""
+                    continue
                 values[name] = _convert(name, raw, f"{found}: {name}")
                 sources[name] = "config file"
 
@@ -98,6 +101,14 @@ def _text(value: Any) -> str:
     if not isinstance(value, str) or not value.strip():
         raise ValueError("expected a non-empty string")
     return value.strip()
+
+
+def _url(value: Any) -> str:
+    url = _text(value).rstrip("/")
+    parts = urlsplit(url)
+    if parts.scheme not in ("http", "https") or not parts.hostname:
+        raise ValueError("expected an http(s) URL such as http://localhost:11434")
+    return url
 
 
 def _provider(value: Any) -> str | None:
@@ -140,7 +151,7 @@ OPTIONS: dict[str, _Option] = {
         "PFA_SEND_DATA", _bool, "allow sending redacted evidence off this machine"
     ),
     "anthropic_api_key": _Option("ANTHROPIC_API_KEY", _text, "Anthropic API key"),
-    "ollama_url": _Option("PFA_OLLAMA_URL", _text, "Ollama server URL"),
+    "ollama_url": _Option("PFA_OLLAMA_URL", _url, "Ollama server URL"),
     "llm_timeout": _Option("PFA_LLM_TIMEOUT", _positive(float), "seconds per AI call"),
     "prompt_budget_tokens": _Option(
         "PFA_PROMPT_BUDGET_TOKENS", _positive(int), "maximum prompt size in tokens"
@@ -167,8 +178,8 @@ def _convert(name: str, value: Any, where: str) -> Any:
 
 def config_path(env: Mapping[str, str] | None = None) -> Path:
     env = os.environ if env is None else env
-    if env.get("PFA_CONFIG"):
-        return Path(env["PFA_CONFIG"]).expanduser()
+    if env.get("PFA_CONFIG", "").strip():
+        return Path(env["PFA_CONFIG"].strip()).expanduser()
     base = Path(env.get("XDG_CONFIG_HOME") or Path.home() / ".config")
     return base / "pfa" / "config.yaml"
 

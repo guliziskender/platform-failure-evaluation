@@ -133,7 +133,11 @@ def _owner_chain(clients: KubeClients, pod: V1Pod, namespace: str) -> list[Owner
 
 
 def pick_pod(pods: list[V1Pod]) -> V1Pod | None:
-    """The most recently failing pod; ties go to the most restarts, then the newest pod."""
+    """The most recently failing pod; ties go to the most restarts, then the newest pod.
+
+    Terminating pods come last: right after a fix is rolled out, the old crashing pod lingers
+    while it shuts down, and diagnosing it would report a problem that is already gone.
+    """
     return max(pods, key=_pod_rank, default=None)
 
 
@@ -154,7 +158,8 @@ def _pod_rank(pod: V1Pod) -> tuple:
     last_failure = max((_last_failure(cs) for cs in statuses), default=_EPOCH)
     restarts = sum(cs.restart_count or 0 for cs in statuses)
     created = pod.metadata.creation_timestamp or _EPOCH
-    return (unhealthy, last_failure, restarts, created)
+    staying = pod.metadata.deletion_timestamp is None
+    return (staying, unhealthy, last_failure, restarts, created)
 
 
 def _container_rank(cs: V1ContainerStatus) -> tuple:

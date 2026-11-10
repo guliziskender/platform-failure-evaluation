@@ -31,6 +31,22 @@ def test_pick_pod_prefers_the_failing_one(oom_pod):
     assert pick_pod([]) is None
 
 
+def _terminating(data):
+    data["metadata"]["deletionTimestamp"] = "2026-10-09T11:45:00Z"
+
+
+def test_pick_pod_skips_a_failing_pod_that_is_shutting_down():
+    # After a fix rolls out: the old pod still crash-loops while it terminates.
+    old = pod("oomkilled", _terminating)
+    new = pod("oomkilled", _healthy)
+    assert pick_pod([old, new]).metadata.name == "memhog-healthy"
+
+
+def test_pick_pod_uses_a_terminating_pod_when_there_is_nothing_else():
+    old = pod("oomkilled", _terminating)
+    assert pick_pod([old]) is old
+
+
 def test_pick_container_returns_crashing_container(oom_pod):
     assert pick_container(oom_pod) == "stress"
 
