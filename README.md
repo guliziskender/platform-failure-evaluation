@@ -165,12 +165,10 @@ Current results (2026-11-10):
 | Answered by | Evidence | Correct | Confident and wrong | Seconds per case |
 | --- | --- | --- | --- | --- |
 | rules (`--no-llm`) | replay and live | 15/15 | 0 | instant |
-| claude-opus-5-5 | replay | 15/15 | 0 | 6 to 10 |
-| claude-opus-5-5 | live | 14/15 * | 1 * | 6 to 11 |
+| claude-opus-5-5 | replay and live | 15/15 | 0 | 6 to 14 |
 
-\* Scored with an answer key that was too strict: the model wrote "resources.limits.memory is
-128Mi", which is right, but the key wanted the words "memory limit". The key was widened and the
-replay run repeated; the live run was not repeated.
+Earlier 14/15 runs in the history are real records, not noise: one came from a too-strict answer
+key, and one live run found a bug in pfa's event collection (see `docs/log.md`, 2026-11-10).
 
 The rules were tuned with these cases in view, so a perfect score here says less than a score on
 cases nobody has tuned against. The model was not tuned on them. Every real failure is a

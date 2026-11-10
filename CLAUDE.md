@@ -65,7 +65,8 @@ uv run ruff check . && uv run ruff format .
   the two can differ: check both.
 - `src/pfa/view.py`: `EvidenceView`, the accessors classifier and rules use. They work only on
   evidence summaries, never live API objects, so saved evidence replays identically.
-- `src/pfa/collectors/`: deterministic evidence: `k8s_state`, `k8s_events`, `logs`.
+- `src/pfa/collectors/`: deterministic evidence: `k8s_state`, `k8s_events`, `logs`. Events keep
+  the target pod's own events at any age; only owner events are cut to the time window.
 - `lab/`: broken-pod lab, three cases per failure type (`cases/<id>/manifest.yaml` + `expected.yaml`
   ground truth). `lab/lab.py` writes to the cluster, so it is deliberately not part of `pfa`. It uses
   pfa's kube context for every kubectl call (`lab_context`), so lab and pfa see one cluster.

@@ -1,4 +1,11 @@
-"""Events for the pod and its owners, deduplicated, newest first."""
+"""Events for the pod and its owners, deduplicated, newest first.
+
+Owner events (ReplicaSet, Deployment) older than the window are dropped: they may be about an
+earlier problem. The pod's own events are kept whatever their age, because the kubelet stops
+updating them during a long failure. On a pod crash-looping for hours, the "Liveness probe
+failed" event was last updated 90 minutes before the BackOff event, and a 60-minute window had
+hidden the cause.
+"""
 
 from __future__ import annotations
 
@@ -43,7 +50,8 @@ class K8sEventsCollector:
                 if e.involved_object.kind == kind
             ]
 
-        events = dedupe_events(raw, since=datetime.now(UTC) - self.window)
+        pod = f"Pod/{target.pod}" if target.pod else None
+        events = dedupe_events(raw, since=datetime.now(UTC) - self.window, keep=pod)
         return Evidence(
             source=self.name,
             summary={
@@ -55,14 +63,17 @@ class K8sEventsCollector:
         )
 
 
-def dedupe_events(events: list[CoreV1Event], since: datetime) -> list[dict[str, Any]]:
-    """Merge repeats of the same (object, reason, message); drop events older than `since`."""
+def dedupe_events(
+    events: list[CoreV1Event], since: datetime, keep: str | None = None
+) -> list[dict[str, Any]]:
+    """Merge repeats of the same (object, reason, message); drop events older than `since`,
+    except those about object `keep` (the target pod, "Pod/<name>")."""
     merged: dict[tuple, dict[str, Any]] = {}
     for e in events:
         last = _last_seen(e)
-        if last is None or last < since:
-            continue
         obj = f"{e.involved_object.kind}/{e.involved_object.name}"
+        if last is None or (last < since and obj != keep):
+            continue
         key = (obj, e.reason, _NUMBERS.sub("#", e.message or ""))
         count = _count(e)
         first = e.first_timestamp or e.event_time or last

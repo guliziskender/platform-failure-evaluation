@@ -464,3 +464,30 @@ per case. The redacted lab evidence (fake data only) was sent to api.anthropic.c
 - The default hosted model stays claude-opus-5-5 (one of the plan's open decisions). No local
   model scored yet.
 
+## 2026-11-10: Live re-run found an event-window bug
+
+Goal: re-run the live Opus eval, which still showed the 14/15 from the too-strict answer key.
+
+**Result:** the old miss was gone, but a new one appeared: `probe-slow-start` answered as
+crash_loop_backoff instead of probe_failure. The model's cause and fix were right, and it said
+why it hedged: "No 'Unhealthy' probe events were included in the evidence."
+
+**Cause:** a bug in pfa, not the model. After hours of crash-looping, the pod's Unhealthy event
+was last updated at 18:11 while its BackOff event kept updating (19:38). The kubelet stops
+updating some events during a long failure, likely its per-object event rate limit. pfa kept
+only the last 60 minutes of events, so the probe evidence fell out, and the classifier and rules
+answered a plain crash with "no rule matched". The integration tests caught it too, once the lab
+had run long enough. It only showed on a live run against a lab that had been up for a week:
+snapshots and a freshly deployed lab both had recent events.
+
+**Fixed:** the target pod's own events are kept whatever their age. The window still applies to
+ReplicaSet and Deployment events, where an old event may be about an earlier problem. An old
+probe event cannot make a different crash look like a probe kill: the classifier also requires
+the current termination to be a kubelet kill (exit 137 or 143).
+
+**After:** claude-opus-5-5 15/15 on live and on replay; rules 15/15 on live. Without the fix,
+three integration tests fail on the long-running lab; with it, all pass.
+
+**Lesson:** a long-running lab is a test environment of its own. Events age, counts grow and
+the kubelet behaves differently than in the first minutes after `make lab-up`.
+

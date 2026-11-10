@@ -123,6 +123,34 @@ def test_events_outside_window_are_dropped():
     assert dedupe_events(_events(), since=datetime(2030, 1, 1, tzinfo=UTC)) == []
 
 
+def _event(kind: str, name: str, reason: str, message: str):
+    return to_k8s(
+        {
+            "metadata": {"name": "e", "namespace": "pfa-lab"},
+            "involvedObject": {"kind": kind, "name": name},
+            "reason": reason,
+            "type": "Warning",
+            "message": message,
+            "count": 1443,
+        },
+        "CoreV1Event",
+    )
+
+
+def test_old_events_of_the_pod_itself_are_kept():
+    # Seen live: after hours of crash-looping, the kubelet stopped updating the pod's Unhealthy
+    # event (last 18:11) while BackOff kept going (19:38). A 60-minute window hid the probe.
+    probe = _event("Pod", "ledger-api-1", "Unhealthy", "Liveness probe failed: refused")
+    old_rs = _event("ReplicaSet", "ledger-api", "FailedCreate", "quota exceeded")
+    for e in (probe, old_rs):
+        e.last_timestamp = e.first_timestamp = datetime(2026, 11, 10, 18, 11, 44, tzinfo=UTC)
+    since = datetime(2026, 11, 10, 18, 41, tzinfo=UTC)
+
+    kept = dedupe_events([probe, old_rs], since=since, keep="Pod/ledger-api-1")
+    assert [e["reason"] for e in kept] == ["Unhealthy"]  # the owner's old event still goes
+    assert dedupe_events([probe, old_rs], since=since) == []  # without `keep`: the old behaviour
+
+
 def test_events_collector_only_keeps_matching_kinds(oom_pod):
     core = FakeCore(events=_events())
     target = _target(oom_pod.metadata.name, owners=[OwnerRef(kind="Deployment", name="memhog")])
