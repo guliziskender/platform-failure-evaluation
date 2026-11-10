@@ -230,7 +230,7 @@ send_data: false
 # anthropic_api_key: sk-ant-...
 
 # ollama_url: http://localhost:11434
-# llm_timeout: 30                 # seconds per AI call
+# llm_timeout: 30                 # seconds per AI call (default 30; 120 for ollama)
 # prompt_budget_tokens: 6000
 
 # kube_context: my-cluster        # default: kubeconfig's current context

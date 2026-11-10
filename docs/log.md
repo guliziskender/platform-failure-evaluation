@@ -491,3 +491,32 @@ three integration tests fail on the long-running lab; with it, all pass.
 **Lesson:** a long-running lab is a test environment of its own. Events age, counts grow and
 the kubelet behaves differently than in the first minutes after `make lab-up`.
 
+## 2026-11-10: First local model scored (qwen3:8b via Ollama)
+
+Goal: score a local model next to Opus, for teams that will not send data out.
+
+**Setup:** Ollama 0.40 from Homebrew, qwen3:8b (5.2 GB), Apple M5 with 24 GB.
+
+**First result: 3/15 and 4/15, but not wrong answers.** 12 cases timed out and fell back to
+the rules; the eval counted them as "no answer", as designed. Every case it did answer was
+right. qwen3 is a thinking model: one diagnosis took 47 s (15 s with thinking off), over pfa's
+30 s timeout. pfa then retried the timed-out request twice, so each case waited 93 s before
+falling back.
+
+**Fixed**
+- Ollama timeouts are not retried. The model is still busy with the request, so a retry queues
+  behind it and times out too. Connection errors and 5xx are still retried. The error now says
+  to raise `llm_timeout`.
+- Ollama gets 120 s by default, since 30 s suits hosted APIs. An explicitly set `llm_timeout`
+  still wins.
+
+**Result:** qwen3:8b 15/15 on replay and live, 0 confident and wrong, 24 to 94 s per case (Opus:
+6 to 14 s). Thinking stays on: it is the model's default, and it was only measured off on one
+case.
+
+**Takeaways**
+- The "no answer" count kept a configuration problem from being read as "the local model is
+  bad". Without it, the first run would have looked like a 3/15 model.
+- On these 15 cases, an 8B local model matches Opus. They are clear-cut failures with the cause
+  in the evidence; harder cases are needed to tell models apart.
+

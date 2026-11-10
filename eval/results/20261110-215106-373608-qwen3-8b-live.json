@@ -1,0 +1,324 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-10T21:51:06.373608Z",
+  "answered_by": "qwen3:8b",
+  "evidence": "live",
+  "total": 15,
+  "correct": 15,
+  "type_correct": 15,
+  "cause_correct": 15,
+  "fix_correct": 15,
+  "confident_wrong": 0,
+  "errors": 0,
+  "results": [
+    {
+      "case": "crashloop-bad-command",
+      "expected": "crash_loop_backoff",
+      "answered": "crash_loop_backoff",
+      "confidence": "high",
+      "source": "llm",
+      "type_ok": true,
+      "cause_ok": true,
+      "fix_ok": true,
+      "correct": true,
+      "confident_wrong": false,
+      "missing": [],
+      "error": null,
+      "known_gap": null,
+      "seconds": 47.17,
+      "cause": "The container command (/app/payment-gateway --listen=:8443) does not exist in the busybox:1.36 image. Busybox is a minimal image that does not include custom binaries like payment-gateway by default.",
+      "fix": [
+        "Change the image to one that includes the payment-gateway binary (e.g., a custom built image or a different base image)",
+        "If using a minimal image, ensure the binary is explicitly included in the image"
+      ]
+    },
+    {
+      "case": "crashloop-init-migration",
+      "expected": "crash_loop_backoff",
+      "answered": "crash_loop_backoff",
+      "confidence": "high",
+      "source": "llm",
+      "type_ok": true,
+      "cause_ok": true,
+      "fix_ok": true,
+      "correct": true,
+      "confident_wrong": false,
+      "missing": [],
+      "error": null,
+      "known_gap": null,
+      "seconds": 42.17,
+      "cause": "The migrate init container failed because it tried to create a database index 'orders_idx' that already exists (log line: \"ERROR: relation \"orders_idx\" already exists\")",
+      "fix": [
+        "Check if the database schema already contains the 'orders_idx' index",
+        "Modify the migration script to skip creating the index if it exists"
+      ]
+    },
+    {
+      "case": "crashloop-missing-env",
+      "expected": "crash_loop_backoff",
+      "answered": "crash_loop_backoff",
+      "confidence": "high",
+      "source": "llm",
+      "type_ok": true,
+      "cause_ok": true,
+      "fix_ok": true,
+      "correct": true,
+      "confident_wrong": false,
+      "missing": [],
+      "error": null,
+      "known_gap": null,
+      "seconds": 25.59,
+      "cause": "App exits with code 1 because \"FATAL: required environment variable DATABASE_URL is not set\" (log line) - DB_USER and DB_PASSWORD are present but DATABASE_URL is missing",
+      "fix": [
+        "Add DATABASE_URL to container's env from Secret",
+        "Roll out deployment"
+      ]
+    },
+    {
+      "case": "imagepull-bad-tag",
+      "expected": "image_pull_backoff",
+      "answered": "image_pull_backoff",
+      "confidence": "high",
+      "source": "llm",
+      "type_ok": true,
+      "cause_ok": true,
+      "fix_ok": true,
+      "correct": true,
+      "confident_wrong": false,
+      "missing": [],
+      "error": null,
+      "known_gap": null,
+      "seconds": 39.82,
+      "cause": "The registry answers 'not found' for image 'busybox:1.36.1-uclbic': the image does not exist. The tag '1.36.1-uclbic' (or repository name) is wrong, or that version was never pushed.",
+      "fix": [
+        "Correct the image tag in the workload's container image field to a valid tag (e.g., 'busybox:latest' or a known tag from the registry)",
+        "Roll out the updated deployment"
+      ]
+    },
+    {
+      "case": "imagepull-invalid-name",
+      "expected": "image_pull_backoff",
+      "answered": "image_pull_backoff",
+      "confidence": "high",
+      "source": "llm",
+      "type_ok": true,
+      "cause_ok": true,
+      "fix_ok": true,
+      "correct": true,
+      "confident_wrong": false,
+      "missing": [],
+      "error": null,
+      "known_gap": null,
+      "seconds": 37.73,
+      "cause": "The image reference 'busybox:1.36:latest' is invalid syntax (e.g. uppercase letters, spaces, or empty variable substitution).",
+      "fix": [
+        "Update the image field in the deployment's container spec to use lowercase and proper format: registry/repository:tag",
+        "Example: Change 'busybox:1.36:latest' to 'busybox:1.36' or 'busybox:latest'"
+      ]
+    },
+    {
+      "case": "imagepull-unknown-registry",
+      "expected": "image_pull_backoff",
+      "answered": "image_pull_backoff",
+      "confidence": "medium",
+      "source": "llm",
+      "type_ok": true,
+      "cause_ok": true,
+      "fix_ok": true,
+      "correct": true,
+      "confident_wrong": false,
+      "missing": [],
+      "error": null,
+      "known_gap": null,
+      "seconds": 43.51,
+      "cause": "The registry mirror 'registry-mirror:1273' returned 500 Internal Server Error when trying to fetch 'registry.pfa-lab.invalid/billing/ui:3.2.0', indicating the mirror cannot reach the upstream registry or it is misconfigured.",
+      "fix": [
+        "Verify the registry hostname 'registry.pfa-lab.invalid' is correct and reachable from the mirror node",
+        "Check the mirror's upstream configuration and logs for connectivity issues to 'registry.pfa-lab.invalid'"
+      ]
+    },
+    {
+      "case": "oomkilled-growing-cache",
+      "expected": "oom_killed",
+      "answered": "oom_killed",
+      "confidence": "high",
+      "source": "llm",
+      "type_ok": true,
+      "cause_ok": true,
+      "fix_ok": true,
+      "correct": true,
+      "confident_wrong": false,
+      "missing": [],
+      "error": null,
+      "known_gap": null,
+      "seconds": 43.14,
+      "cause": "The stress command uses --vm-bytes 300M which exceeds the 200Mi memory limit, causing the kernel to kill the container. Exit code 137 (OOMKilled) confirms this.",
+      "fix": [
+        "Set resources.limits.memory to at least 300Mi in the StatefulSet's container spec (e.g., 448Mi as suggested)."
+      ]
+    },
+    {
+      "case": "oomkilled-low-limit",
+      "expected": "oom_killed",
+      "answered": "oom_killed",
+      "confidence": "high",
+      "source": "llm",
+      "type_ok": true,
+      "cause_ok": true,
+      "fix_ok": true,
+      "correct": true,
+      "confident_wrong": false,
+      "missing": [],
+      "error": null,
+      "known_gap": null,
+      "seconds": 38.8,
+      "cause": "The process needs more memory than its 128Mi memory limit, so the kernel kills it each time it reaches the limit. The app is explicitly loading 250MB of data into memory via stress --vm-bytes 250M.",
+      "fix": [
+        "Set resources.limits.memory to 256Mi or higher in the deployment YAML to accommodate the 250MB workload"
+      ]
+    },
+    {
+      "case": "oomkilled-sidecar",
+      "expected": "oom_killed",
+      "answered": "oom_killed",
+      "confidence": "high",
+      "source": "llm",
+      "type_ok": true,
+      "cause_ok": true,
+      "fix_ok": true,
+      "correct": true,
+      "confident_wrong": false,
+      "missing": [],
+      "error": null,
+      "known_gap": null,
+      "seconds": 44.95,
+      "cause": "The stress command uses 200MB of memory (\"--vm-bytes 200M\") but the container's memory limit is 64Mi. The kernel kills the container when it exceeds its memory limit.",
+      "fix": [
+        "Set resources.limits.memory to at least 200Mi in the deployment's container configuration",
+        "Verify if the 200MB memory usage is necessary; reduce if possible"
+      ]
+    },
+    {
+      "case": "pending-cpu-units",
+      "expected": "pending",
+      "answered": "pending",
+      "confidence": "high",
+      "source": "llm",
+      "type_ok": true,
+      "cause_ok": true,
+      "fix_ok": true,
+      "correct": true,
+      "confident_wrong": false,
+      "missing": [],
+      "error": null,
+      "known_gap": null,
+      "seconds": 33.4,
+      "cause": "The pod requests 4000 CPU cores (4k) but the node only has 1 core available. Kubernetes interprets '4k' as 4000 whole cores, not 4 cores (4000m).",
+      "fix": [
+        "Update the CPU request to '4000m' in the container's resources section"
+      ]
+    },
+    {
+      "case": "pending-missing-configmap",
+      "expected": "pending",
+      "answered": "pending",
+      "confidence": "high",
+      "source": "llm",
+      "type_ok": true,
+      "cause_ok": true,
+      "fix_ok": true,
+      "correct": true,
+      "confident_wrong": false,
+      "missing": [],
+      "error": null,
+      "known_gap": null,
+      "seconds": 34.14,
+      "cause": "The pod mounts configmap \"email-templates\" which does not exist in the namespace (event: FailedMount x987: MountVolume.SetUp failed for volume \"templates\" : configmap \"email-templates\" not found)",
+      "fix": [
+        "Create the missing configmap: kubectl create configmap email-templates --from-file=templates -n pfa-lab",
+        "Or verify/fix the configmap name in the pod's volumes configuration"
+      ]
+    },
+    {
+      "case": "pending-node-selector",
+      "expected": "pending",
+      "answered": "pending",
+      "confidence": "high",
+      "source": "llm",
+      "type_ok": true,
+      "cause_ok": true,
+      "fix_ok": true,
+      "correct": true,
+      "confident_wrong": false,
+      "missing": [],
+      "error": null,
+      "known_gap": null,
+      "seconds": 28.98,
+      "cause": "The pod's nodeSelector {'hardware': 'gpu-a100'} matches no nodes (event: \"0/1 nodes are available: 1 node(s) didn't match Pod's node affinity/selector\")",
+      "fix": [
+        "kubectl get nodes --show-labels"
+      ]
+    },
+    {
+      "case": "probe-readiness-404",
+      "expected": "probe_failure",
+      "answered": "probe_failure",
+      "confidence": "high",
+      "source": "llm",
+      "type_ok": true,
+      "cause_ok": true,
+      "fix_ok": true,
+      "correct": true,
+      "confident_wrong": false,
+      "missing": [],
+      "error": null,
+      "known_gap": null,
+      "seconds": 36.52,
+      "cause": "The readiness probe requests path /ready (as configured in probes.readiness.http_get), but the app only serves health checks at /healthz (log line: \"catalog-api listening on :80, health at /healthz\")",
+      "fix": [
+        "Update readiness probe path to /healthz: set probes.readiness.http_get to HTTP /healthz port=http"
+      ]
+    },
+    {
+      "case": "probe-slow-start",
+      "expected": "probe_failure",
+      "answered": "probe_failure",
+      "confidence": "medium",
+      "source": "llm",
+      "type_ok": true,
+      "cause_ok": true,
+      "fix_ok": true,
+      "correct": true,
+      "confident_wrong": false,
+      "missing": [],
+      "error": null,
+      "known_gap": null,
+      "seconds": 92.87,
+      "cause": "The liveness probe checks http://10.244.0.16:80/healthz (port 80) but the app's healthz endpoint isn't available yet. The container's command shows it sleeps 45 seconds before starting httpd, but the probe starts checking after only 2 seconds (initialDelaySeconds=2).",
+      "fix": [
+        "Set initialDelaySeconds=45 in the liveness probe configuration to match the app's startup delay",
+        "Add a startupProbe with httpGet to /healthz and port 80 to ensure the probe waits until the app is ready"
+      ]
+    },
+    {
+      "case": "probe-wrong-port",
+      "expected": "probe_failure",
+      "answered": "probe_failure",
+      "confidence": "high",
+      "source": "llm",
+      "type_ok": true,
+      "cause_ok": true,
+      "fix_ok": true,
+      "correct": true,
+      "confident_wrong": false,
+      "missing": [],
+      "error": null,
+      "known_gap": null,
+      "seconds": 55.14,
+      "cause": "The liveness probe checks http://10.244.0.12:8080/healthz (port 8080), but the container only declares http=80/TCP and the app listens on port 80 (log line: \"inventory-api listening on :80\").",
+      "fix": [
+        "Update the liveness probe's port to 80: change \"http_get\": \"HTTP /healthz port=8080\" to \"http_get\": \"HTTP /healthz port=80\" in the StatefulSet spec"
+      ]
+    }
+  ]
+}

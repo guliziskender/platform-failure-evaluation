@@ -38,13 +38,14 @@ def make_provider(settings: Settings) -> LLMProvider | None:
         )
 
     if settings.provider == "ollama":
-        from pfa.ai.providers.ollama import OllamaProvider, is_local
+        from pfa.ai.providers.ollama import DEFAULT_TIMEOUT, OllamaProvider, is_local
 
         if not is_local(settings.ollama_url):
             _require_send_data(settings, settings.ollama_url)
-        return OllamaProvider(
-            model=settings.model, url=settings.ollama_url, timeout=settings.llm_timeout
-        )
+        timeout = settings.llm_timeout
+        if settings.source("llm_timeout") == "default":
+            timeout = DEFAULT_TIMEOUT  # local models are slow; 30 s suits hosted APIs
+        return OllamaProvider(model=settings.model, url=settings.ollama_url, timeout=timeout)
 
     raise ProviderConfigError(
         f"unknown provider {settings.provider!r}; use one of: {', '.join(PROVIDERS)}."

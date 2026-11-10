@@ -133,6 +133,22 @@ def test_ollama_missing_model_says_how_to_fix():
         provider.complete("s", "u", {})
 
 
+def test_ollama_timeout_is_not_retried():
+    # A local model that times out is still busy with the request: retrying only triples the
+    # wait before the rules fallback.
+    request = httpx.Request("POST", "http://localhost:11434/api/chat")
+    provider, seen = _ollama(httpx.ReadTimeout("slow", request=request), _chat("{}"))
+    with pytest.raises(ProviderError, match="did not answer within .* raise llm_timeout"):
+        provider.complete("s", "u", {})
+    assert len(seen) == 1
+
+
+def test_ollama_gets_a_longer_timeout_unless_one_is_set():
+    assert make_provider(Settings(provider="ollama")).client.timeout.read == 120
+    explicit = Settings(provider="ollama", llm_timeout=45, sources={"llm_timeout": "env"})
+    assert make_provider(explicit).client.timeout.read == 45
+
+
 def test_ollama_not_running():
     request = httpx.Request("POST", "http://localhost:11434/api/chat")
     errors = [httpx.ConnectError("refused", request=request)] * 3

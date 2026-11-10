@@ -100,7 +100,7 @@ send_data: true
 | `send_data` | `PFA_SEND_DATA` | `--send-data` / `--no-send-data` | off |
 | `anthropic_api_key` | `ANTHROPIC_API_KEY` | | prefer the env var; a key in the file needs `chmod 600` |
 | `ollama_url` | `PFA_OLLAMA_URL` | | `http://localhost:11434` |
-| `llm_timeout` | `PFA_LLM_TIMEOUT` | | 30 s per AI call (rate limits and 5xx retried twice) |
+| `llm_timeout` | `PFA_LLM_TIMEOUT` | | 30 s per AI call, 120 s for Ollama (rate limits and 5xx retried twice; timeouts are not retried for Ollama) |
 | `prompt_budget_tokens` | `PFA_PROMPT_BUDGET_TOKENS` | | 6000 |
 | `kube_context` | `PFA_KUBE_CONTEXT` | `--context` | kubeconfig's current context |
 | `api_timeout` | `PFA_API_TIMEOUT` | | 10 s per Kubernetes call |
@@ -166,9 +166,14 @@ Current results (2026-11-10):
 | --- | --- | --- | --- | --- |
 | rules (`--no-llm`) | replay and live | 15/15 | 0 | instant |
 | claude-opus-5-5 | replay and live | 15/15 | 0 | 6 to 14 |
+| qwen3:8b via Ollama (local, Apple M5, 24 GB) | replay and live | 15/15 | 0 | 24 to 94 |
 
-Earlier 14/15 runs in the history are real records, not noise: one came from a too-strict answer
-key, and one live run found a bug in pfa's event collection (see `docs/log.md`, 2026-11-10).
+Earlier lower runs in the history are real records, not noise: an Opus 14/15 came from a
+too-strict answer key, another from a bug in pfa's event collection, and qwen3:8b's 3/15 and 4/15
+were timeouts, not wrong answers (see `docs/log.md`, 2026-11-10).
+
+The local model matches the hosted one on these cases, but is 5 to 10 times slower, and nothing
+leaves the machine. These cases are clear-cut; harder or noisier failures may separate them.
 
 The rules were tuned with these cases in view, so a perfect score here says less than a score on
 cases nobody has tuned against. The model was not tuned on them. Every real failure is a

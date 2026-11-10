@@ -12,6 +12,9 @@ from pfa.ai.providers.base import ProviderError
 
 DEFAULT_MODEL = "qwen3:8b"
 _RETRY_STATUS = {429, 500, 502, 503, 504}
+# A local model on a laptop needs far longer than a hosted API: qwen3:8b with thinking took
+# 47 s for one diagnosis on an M5. Used unless llm_timeout is set explicitly.
+DEFAULT_TIMEOUT = 120.0
 _LOCAL_HOSTS = {"localhost", "127.0.0.1", "::1"}
 
 
@@ -26,7 +29,7 @@ class OllamaProvider:
         self,
         model: str | None = None,
         url: str = "http://localhost:11434",
-        timeout: float = 30.0,
+        timeout: float = DEFAULT_TIMEOUT,
         max_retries: int = 2,
         client: httpx.Client | None = None,
         backoff: float = 1.0,
@@ -55,8 +58,12 @@ class OllamaProvider:
             try:
                 response = self.client.post(f"{self.url}/api/chat", json=body)
             except httpx.TimeoutException as exc:
-                if last:
-                    raise ProviderError(f"Ollama at {self.url} timed out") from exc
+                # No retry: the model is still busy with this request, and a retry would queue
+                # behind it and time out too (30 s became 93 s before falling back).
+                raise ProviderError(
+                    f"Ollama at {self.url} did not answer within {self.client.timeout.read:.0f} s; "
+                    "raise llm_timeout (PFA_LLM_TIMEOUT) for slower models"
+                ) from exc
             except httpx.TransportError as exc:
                 if last:
                     raise ProviderError(f"cannot reach Ollama at {self.url}: {exc}") from exc
