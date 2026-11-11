@@ -2,5 +2,5 @@ apiVersion: v2
 name: pfa
 description: Platform Failure Assistant. Diagnoses failing pods with read-only cluster access.
 type: application
-version: 0.1.0
-appVersion: "0.1.0"
+version: 0.2.0
+appVersion: "0.2.0"
