@@ -606,5 +606,9 @@ on saved and live evidence, 0 confident and wrong. The image is public (anonymou
 - Publish only after the kind job passes, so a published image has been installed by Helm and
   diagnosed the lab from inside a cluster.
 
-**Not done:** the `v0.1.0` tag (the first versioned image and the chart) is waiting on approval;
-the docs already point at it. No NetworkPolicy yet. Not yet installed on a real cluster.
+- Released `v0.1.0`: the tag's run published `pfa:0.1.0` and the chart. Checked as a stranger
+  would: anonymous pulls of both work, and the guide's `helm install
+  oci://ghcr.io/guliziskender/charts/pfa --version 0.1.0` on Docker Desktop ran
+  `ghcr.io/guliziskender/pfa:0.1.0` and diagnosed a lab case from inside.
+
+**Not done:** no NetworkPolicy yet. Not yet installed on a real cluster (milestone 4).
