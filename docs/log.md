@@ -575,3 +575,36 @@ Goal: install pfa into someone else's cluster safely.
 445 MB. The chart has only been installed on Docker Desktop's cluster, not yet on kind or a
 real one.
 
+
+## 2026-11-11: CI and published image
+
+**Done**
+- `.github/workflows/ci.yml`, three jobs:
+  - `checks`: ruff, `helm lint`, unit tests (including the chart's RBAC tests) and the rules eval
+    on saved evidence with `--fail-under 100`. About 20 s.
+  - `cluster`: a kind cluster, the lab, the integration and Helm install tests, and the rules eval
+    on live evidence, again at 100%. About 2 min. This is the chart's first install outside
+    Docker Desktop.
+  - `publish`, after both pass on a push: a linux/amd64 and linux/arm64 image to
+    `ghcr.io/guliziskender/pfa` (`:edge` and `:sha-…` from master; `:<version>` from a tag).
+    On a `v*` tag it also pushes the chart to `oci://ghcr.io/guliziskender/charts`, and refuses a
+    tag that differs from the pyproject, Chart `version` or `appVersion` version.
+- The integration tests skip when there is no cluster, which is right on a laptop and wrong in
+  CI: a broken setup would be a green run that tested nothing. With `REQUIRE_CLUSTER=1` (set in
+  CI) a skip becomes a failure (`tests/integration/require.py`).
+- The chart's default image is now `ghcr.io/guliziskender/pfa:<appVersion>`. A unit test checks
+  that the three versions match and that the default image is the published one.
+- The install guide and README install from the published chart; building your own image is
+  the air-gapped option.
+
+**Results:** first run green: 487 unit tests, 48 integration and Helm tests (none skipped), 15/15
+on saved and live evidence, 0 confident and wrong. The image is public (anonymous pull works).
+
+**Decisions**
+- Image size not reduced: 445 MB unpacked is 72 MB to pull, and most of it is the official
+  kubernetes client's generated models. Not worth a custom client.
+- Publish only after the kind job passes, so a published image has been installed by Helm and
+  diagnosed the lab from inside a cluster.
+
+**Not done:** the `v0.1.0` tag (the first versioned image and the chart) is waiting on approval;
+the docs already point at it. No NetworkPolicy yet. Not yet installed on a real cluster.
