@@ -90,10 +90,23 @@ def analyze(target: Target, evidence: list[Evidence]) -> Report:
     view = EvidenceView(target, evidence)
     classification = classify(view)
     hits = run_rules(view, classification)
+    others = []  # (container label, its best hit) for each other failing container
+    for name in target.also_failing:
+        other = EvidenceView(target.model_copy(update={"container": name}), evidence)
+        other_hits = run_rules(other, classification)
+        if other_hits and other_hits[0].failure_type is classification.failure_type:
+            others.append((other.container_label, other_hits[0]))
+    # The other containers' findings are hints for the AI too, named by container: given only
+    # the first container's, a model trusts them and misses the second failure.
+    hints = hits + [
+        h.model_copy(update={"finding": f"{label[:1].upper()}{label[1:]}: {h.finding}"})
+        for label, h in others
+        if h.cause not in {x.cause for x in hits}
+    ]
     return Report(
         target=target,
         classification=classification,
-        rule_hits=hits,
-        diagnosis=answer_from_rules(classification, hits),
+        rule_hits=hints,
+        diagnosis=answer_from_rules(classification, hits, view.container_label, others),
         evidence=evidence,
     )

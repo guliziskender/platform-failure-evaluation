@@ -77,6 +77,7 @@ _RESOURCE = {
     "deployment": "deployments",
     "replica_set": "replicasets",
     "stateful_set": "statefulsets",
+    "persistent_volume_claim": "persistentvolumeclaims",
 }
 
 

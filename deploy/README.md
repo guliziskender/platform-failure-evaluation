@@ -9,10 +9,11 @@ The chart creates a ClusterRole (or a Role per namespace, see below) with exactl
 
 | API group | Resources | Verbs |
 | --- | --- | --- |
-| core | `pods`, `pods/log`, `events` | get, list, watch |
+| core | `pods`, `pods/log`, `events`, `persistentvolumeclaims` | get, list, watch |
 | apps | `deployments`, `replicasets`, `statefulsets` | get, list, watch |
 
-No Secrets, no ConfigMaps, no exec, no writes of any kind. pfa reads container env var
+No Secrets, no ConfigMaps, no exec, no writes of any kind. Volume claims are read only for the
+claims a diagnosed pod mounts, because why a claim does not bind is recorded on the claim. pfa reads container env var
 *names* from pod specs, never their values. `tests/test_helm.py` checks this list against every
 Kubernetes API call in pfa's source, and `make test-helm` asks a live API server
 (`kubectl auth can-i`) what the service account can and cannot do.

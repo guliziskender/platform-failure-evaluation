@@ -5,6 +5,7 @@
     "kind": "deployment",
     "pod": "ml-trainer-8558d584bb-c7vtm",
     "container": "trainer",
+    "also_failing": [],
     "owners": [
       {
         "kind": "ReplicaSet",
@@ -73,14 +74,17 @@
                   "cpu": "4k",
                   "memory": "256Mi"
                 }
-              }
+              },
+              "mounts": [
+                "/var/run/secrets/kubernetes.io/serviceaccount"
+              ]
             }
           ]
         }
       },
       "raw_excerpt": null,
       "error": null,
-      "collected_at": "2026-11-11T14:31:51.060980Z",
+      "collected_at": "2026-11-11T14:57:05.862234Z",
       "redacted": true,
       "redactions": {}
     },
@@ -108,7 +112,7 @@
       },
       "raw_excerpt": null,
       "error": null,
-      "collected_at": "2026-11-11T14:31:51.062362Z",
+      "collected_at": "2026-11-11T14:57:05.864885Z",
       "redacted": true,
       "redactions": {}
     },
@@ -129,7 +133,7 @@
       },
       "raw_excerpt": null,
       "error": null,
-      "collected_at": "2026-11-11T14:31:51.060776Z",
+      "collected_at": "2026-11-11T14:57:05.862764Z",
       "redacted": true,
       "redactions": {}
     }

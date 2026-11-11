@@ -436,3 +436,219 @@ def test_crash_log_rule_names_a_failing_init_container():
     assert hit.rule == "crash_log_error"
     assert hit.cause.startswith("Init container app fails, so the app containers never start")
     assert "already exists" in hit.cause
+
+
+# --- found by the hard eval cases (lab/cases/*, difficulty: hard) ------------------------------
+
+
+def test_crash_log_error_takes_the_most_severe_line_not_the_last():
+    logs = (
+        'level=error msg="cache: connection refused" fallback=in-memory\n'
+        'level=fatal msg="config: PORT_RANGE is invalid"\n'
+        'level=error msg="metrics: flush failed during shutdown"\n'
+    )
+    hit = rules.crash_log_error(make_view(crashed(1), logs=logs))
+    assert "config: PORT_RANGE is invalid" in hit.cause
+    assert "metrics" not in hit.cause
+    assert hit.certainty == "low"  # PORT_RANGE is not set on the container: just a pointer
+
+
+def test_crash_log_error_names_an_env_var_whose_value_is_rejected():
+    container = {**crashed(1), "env_names": ["MAX_CONNECTIONS", "LOG_LEVEL"]}
+    logs = 'level=fatal msg="config: MAX_CONNECTIONS=\\"ten\\" is not an integer"\n'
+    hit = rules.crash_log_error(make_view(container, logs=logs))
+    assert hit.certainty == "medium"
+    assert "MAX_CONNECTIONS, which the container sets" in hit.cause
+    assert "value of MAX_CONNECTIONS" in hit.fix[0]
+
+
+@pytest.mark.parametrize(
+    ("line", "host"),
+    [
+        ("dial tcp: lookup orders-db on 10.96.0.10:53: no such host", "orders-db"),
+        ("lookup inventory-db: no such host", "inventory-db"),
+        ("Error: getaddrinfo ENOTFOUND payments.internal", "payments.internal"),
+        ("java.net.UnknownHostException: kafka-0.kafka", "kafka-0.kafka"),
+        ('could not translate host name "pg.prod.svc" to address: Name', "pg.prod.svc"),
+        ("nslookup: can't resolve 'redis'", "redis"),
+        ("socket.gaierror: redis-master:6379: Name or service not known", "redis-master"),
+    ],
+)
+def test_dns_failures_in_common_spellings(line, host):
+    assert rules.dns_failures(f"starting\n{line}\n") == [(host, line)]
+
+
+def test_dns_failures_ignore_other_connection_errors():
+    assert rules.dns_failures("dial tcp 10.0.0.5:5432: connect: connection refused") == []
+
+
+def test_crash_dns_lookup_names_the_missing_service():
+    logs = "FATAL: db: dial tcp: lookup orders-db on 10.96.0.10:53: no such host\n"
+    hit = rules.crash_dns_lookup_failed(make_view(crashed(1), logs=logs))
+    assert hit.certainty == "medium"  # the lookup fails for sure; why is not visible
+    assert "no Service named orders-db in namespace default" in hit.cause
+    assert "kubectl get svc orders-db -n default" in hit.fix[0]
+
+
+def test_crash_dns_lookup_of_an_external_name_is_not_called_a_service():
+    logs = "Error: getaddrinfo ENOTFOUND api.stripe.example\n"
+    hit = rules.crash_dns_lookup_failed(make_view(crashed(1), logs=logs))
+    assert "Service" not in hit.cause
+    assert "api.stripe.example" in hit.fix[0]
+
+
+def test_crash_missing_file_with_nothing_mounted():
+    logs = "error: open /etc/cart/worker.yaml: no such file or directory\n"
+    hit = rules.crash_missing_file(make_view(crashed(2), logs=logs))
+    assert "nothing is mounted at /etc/cart" in hit.cause
+    assert "/etc/cart/worker.yaml" in hit.fix[0]
+
+
+def test_crash_missing_file_inside_a_mounted_volume_blames_the_key():
+    container = {**crashed(2), "mounts": ["/etc/cart"]}
+    logs = "FileNotFoundError: [Errno 2] No such file or directory: '/etc/cart/worker.yaml'\n"
+    hit = rules.crash_missing_file(make_view(container, logs=logs))
+    assert "mounted at /etc/cart, but it has no worker.yaml" in hit.cause
+
+
+def _unhealthy(message, count, last_seen):
+    return {"reason": "Unhealthy", "message": message, "count": count, "last_seen": last_seen}
+
+
+def test_probe_rules_use_the_current_failure_not_the_first():
+    # Connection refused while httpd started (once, early), then 503 ever since.
+    container = {
+        "ready": False,
+        "ports": ["http=80/TCP"],
+        "probes": {"readiness": {"http_get": "GET /ready port=http"}},
+    }
+    events = [
+        _unhealthy(
+            "Readiness probe failed: dial tcp 10.0.0.9:80: connect: connection refused",
+            1,
+            "2026-11-11T10:00:01+00:00",
+        ),
+        _unhealthy(
+            "Readiness probe failed: HTTP probe failed with statuscode: 503",
+            40,
+            "2026-11-11T10:05:00+00:00",
+        ),
+    ]
+    view = make_view(container, events=events)
+    assert rules.probe_app_not_listening(view) is None
+    assert "503" in rules.probe_http_status(view).finding
+
+
+def test_probe_5xx_with_a_failed_lookup_says_the_probe_is_right():
+    container = {"ready": False, "probes": {"readiness": {"http_get": "GET /ready port=80"}}}
+    events = [
+        _unhealthy(
+            "Readiness probe failed: HTTP probe failed with statuscode: 503",
+            9,
+            "2026-11-11T10:05:00+00:00",
+        )
+    ]
+    logs = "readiness: database inventory-db:5432 unreachable: lookup inventory-db: no such host\n"
+    hit = rules.probe_http_status(make_view(container, events=events, logs=logs))
+    assert "not because the probe is wrong" in hit.cause
+    assert "inventory-db" in hit.fix[1]
+    assert "Leave the probe" in hit.fix[-1]
+
+
+_UNBOUND = {
+    "reason": "FailedScheduling",
+    "message": "0/1 nodes are available: pod has unbound immediate PersistentVolumeClaims.",
+}
+
+
+def _pvc_view(claims):
+    return make_view(
+        {"state": {}}, pod={"phase": "Pending", "pvcs": ["data"]}, events=[_UNBOUND], claims=claims
+    )
+
+
+def test_pending_pvc_names_the_missing_storage_class():
+    claims = [
+        {
+            "name": "data",
+            "phase": "Pending",
+            "storage_class": "fast-ssd",
+            "events": [
+                {
+                    "reason": "ProvisioningFailed",
+                    "message": 'storageclass.storage.k8s.io "fast-ssd" not found',
+                }
+            ],
+        }
+    ]
+    hit = rules.pending_pvc(_pvc_view(claims))
+    assert hit.certainty == "high"
+    assert "storageClassName fast-ssd, which does not exist" in hit.cause
+
+
+def test_pending_pvc_missing_claim_is_high():
+    hit = rules.pending_pvc(_pvc_view([{"name": "data", "missing": True}]))
+    assert hit.certainty == "high"
+    assert "PersistentVolumeClaim data, which does not exist in namespace default" in hit.cause
+
+
+def test_pending_pvc_other_provisioning_failure_is_quoted_at_medium():
+    claims = [
+        {
+            "name": "data",
+            "phase": "Pending",
+            "storage_class": "ebs",
+            "events": [
+                {
+                    "reason": "ProvisioningFailed",
+                    "message": "failed to provision volume: quota exceeded",
+                }
+            ],
+        }
+    ]
+    hit = rules.pending_pvc(_pvc_view(claims))
+    assert hit.certainty == "medium"
+    assert "quota exceeded" in hit.cause
+
+
+def test_pending_pvc_without_the_claim_is_only_medium():
+    # The pod's side alone is the symptom: claiming "high" here was confident and wrong.
+    hit = rules.pending_pvc(_pvc_view(None))
+    assert hit.certainty == "medium"
+    hit = rules.pending_pvc(_pvc_view([{"name": "data", "error": "403 Forbidden"}]))
+    assert hit.certainty == "medium"
+
+
+def _crash_hit(cause, certainty):
+    return rules._hit(
+        "r",
+        FailureType.CRASH_LOOP,
+        finding="f",
+        cause=cause,
+        fix=[f"fix {cause}"],
+        certainty=certainty,
+        evidence=[f"ev {cause}"],
+    )
+
+
+def test_answer_names_every_failing_container():
+    cls = Classification(failure_type=FailureType.CRASH_LOOP, problem="p")
+    d = rules.answer_from_rules(
+        cls,
+        [_crash_hit("A is unset.", "high")],
+        "container api",
+        [("container worker", _crash_hit("B is missing.", "medium"))],
+    )
+    assert d.likely_cause == (
+        "2 containers fail, for different reasons. Container api: A is unset. "
+        "Container worker: B is missing."
+    )
+    assert d.fix == ["Container api: fix A is unset.", "Container worker: fix B is missing."]
+    assert d.confidence == "medium"  # no more sure than its least sure part
+
+
+def test_answer_with_the_same_cause_twice_names_it_once():
+    cls = Classification(failure_type=FailureType.CRASH_LOOP, problem="p")
+    hit = _crash_hit("Same cause.", "high")
+    d = rules.answer_from_rules(cls, [hit], "container api", [("container worker", hit)])
+    assert d.likely_cause == "Same cause."

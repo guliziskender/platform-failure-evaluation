@@ -2,8 +2,6 @@
 workload: {kind: deployment, name: metrics-store}
 failure_type: pending
 difficulty: hard
-known_gap: >-
-  pfa reads only the pod's and its owners' events. The reason (StorageClass fast-ssd not found) is on the PersistentVolumeClaim, which pfa cannot read.
 trap: >-
   The pod only says it waits for its volume claim. The reason is on the claim, not the pod:
   its StorageClass fast-ssd does not exist, so no volume is ever provisioned.
@@ -17,4 +15,4 @@ fix: >-
   create fast-ssd. A claim's storageClassName cannot be edited, so recreate the claim.
 fix_keywords: [[fast-ssd, storageclass, storage class]]
 ready_when: {pod_condition_reason: Unschedulable}
-evidence_must_contain: ["metrics-data"]
+evidence_must_contain: ["metrics-data", "fast-ssd", "ProvisioningFailed"]

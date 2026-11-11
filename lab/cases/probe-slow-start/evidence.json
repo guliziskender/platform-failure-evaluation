@@ -5,6 +5,7 @@
     "kind": "deployment",
     "pod": "ledger-api-8d6995d7f-tx28s",
     "container": "api",
+    "also_failing": [],
     "owners": [
       {
         "kind": "ReplicaSet",
@@ -24,9 +25,9 @@
           "kind": "deployment",
           "name": "ledger-api",
           "replicas_desired": 1,
-          "replicas_ready": 1,
+          "replicas_ready": 0,
           "replicas_updated": 1,
-          "replicas_available": 1,
+          "replicas_available": 0,
           "generation": 1,
           "observed_generation": 1,
           "conditions": [
@@ -39,10 +40,10 @@
             },
             {
               "type": "Available",
-              "status": "True",
-              "reason": "MinimumReplicasAvailable",
-              "message": "Deployment has minimum availability.",
-              "last_update": "2026-11-11T14:31:41+00:00"
+              "status": "False",
+              "reason": "MinimumReplicasUnavailable",
+              "message": "Deployment does not have minimum availability.",
+              "last_update": "2026-11-11T14:52:21+00:00"
             }
           ]
         },
@@ -64,11 +65,15 @@
             },
             {
               "type": "Ready",
-              "status": "True"
+              "status": "False",
+              "reason": "ContainersNotReady",
+              "message": "containers with unready status: [api]"
             },
             {
               "type": "ContainersReady",
-              "status": "True"
+              "status": "False",
+              "reason": "ContainersNotReady",
+              "message": "containers with unready status: [api]"
             },
             {
               "type": "PodScheduled",
@@ -98,20 +103,24 @@
                   "failure_threshold": 2
                 }
               },
-              "ready": true,
-              "started": true,
-              "restart_count": 820,
+              "mounts": [
+                "/var/run/secrets/kubernetes.io/serviceaccount"
+              ],
+              "ready": false,
+              "started": false,
+              "restart_count": 827,
               "state": {
-                "running": {
-                  "started_at": "2026-11-11T14:31:41+00:00"
+                "waiting": {
+                  "reason": "CrashLoopBackOff",
+                  "message": "back-off 5m0s restarting failed container=api pod=ledger-api-8d6995d7f-tx28s_pfa-lab(0f46345f-b711-44cb-bba2-ef7a7570361d)"
                 }
               },
               "last_state": {
                 "terminated": {
                   "reason": "Error",
                   "exit_code": 137,
-                  "started_at": "2026-11-11T14:25:56+00:00",
-                  "finished_at": "2026-11-11T14:26:32+00:00"
+                  "started_at": "2026-11-11T14:51:44+00:00",
+                  "finished_at": "2026-11-11T14:52:20+00:00"
                 }
               },
               "image_id": "docker.io/library/busybox@sha256:73aaf090f3d85aa34ee199857f03fa3a95c8ede2ffd4cc2cdb5b94e566b11662"
@@ -121,7 +130,7 @@
       },
       "raw_excerpt": null,
       "error": null,
-      "collected_at": "2026-11-11T14:31:51.110939Z",
+      "collected_at": "2026-11-11T14:57:05.951326Z",
       "redacted": true,
       "redactions": {}
     },
@@ -134,25 +143,34 @@
           "ReplicaSet/ledger-api-8d6995d7f",
           "Deployment/ledger-api"
         ],
-        "total": 5,
+        "total": 4,
         "events": [
           {
             "type": "Warning",
             "reason": "Unhealthy",
             "object": "Pod/ledger-api-8d6995d7f-tx28s",
             "message": "Liveness probe failed: Get \"http://10.244.0.16:80/healthz\": dial tcp 10.244.0.16:80: connect: connection refused",
-            "count": 1641,
+            "count": 1655,
             "first_seen": "2026-11-02T15:26:43+00:00",
-            "last_seen": "2026-11-11T14:31:44+00:00"
+            "last_seen": "2026-11-11T14:51:47+00:00"
           },
           {
             "type": "Warning",
             "reason": "BackOff",
             "object": "Pod/ledger-api-8d6995d7f-tx28s",
             "message": "Back-off restarting failed container api in pod ledger-api-8d6995d7f-tx28s_pfa-lab(0f46345f-b711-44cb-bba2-ef7a7570361d)",
-            "count": 1766,
+            "count": 1781,
             "first_seen": "2026-11-02T15:29:40+00:00",
-            "last_seen": "2026-11-11T14:27:59+00:00"
+            "last_seen": "2026-11-11T14:47:16+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "Pulled",
+            "object": "Pod/ledger-api-8d6995d7f-tx28s",
+            "message": "Container image \"busybox:1.36\" already present on machine and can be accessed by the pod",
+            "count": 828,
+            "first_seen": "2026-11-02T15:26:40+00:00",
+            "last_seen": "2026-11-11T14:51:44+00:00"
           },
           {
             "type": "Normal",
@@ -162,30 +180,12 @@
             "count": 821,
             "first_seen": "2026-11-02T15:26:46+00:00",
             "last_seen": "2026-11-11T14:31:47+00:00"
-          },
-          {
-            "type": "Normal",
-            "reason": "Pulled",
-            "object": "Pod/ledger-api-8d6995d7f-tx28s",
-            "message": "Container image \"busybox:1.36\" already present on machine and can be accessed by the pod",
-            "count": 821,
-            "first_seen": "2026-11-02T15:26:40+00:00",
-            "last_seen": "2026-11-11T14:31:41+00:00"
-          },
-          {
-            "type": "Normal",
-            "reason": "Created",
-            "object": "Pod/ledger-api-8d6995d7f-tx28s",
-            "message": "Container created",
-            "count": 807,
-            "first_seen": "2026-11-02T15:26:40+00:00",
-            "last_seen": "2026-11-11T13:25:17+00:00"
           }
         ]
       },
       "raw_excerpt": null,
       "error": null,
-      "collected_at": "2026-11-11T14:31:51.112371Z",
+      "collected_at": "2026-11-11T14:57:05.954269Z",
       "redacted": true,
       "redactions": {}
     },
@@ -204,7 +204,7 @@
       },
       "raw_excerpt": "=== previous container ===\nledger-api replaying journal, this takes about 45 seconds\n\n=== current container ===\nledger-api replaying journal, this takes about 45 seconds\n",
       "error": null,
-      "collected_at": "2026-11-11T14:31:51.112093Z",
+      "collected_at": "2026-11-11T14:57:05.954887Z",
       "redacted": true,
       "redactions": {}
     }

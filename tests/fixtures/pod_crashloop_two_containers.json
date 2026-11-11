@@ -1,0 +1,294 @@
+{
+  "apiVersion": "v1",
+  "kind": "Pod",
+  "metadata": {
+    "creationTimestamp": "2026-11-11T14:31:27Z",
+    "generateName": "cart-service-778b6bcd87-",
+    "generation": 1,
+    "labels": {
+      "app": "cart-service",
+      "pod-template-hash": "778b6bcd87"
+    },
+    "name": "cart-service-778b6bcd87-vf9bn",
+    "namespace": "pfa-lab",
+    "ownerReferences": [
+      {
+        "apiVersion": "apps/v1",
+        "blockOwnerDeletion": true,
+        "controller": true,
+        "kind": "ReplicaSet",
+        "name": "cart-service-778b6bcd87",
+        "uid": "a56f341c-82a0-4323-b11e-f1896a653f9c"
+      }
+    ],
+    "resourceVersion": "1149416",
+    "uid": "2049df7d-3d77-4ccc-8549-e7fc1e44dfb2"
+  },
+  "spec": {
+    "containers": [
+      {
+        "args": [
+          "echo \"cart-service api 1.12.0 starting\"\nif [ -z \"$REDIS_URL\" ]; then\n  echo \"FATAL: required environment variable REDIS_URL is not set\" >&2\n  exit 1\nfi\nexec sleep 3600\n"
+        ],
+        "command": [
+          "sh",
+          "-c"
+        ],
+        "env": [
+          {
+            "name": "PORT",
+            "value": "8080"
+          }
+        ],
+        "image": "busybox:1.36",
+        "imagePullPolicy": "IfNotPresent",
+        "name": "api",
+        "resources": {},
+        "terminationMessagePath": "/dev/termination-log",
+        "terminationMessagePolicy": "File",
+        "volumeMounts": [
+          {
+            "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+            "name": "kube-api-access-rdtvh",
+            "readOnly": true
+          }
+        ]
+      },
+      {
+        "args": [
+          "echo \"cart-service worker 1.12.0 starting, config /etc/cart/worker.yaml\"\ncat /etc/cart/worker.yaml >/dev/null 2>&1 || {\n  echo \"error: open /etc/cart/worker.yaml: no such file or directory\" >&2\n  exit 2\n}\nexec sleep 3600\n"
+        ],
+        "command": [
+          "sh",
+          "-c"
+        ],
+        "image": "busybox:1.36",
+        "imagePullPolicy": "IfNotPresent",
+        "name": "worker",
+        "resources": {},
+        "terminationMessagePath": "/dev/termination-log",
+        "terminationMessagePolicy": "File",
+        "volumeMounts": [
+          {
+            "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+            "name": "kube-api-access-rdtvh",
+            "readOnly": true
+          }
+        ]
+      }
+    ],
+    "dnsPolicy": "ClusterFirst",
+    "enableServiceLinks": true,
+    "nodeName": "desktop-control-plane",
+    "preemptionPolicy": "PreemptLowerPriority",
+    "priority": 0,
+    "restartPolicy": "Always",
+    "schedulerName": "default-scheduler",
+    "securityContext": {},
+    "serviceAccount": "default",
+    "serviceAccountName": "default",
+    "terminationGracePeriodSeconds": 30,
+    "tolerations": [
+      {
+        "effect": "NoExecute",
+        "key": "node.kubernetes.io/not-ready",
+        "operator": "Exists",
+        "tolerationSeconds": 300
+      },
+      {
+        "effect": "NoExecute",
+        "key": "node.kubernetes.io/unreachable",
+        "operator": "Exists",
+        "tolerationSeconds": 300
+      }
+    ],
+    "volumes": [
+      {
+        "name": "kube-api-access-rdtvh",
+        "projected": {
+          "defaultMode": 420,
+          "sources": [
+            {
+              "serviceAccountToken": {
+                "expirationSeconds": 3607,
+                "path": "token"
+              }
+            },
+            {
+              "configMap": {
+                "items": [
+                  {
+                    "key": "ca.crt",
+                    "path": "ca.crt"
+                  }
+                ],
+                "name": "kube-root-ca.crt"
+              }
+            },
+            {
+              "downwardAPI": {
+                "items": [
+                  {
+                    "fieldRef": {
+                      "apiVersion": "v1",
+                      "fieldPath": "metadata.namespace"
+                    },
+                    "path": "namespace"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "status": {
+    "conditions": [
+      {
+        "lastProbeTime": null,
+        "lastTransitionTime": "2026-11-11T14:31:28Z",
+        "observedGeneration": 1,
+        "status": "True",
+        "type": "PodReadyToStartContainers"
+      },
+      {
+        "lastProbeTime": null,
+        "lastTransitionTime": "2026-11-11T14:31:27Z",
+        "observedGeneration": 1,
+        "status": "True",
+        "type": "Initialized"
+      },
+      {
+        "lastProbeTime": null,
+        "lastTransitionTime": "2026-11-11T14:31:27Z",
+        "message": "containers with unready status: [api worker]",
+        "observedGeneration": 1,
+        "reason": "ContainersNotReady",
+        "status": "False",
+        "type": "Ready"
+      },
+      {
+        "lastProbeTime": null,
+        "lastTransitionTime": "2026-11-11T14:31:27Z",
+        "message": "containers with unready status: [api worker]",
+        "observedGeneration": 1,
+        "reason": "ContainersNotReady",
+        "status": "False",
+        "type": "ContainersReady"
+      },
+      {
+        "lastProbeTime": null,
+        "lastTransitionTime": "2026-11-11T14:31:27Z",
+        "observedGeneration": 1,
+        "status": "True",
+        "type": "PodScheduled"
+      }
+    ],
+    "containerStatuses": [
+      {
+        "containerID": "containerd://a3ba5e691e21cea1a619e9ae00d865b6d685b1e1ed6f8394be0178f6b47b0af3",
+        "image": "docker.io/library/busybox:1.36",
+        "imageID": "docker.io/library/busybox@sha256:73aaf090f3d85aa34ee199857f03fa3a95c8ede2ffd4cc2cdb5b94e566b11662",
+        "lastState": {
+          "terminated": {
+            "containerID": "containerd://a3ba5e691e21cea1a619e9ae00d865b6d685b1e1ed6f8394be0178f6b47b0af3",
+            "exitCode": 1,
+            "finishedAt": "2026-11-11T14:57:48Z",
+            "reason": "Error",
+            "startedAt": "2026-11-11T14:57:48Z"
+          }
+        },
+        "name": "api",
+        "ready": false,
+        "resources": {},
+        "restartCount": 10,
+        "started": false,
+        "state": {
+          "waiting": {
+            "message": "back-off 5m0s restarting failed container=api pod=cart-service-778b6bcd87-vf9bn_pfa-lab(2049df7d-3d77-4ccc-8549-e7fc1e44dfb2)",
+            "reason": "CrashLoopBackOff"
+          }
+        },
+        "user": {
+          "linux": {
+            "gid": 0,
+            "supplementalGroups": [
+              0,
+              10
+            ],
+            "uid": 0
+          }
+        },
+        "volumeMounts": [
+          {
+            "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+            "name": "kube-api-access-rdtvh",
+            "readOnly": true,
+            "recursiveReadOnly": "Disabled"
+          }
+        ]
+      },
+      {
+        "containerID": "containerd://f919283372d05576fd6957057710acaf177d59f6326fbaea27e781adf3054dc3",
+        "image": "docker.io/library/busybox:1.36",
+        "imageID": "docker.io/library/busybox@sha256:73aaf090f3d85aa34ee199857f03fa3a95c8ede2ffd4cc2cdb5b94e566b11662",
+        "lastState": {
+          "terminated": {
+            "containerID": "containerd://f919283372d05576fd6957057710acaf177d59f6326fbaea27e781adf3054dc3",
+            "exitCode": 2,
+            "finishedAt": "2026-11-11T14:57:48Z",
+            "reason": "Error",
+            "startedAt": "2026-11-11T14:57:48Z"
+          }
+        },
+        "name": "worker",
+        "ready": false,
+        "resources": {},
+        "restartCount": 10,
+        "started": false,
+        "state": {
+          "waiting": {
+            "message": "back-off 5m0s restarting failed container=worker pod=cart-service-778b6bcd87-vf9bn_pfa-lab(2049df7d-3d77-4ccc-8549-e7fc1e44dfb2)",
+            "reason": "CrashLoopBackOff"
+          }
+        },
+        "user": {
+          "linux": {
+            "gid": 0,
+            "supplementalGroups": [
+              0,
+              10
+            ],
+            "uid": 0
+          }
+        },
+        "volumeMounts": [
+          {
+            "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+            "name": "kube-api-access-rdtvh",
+            "readOnly": true,
+            "recursiveReadOnly": "Disabled"
+          }
+        ]
+      }
+    ],
+    "hostIP": "172.18.0.3",
+    "hostIPs": [
+      {
+        "ip": "172.18.0.3"
+      }
+    ],
+    "observedGeneration": 1,
+    "phase": "Running",
+    "podIP": "10.244.0.32",
+    "podIPs": [
+      {
+        "ip": "10.244.0.32"
+      }
+    ],
+    "qosClass": "BestEffort",
+    "resources": {},
+    "startTime": "2026-11-11T14:31:27Z"
+  }
+}

@@ -2,8 +2,7 @@
 workload: {kind: deployment, name: shipping-api}
 failure_type: crash_loop_backoff
 difficulty: hard
-known_gap: >-
-  The cause quotes the right log line, but no rule recognises a failed DNS lookup of a Service name, so the fix is generic.
+rules_confidence: medium
 trap: >-
   The cause is outside the pod: nothing is wrong with the container or its spec. The database
   Service it connects to does not exist, so the name does not resolve. Restarting, more memory

@@ -39,6 +39,9 @@ class Target(BaseModel):
     kind: WorkloadKind
     pod: str | None = None  # None when a workload has no pods at all (e.g. quota blocks creation)
     container: str | None = None  # the container that looks most broken
+    # Other containers of the pod that are failing now, most broken first: a diagnosis that
+    # names only one would leave the pod broken after its fix.
+    also_failing: list[str] = Field(default_factory=list)
     owners: list[OwnerRef] = Field(default_factory=list)  # pod -> ReplicaSet -> Deployment chain
 
 

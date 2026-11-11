@@ -22,8 +22,8 @@ helm install pfa oci://ghcr.io/guliziskender/charts/pfa --version 0.1.0 -n pfa -
 kubectl -n pfa exec deploy/pfa -- pfa diagnose checkout-api -n shop
 ```
 
-Read-only by design: get/list/watch on `pods`, `pods/log`, `events`, `deployments`,
-`replicasets` and `statefulsets`, and nothing else (no Secrets, no writes). A per-namespace
+Read-only by design: get/list/watch on `pods`, `pods/log`, `events`, `persistentvolumeclaims`,
+`deployments`, `replicasets` and `statefulsets`, and nothing else (no Secrets, no writes). A per-namespace
 variant is one flag. The chart and a multi-arch image are published to ghcr.io by CI for
 every release, after the tests pass on a kind cluster. Nothing leaves the cluster unless you set a provider and `ai.sendData=true`.
 Full guide, including the data table and uninstall: [deploy/README.md](deploy/README.md).
@@ -126,7 +126,8 @@ mean 'send_data'?"), `PFA_SEND_DATA=maybe`, a negative timeout, or an API key in
 that other users can read.
 
 `pfa` uses your current kubeconfig context and only issues `get`/`list`
-calls against pods, pods/log, events, deployments, replicasets and statefulsets.
+calls against pods, pods/log, events, persistentvolumeclaims, deployments, replicasets and
+statefulsets.
 
 ## What data `pfa` reads, and what it hides
 
@@ -181,18 +182,27 @@ Current results (2026-11-11, saved evidence):
 
 | Answered by | Standard (15) | Hard (6) | Confident and wrong | Seconds per case |
 | --- | --- | --- | --- | --- |
-| rules (`--no-llm`) | 15/15 | 1/6 | 3 | instant |
-| claude-opus-5-5 | 15/15 | 5/6 | 1 | 6 to 11 |
-| qwen3:8b via Ollama (local, Apple M5, 24 GB) | 14/15 | 4/6 | 3 | 18 to 49 |
+| rules (`--no-llm`) | 15/15 | 6/6 | 0 | instant |
+| claude-opus-5-5 | 15/15 | 6/6 | 0 | 6 to 9 |
+| qwen3:8b via Ollama (local, Apple M5, 24 GB) | 15/15 | 6/6 | 0 | 15 to 65 |
 
-The hard cases separate the three. The rules quote the last error line, diagnose one container
-of two, and trust the first probe event, so they miss 5 of 6. Opus sees through every trap it has
-the evidence for. Its one miss is `pending-pvc-storageclass`, where the cause sits on the
-PersistentVolumeClaim, which pfa does not read. Every answerer misses it: the rules and qwen3:8b
-stop at "the claim is not bound", and Opus guesses the claim does not exist (it does). That is a
-gap in pfa's evidence, not in the models.
-qwen3:8b also misses the two-container case, and one standard case on formatting: it wrote the
-command path with JSON escapes (`\u002Fapp\u002Fpayment-gateway`).
+The hard cases first scored rules 1/6, Opus 5/6 and qwen3:8b 4/6, with 3, 1 and 3 answers
+confident and wrong. Every miss pointed at something in pfa, not only in the answerers:
+
+- The rules quoted the last error line (a shutdown side effect), diagnosed one container of
+  two, and trusted the first probe failure over the one that repeats.
+- No rule recognised a hostname that does not resolve, so a missing Service got a generic fix.
+- The volume-claim rule claimed high confidence from the pod's side alone, while the reason
+  was on the claim, which pfa did not read. Every answerer missed that case; Opus guessed the
+  claim did not exist. pfa now reads the claims a pod mounts (one more read-only permission).
+- qwen3:8b missed the second container even with its logs in the prompt: the prompt's rule
+  hints held only the first container's finding, at high certainty. They now cover every
+  failing container.
+- qwen3:8b wrote a path as `\u002Fapp\u002Fpayment-gateway`; pfa now decodes such escapes.
+
+The rules were then fixed on these cases, so their 6/6 says less than the first run did. The
+models were not tuned; they improved because the evidence and hints did. `docs/log.md`
+(2026-11-11) has the detail.
 
 Earlier lower runs in the history are real records, not noise: an Opus 14/15 came from a
 too-strict answer key, another from a bug in pfa's event collection, and qwen3:8b's 3/15 and 4/15

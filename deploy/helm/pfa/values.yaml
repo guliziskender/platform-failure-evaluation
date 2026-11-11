@@ -20,8 +20,8 @@ ai:
   existingSecretKey: ANTHROPIC_API_KEY
   timeoutSeconds: null  # per AI call; default 30, or 120 for ollama
 
-# What pfa may read. Only get/list/watch on pods, pods/log, events, deployments, replicasets
-# and statefulsets. Never Secrets, never any write.
+# What pfa may read. Only get/list/watch on pods, pods/log, events, persistentvolumeclaims,
+# deployments, replicasets and statefulsets. Never Secrets, never any write.
 rbac:
   create: true
   # cluster: one ClusterRole, pfa can diagnose any namespace.

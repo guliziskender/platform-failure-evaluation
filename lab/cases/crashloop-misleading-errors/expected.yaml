@@ -2,8 +2,7 @@
 workload: {kind: deployment, name: pricing-api}
 failure_type: crash_loop_backoff
 difficulty: hard
-known_gap: >-
-  The crash rule quotes the last error line in the logs. Here that is the statsd flush during shutdown, not the fatal config error before it.
+rules_confidence: medium
 trap: >-
   The logs have three error lines and only one matters. The Redis error is a degraded-mode
   warning (the app carries on without a cache), and the statsd error is printed while the app

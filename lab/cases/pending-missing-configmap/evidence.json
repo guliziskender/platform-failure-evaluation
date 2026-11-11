@@ -5,6 +5,7 @@
     "kind": "deployment",
     "pod": "email-sender-bdc4d8b75-rmrvl",
     "container": "sender",
+    "also_failing": [],
     "owners": [
       {
         "kind": "ReplicaSet",
@@ -87,6 +88,10 @@
                 "sleep",
                 "3600"
               ],
+              "mounts": [
+                "/etc/templates",
+                "/var/run/secrets/kubernetes.io/serviceaccount"
+              ],
               "ready": false,
               "started": false,
               "restart_count": 0,
@@ -101,7 +106,7 @@
       },
       "raw_excerpt": null,
       "error": null,
-      "collected_at": "2026-11-11T14:31:51.069806Z",
+      "collected_at": "2026-11-11T14:57:05.874883Z",
       "redacted": true,
       "redactions": {}
     },
@@ -121,15 +126,15 @@
             "reason": "FailedMount",
             "object": "Pod/email-sender-bdc4d8b75-rmrvl",
             "message": "MountVolume.SetUp failed for volume \"templates\" : configmap \"email-templates\" not found",
-            "count": 1063,
+            "count": 1075,
             "first_seen": "2026-11-02T15:26:39+00:00",
-            "last_seen": "2026-11-11T14:27:51+00:00"
+            "last_seen": "2026-11-11T14:52:15+00:00"
           }
         ]
       },
       "raw_excerpt": null,
       "error": null,
-      "collected_at": "2026-11-11T14:31:51.071282Z",
+      "collected_at": "2026-11-11T14:57:05.877438Z",
       "redacted": true,
       "redactions": {}
     },
@@ -148,7 +153,7 @@
       },
       "raw_excerpt": null,
       "error": null,
-      "collected_at": "2026-11-11T14:31:51.070423Z",
+      "collected_at": "2026-11-11T14:57:05.876050Z",
       "redacted": true,
       "redactions": {}
     }

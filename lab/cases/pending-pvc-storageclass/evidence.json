@@ -5,6 +5,7 @@
     "kind": "deployment",
     "pod": "metrics-store-59d6c6fdf9-5ntm7",
     "container": "store",
+    "also_failing": [],
     "owners": [
       {
         "kind": "ReplicaSet",
@@ -39,10 +40,10 @@
             },
             {
               "type": "Progressing",
-              "status": "True",
-              "reason": "ReplicaSetUpdated",
-              "message": "ReplicaSet \"metrics-store-59d6c6fdf9\" is progressing.",
-              "last_update": "2026-11-11T14:31:27+00:00"
+              "status": "False",
+              "reason": "ProgressDeadlineExceeded",
+              "message": "ReplicaSet \"metrics-store-59d6c6fdf9\" has timed out progressing.",
+              "last_update": "2026-11-11T14:41:27+00:00"
             }
           ]
         },
@@ -66,17 +67,40 @@
               "command": [
                 "sleep",
                 "3600"
+              ],
+              "mounts": [
+                "/data",
+                "/var/run/secrets/kubernetes.io/serviceaccount"
               ]
             }
           ],
           "pvcs": [
             "metrics-data"
           ]
-        }
+        },
+        "claims": [
+          {
+            "name": "metrics-data",
+            "phase": "Pending",
+            "storage_class": "fast-ssd",
+            "access_modes": [
+              "ReadWriteOnce"
+            ],
+            "requested": "1Gi",
+            "events": [
+              {
+                "type": "Warning",
+                "reason": "ProvisioningFailed",
+                "message": "storageclass.storage.k8s.io \"fast-ssd\" not found",
+                "count": 102
+              }
+            ]
+          }
+        ]
       },
       "raw_excerpt": null,
       "error": null,
-      "collected_at": "2026-11-11T14:31:51.086978Z",
+      "collected_at": "2026-11-11T14:57:05.909893Z",
       "redacted": true,
       "redactions": {}
     },
@@ -96,9 +120,9 @@
             "reason": "FailedScheduling",
             "object": "Pod/metrics-store-59d6c6fdf9-5ntm7",
             "message": "0/1 nodes are available: pod has unbound immediate PersistentVolumeClaims. not found",
-            "count": 1,
+            "count": 3,
             "first_seen": "2026-11-11T14:31:27.912146+00:00",
-            "last_seen": "2026-11-11T14:31:27.912146+00:00"
+            "last_seen": "2026-11-11T14:41:45.152786+00:00"
           },
           {
             "type": "Normal",
@@ -122,7 +146,7 @@
       },
       "raw_excerpt": null,
       "error": null,
-      "collected_at": "2026-11-11T14:31:51.088493Z",
+      "collected_at": "2026-11-11T14:57:05.908412Z",
       "redacted": true,
       "redactions": {}
     },
@@ -143,7 +167,7 @@
       },
       "raw_excerpt": null,
       "error": null,
-      "collected_at": "2026-11-11T14:31:51.086747Z",
+      "collected_at": "2026-11-11T14:57:05.904682Z",
       "redacted": true,
       "redactions": {}
     }

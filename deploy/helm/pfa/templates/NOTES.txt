@@ -1,5 +1,5 @@
 pfa is installed in namespace {{ .Release.Namespace }}. It can only read pods, logs, events,
-deployments, replicasets and statefulsets{{ if eq .Values.rbac.scope "namespaces" }} in: {{ join ", " .Values.rbac.namespaces }}{{ else }}, in every namespace{{ end }}.
+persistentvolumeclaims, deployments, replicasets and statefulsets{{ if eq .Values.rbac.scope "namespaces" }} in: {{ join ", " .Values.rbac.namespaces }}{{ else }}, in every namespace{{ end }}.
 
 Data: {{ if eq .Values.ai.provider "none" }}no AI provider, so pfa answers from its rules. Nothing leaves the cluster.
 {{- else if .Values.ai.sendData }}redacted evidence is sent to the {{ .Values.ai.provider }} model.

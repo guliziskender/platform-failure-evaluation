@@ -245,3 +245,57 @@ def test_one_failing_collector_does_not_break_the_others():
 def test_collectors_filtered_by_failure_type():
     evidence = collect_evidence(_target(), [_Boom(), _Ok()], FailureType.DOCKER_BUILD)
     assert [e.source for e in evidence] == ["boom"]
+
+
+# --- other failing containers and volume claims (found by the hard eval cases) ----------------
+
+
+def test_logs_of_other_failing_containers_are_labelled_and_kept_apart():
+    from pfa.view import EvidenceView
+
+    core = FakeCore(
+        logs={
+            ("p", "app", True): "FATAL: REDIS_URL is not set\n",
+            ("p", "worker", True): "error: open /etc/w.yaml: no such file or directory\n",
+        }
+    )
+    target = _target().model_copy(update={"also_failing": ["worker"]})
+    ev = LogsCollector(make_clients(core)).collect(target)
+    assert "=== previous container ===\nFATAL" in ev.raw_excerpt
+    assert "=== worker: previous container ===\nerror: open /etc/w.yaml" in ev.raw_excerpt
+    assert ev.summary["others"]["worker"]["previous"]["available"] is True
+    # Each container's rules see only its own logs.
+    view = EvidenceView(target, [ev])
+    assert "w.yaml" not in view.logs and "REDIS_URL" in view.logs
+    assert "REDIS_URL" not in view.logs_of("worker") and "w.yaml" in view.logs_of("worker")
+
+
+def test_state_reads_the_pods_claims_and_their_events():
+    pending = pod("pending_pvc_storageclass")
+    claim = to_k8s(load_json("pvc_storageclass_missing.json"), "V1PersistentVolumeClaim")
+    events = [to_k8s(e, "CoreV1Event") for e in load_json("events_pvc_storageclass.json")]
+    core = FakeCore(pods=[pending], pvcs=[claim], events=events)
+    target = _target(pending.metadata.name, "store")
+    (c,) = K8sStateCollector(make_clients(core)).collect(target).summary["claims"]
+    assert (c["name"], c["phase"], c["storage_class"]) == ("metrics-data", "Pending", "fast-ssd")
+    assert c["events"][0]["reason"] == "ProvisioningFailed"
+    assert 'storageclass.storage.k8s.io "fast-ssd" not found' in c["events"][0]["message"]
+
+
+def test_state_a_missing_or_forbidden_claim_does_not_lose_the_pod():
+    pending = pod("pending_pvc_storageclass")
+    target = _target(pending.metadata.name, "store")
+    for pvcs, expected in (
+        ({}, {"name": "metrics-data", "missing": True}),
+        (
+            {"metrics-data": ApiException(status=403, reason="Forbidden")},
+            {"name": "metrics-data", "error": "403 Forbidden"},
+        ),
+    ):
+        summary = (
+            K8sStateCollector(make_clients(FakeCore(pods=[pending], pvcs=pvcs)))
+            .collect(target)
+            .summary
+        )
+        assert summary["claims"] == [expected]
+        assert summary["pod"]["phase"] == "Pending"

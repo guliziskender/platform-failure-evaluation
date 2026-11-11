@@ -5,6 +5,7 @@
     "kind": "deployment",
     "pod": "storefront-7ff696ddf6-mt2q7",
     "container": "web",
+    "also_failing": [],
     "owners": [
       {
         "kind": "ReplicaSet",
@@ -92,6 +93,9 @@
               "ports": [
                 "80/TCP"
               ],
+              "mounts": [
+                "/var/run/secrets/kubernetes.io/serviceaccount"
+              ],
               "ready": false,
               "started": false,
               "restart_count": 0,
@@ -107,7 +111,7 @@
       },
       "raw_excerpt": null,
       "error": null,
-      "collected_at": "2026-11-11T14:31:50.999314Z",
+      "collected_at": "2026-11-11T14:57:05.746928Z",
       "redacted": true,
       "redactions": {}
     },
@@ -120,31 +124,49 @@
           "ReplicaSet/storefront-7ff696ddf6",
           "Deployment/storefront"
         ],
-        "total": 2,
+        "total": 4,
         "events": [
           {
             "type": "Warning",
             "reason": "Failed",
             "object": "Pod/storefront-7ff696ddf6-mt2q7",
             "message": "Error: ImagePullBackOff",
-            "count": 18742,
+            "count": 18854,
             "first_seen": "2026-10-26T14:47:00+00:00",
-            "last_seen": "2026-11-11T14:29:18+00:00"
+            "last_seen": "2026-11-11T14:54:26+00:00"
+          },
+          {
+            "type": "Warning",
+            "reason": "Failed",
+            "object": "Pod/storefront-7ff696ddf6-mt2q7",
+            "message": "Failed to pull image \"busybox:1.36.1-uclbic\": rpc error: code = NotFound desc = failed to pull and unpack image \"docker.io/library/busybox:1.36.1-uclbic\": failed to resolve reference \"docker.io/library/busybox:1.36.1-uclbic\": docker.io/library/busybox:1.36.1-uclbic: not found",
+            "count": 825,
+            "first_seen": "2026-10-26T14:47:00+00:00",
+            "last_seen": "2026-11-11T14:39:24+00:00"
           },
           {
             "type": "Normal",
             "reason": "BackOff",
             "object": "Pod/storefront-7ff696ddf6-mt2q7",
             "message": "Back-off pulling image \"busybox:1.36.1-uclbic\"",
-            "count": 18742,
+            "count": 18853,
             "first_seen": "2026-10-26T14:47:00+00:00",
-            "last_seen": "2026-11-11T14:29:18+00:00"
+            "last_seen": "2026-11-11T14:54:14+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "Pulling",
+            "object": "Pod/storefront-7ff696ddf6-mt2q7",
+            "message": "Pulling image \"busybox:1.36.1-uclbic\"",
+            "count": 838,
+            "first_seen": "2026-10-26T14:46:59+00:00",
+            "last_seen": "2026-11-11T14:39:23+00:00"
           }
         ]
       },
       "raw_excerpt": null,
       "error": null,
-      "collected_at": "2026-11-11T14:31:51.000949Z",
+      "collected_at": "2026-11-11T14:57:05.750481Z",
       "redacted": true,
       "redactions": {}
     },
@@ -163,7 +185,7 @@
       },
       "raw_excerpt": null,
       "error": null,
-      "collected_at": "2026-11-11T14:31:50.999821Z",
+      "collected_at": "2026-11-11T14:57:05.748471Z",
       "redacted": true,
       "redactions": {}
     }

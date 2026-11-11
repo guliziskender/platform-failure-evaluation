@@ -55,10 +55,12 @@ def not_found() -> ApiException:
 
 
 class FakeCore:
-    def __init__(self, pods=(), events=(), logs=None):
+    def __init__(self, pods=(), events=(), logs=None, pvcs=()):
         self.pods = {p.metadata.name: p for p in pods}
         self.events = list(events)
-        self.logs = logs or {}  # (pod, previous) -> str | ApiException
+        # (pod, previous) or (pod, container, previous) -> str | ApiException
+        self.logs = logs or {}
+        self.pvcs = pvcs if isinstance(pvcs, dict) else {c.metadata.name: c for c in pvcs}
 
     def read_namespaced_pod(self, name, namespace, **_):
         if name not in self.pods:
@@ -75,11 +77,26 @@ class FakeCore:
         return SimpleNamespace(items=items)
 
     def list_namespaced_event(self, namespace, field_selector="", **_):
-        name = field_selector.removeprefix("involvedObject.name=")
-        return SimpleNamespace(items=[e for e in self.events if e.involved_object.name == name])
+        wanted = dict(kv.split("=", 1) for kv in field_selector.split(",") if "=" in kv)
+        return SimpleNamespace(
+            items=[
+                e
+                for e in self.events
+                if e.involved_object.name == wanted.get("involvedObject.name")
+                and wanted.get("involvedObject.kind", e.involved_object.kind)
+                == e.involved_object.kind
+            ]
+        )
 
-    def read_namespaced_pod_log(self, name, namespace, previous=False, **_):
-        result = self.logs.get((name, previous), "")
+    def read_namespaced_persistent_volume_claim(self, name, namespace, **_):
+        if isinstance(self.pvcs.get(name), Exception):
+            raise self.pvcs[name]
+        if name not in self.pvcs:
+            raise not_found()
+        return self.pvcs[name]
+
+    def read_namespaced_pod_log(self, name, namespace, container=None, previous=False, **_):
+        result = self.logs.get((name, container, previous), self.logs.get((name, previous), ""))
         if isinstance(result, Exception):
             raise result
         return result
@@ -168,6 +185,7 @@ def make_view(
     logs: str = "",
     kind: str = "deployment",
     has_pod: bool = True,
+    claims: list[dict] | None = None,
 ):
     """An EvidenceView from hand-written summaries; only fields a test cares about are needed."""
     from pfa.models import Evidence, OwnerRef, Target, WorkloadKind
@@ -185,7 +203,13 @@ def make_view(
     )
     evs = [{"type": "Warning", "count": 1, "object": "Pod/app-123", **e} for e in (events or [])]
     evidence = [
-        Evidence(source="k8s_state", summary={"pod": pod_summary if has_pod else None}),
+        Evidence(
+            source="k8s_state",
+            summary={
+                "pod": pod_summary if has_pod else None,
+                **({"claims": claims} if claims else {}),
+            },
+        ),
         Evidence(source="k8s_events", summary={"events": evs}),
         Evidence(source="logs", summary={}, raw_excerpt=logs or None),
     ]

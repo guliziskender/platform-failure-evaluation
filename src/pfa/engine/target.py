@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 
 from kubernetes.client import V1ContainerStatus, V1LabelSelector, V1Pod, V1ReplicaSet
 from kubernetes.client.exceptions import ApiException
@@ -13,6 +13,8 @@ from pfa.models import OwnerRef, Target, WorkloadKind
 _EPOCH = datetime.min.replace(tzinfo=UTC)
 # Waiting reasons that just mean "an earlier step hasn't finished", not a failure of this container.
 _BENIGN_WAITING = {"PodInitializing"}
+# A container that failed this recently is still failing, even while it happens to run.
+_RECENT_FAILURE = timedelta(minutes=10)
 
 
 class TargetNotFound(LookupError):
@@ -46,6 +48,7 @@ def _resolve_pod(clients: KubeClients, name: str, namespace: str) -> Target:
         kind=WorkloadKind.POD,
         pod=name,
         container=pick_container(pod),
+        also_failing=also_failing(pod),
         owners=_owner_chain(clients, pod, namespace),
     )
 
@@ -99,6 +102,7 @@ def _workload_target(
         kind=kind,
         pod=pod.metadata.name if pod else None,
         container=pick_container(pod) if pod else None,
+        also_failing=also_failing(pod) if pod else [],
         owners=owners,
     )
 
@@ -148,6 +152,26 @@ def pick_container(pod: V1Pod) -> str | None:
         return max(broken, key=_container_rank).name
     containers = pod.spec.containers or []
     return containers[0].name if containers else None
+
+
+def also_failing(pod: V1Pod) -> list[str]:
+    """The pod's other containers that are failing now (not just restarted once), worst first."""
+    picked = pick_container(pod)
+    failing = [cs for cs in _all_statuses(pod) if cs.name != picked and _failing_now(cs)]
+    return [cs.name for cs in sorted(failing, key=_container_rank, reverse=True)]
+
+
+def _failing_now(cs: V1ContainerStatus) -> bool:
+    state = cs.state
+    if state is None:
+        return False
+    if state.waiting and state.waiting.reason not in _BENIGN_WAITING:
+        return True
+    if state.terminated and (state.terminated.exit_code or 0) != 0:
+        return True
+    if state.running and not cs.ready:
+        return True
+    return datetime.now(UTC) - _last_failure(cs) <= _RECENT_FAILURE
 
 
 def _pod_rank(pod: V1Pod) -> tuple:

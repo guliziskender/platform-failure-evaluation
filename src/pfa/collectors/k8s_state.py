@@ -11,6 +11,7 @@ from kubernetes.client import (
     V1Pod,
     V1Probe,
 )
+from kubernetes.client.exceptions import ApiException
 
 from pfa.collectors.base import drop_none, iso
 from pfa.kube import KubeClients
@@ -38,7 +39,49 @@ class K8sStateCollector:
                 target.pod, target.namespace, _request_timeout=self.clients.timeout
             )
             summary["pod"] = summarize_pod(pod)
+            if claims := summary["pod"].get("pvcs"):
+                summary["claims"] = [self._claim(name, target.namespace) for name in claims]
         return Evidence(source=self.name, summary=summary)
+
+    def _claim(self, name: str, namespace: str) -> dict[str, Any]:
+        """A PersistentVolumeClaim the pod mounts, with its own events: why a claim does not
+        bind is recorded on the claim (ProvisioningFailed), never on the pod."""
+        t = self.clients.timeout
+        try:
+            pvc = self.clients.core.read_namespaced_persistent_volume_claim(
+                name, namespace, _request_timeout=t
+            )
+            events = self.clients.core.list_namespaced_event(
+                namespace,
+                field_selector=f"involvedObject.name={name},involvedObject.kind="
+                "PersistentVolumeClaim",
+                _request_timeout=t,
+            ).items
+        except ApiException as exc:
+            # Not fatal for the pod's state: a missing claim is itself the answer, and an
+            # install without PVC access (older chart) still gets everything else.
+            if exc.status == 404:
+                return {"name": name, "missing": True}
+            return {"name": name, "error": f"{exc.status} {exc.reason}"}
+        events = sorted(events, key=lambda e: iso(e.last_timestamp) or "", reverse=True)
+        return drop_none(
+            {
+                "name": name,
+                "phase": pvc.status.phase if pvc.status else None,
+                "storage_class": pvc.spec.storage_class_name,
+                "volume": pvc.spec.volume_name,
+                "access_modes": pvc.spec.access_modes,
+                "requested": (pvc.spec.resources.requests or {}).get("storage")
+                if pvc.spec.resources
+                else None,
+                "events": [
+                    drop_none(
+                        {"type": e.type, "reason": e.reason, "message": e.message, "count": e.count}
+                    )
+                    for e in events[:5]
+                ],
+            }
+        )
 
     def _workload(self, target: Target) -> dict[str, Any]:
         apps, t = self.clients.apps, self.clients.timeout
@@ -149,6 +192,7 @@ def summarize_container(c: V1Container, cs: V1ContainerStatus | None) -> dict[st
         # Names only, never values: values are where secrets live.
         "env_names": [e.name for e in c.env or []],
         "env_from": [_env_from(e) for e in c.env_from or []],
+        "mounts": [m.mount_path for m in c.volume_mounts or []],
     }
     if cs is not None:
         out.update(

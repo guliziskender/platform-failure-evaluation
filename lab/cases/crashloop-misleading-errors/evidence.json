@@ -5,6 +5,7 @@
     "kind": "deployment",
     "pod": "pricing-api-8b8ddc7c-5vt69",
     "container": "api",
+    "also_failing": [],
     "owners": [
       {
         "kind": "ReplicaSet",
@@ -42,7 +43,7 @@
               "status": "False",
               "reason": "MinimumReplicasUnavailable",
               "message": "Deployment does not have minimum availability.",
-              "last_update": "2026-11-11T14:31:40+00:00"
+              "last_update": "2026-11-11T14:52:35+00:00"
             }
           ]
         },
@@ -95,23 +96,24 @@
                 "CACHE_URL",
                 "STATSD_ADDR"
               ],
+              "mounts": [
+                "/var/run/secrets/kubernetes.io/serviceaccount"
+              ],
               "ready": false,
               "started": false,
-              "restart_count": 2,
+              "restart_count": 9,
               "state": {
-                "terminated": {
-                  "reason": "Error",
-                  "exit_code": 1,
-                  "started_at": "2026-11-11T14:31:40+00:00",
-                  "finished_at": "2026-11-11T14:31:40+00:00"
+                "waiting": {
+                  "reason": "CrashLoopBackOff",
+                  "message": "back-off 5m0s restarting failed container=api pod=pricing-api-8b8ddc7c-5vt69_pfa-lab(80f55016-4605-4919-bf3a-f5d2561c6f03)"
                 }
               },
               "last_state": {
                 "terminated": {
                   "reason": "Error",
                   "exit_code": 1,
-                  "started_at": "2026-11-11T14:31:28+00:00",
-                  "finished_at": "2026-11-11T14:31:28+00:00"
+                  "started_at": "2026-11-11T14:52:35+00:00",
+                  "finished_at": "2026-11-11T14:52:35+00:00"
                 }
               },
               "image_id": "docker.io/library/busybox@sha256:73aaf090f3d85aa34ee199857f03fa3a95c8ede2ffd4cc2cdb5b94e566b11662"
@@ -121,7 +123,7 @@
       },
       "raw_excerpt": null,
       "error": null,
-      "collected_at": "2026-11-11T14:31:50.961803Z",
+      "collected_at": "2026-11-11T14:57:05.677741Z",
       "redacted": true,
       "redactions": {}
     },
@@ -141,36 +143,36 @@
             "reason": "BackOff",
             "object": "Pod/pricing-api-8b8ddc7c-5vt69",
             "message": "Back-off restarting failed container api in pod pricing-api-8b8ddc7c-5vt69_pfa-lab(80f55016-4605-4919-bf3a-f5d2561c6f03)",
-            "count": 2,
+            "count": 25,
             "first_seen": "2026-11-11T14:31:29+00:00",
-            "last_seen": "2026-11-11T14:31:40+00:00"
+            "last_seen": "2026-11-11T14:56:21+00:00"
           },
           {
             "type": "Normal",
             "reason": "Pulled",
             "object": "Pod/pricing-api-8b8ddc7c-5vt69",
             "message": "Container image \"busybox:1.36\" already present on machine and can be accessed by the pod",
-            "count": 3,
+            "count": 10,
             "first_seen": "2026-11-11T14:31:28+00:00",
-            "last_seen": "2026-11-11T14:31:40+00:00"
+            "last_seen": "2026-11-11T14:52:35+00:00"
           },
           {
             "type": "Normal",
             "reason": "Created",
             "object": "Pod/pricing-api-8b8ddc7c-5vt69",
             "message": "Container created",
-            "count": 3,
+            "count": 10,
             "first_seen": "2026-11-11T14:31:28+00:00",
-            "last_seen": "2026-11-11T14:31:40+00:00"
+            "last_seen": "2026-11-11T14:52:35+00:00"
           },
           {
             "type": "Normal",
             "reason": "Started",
             "object": "Pod/pricing-api-8b8ddc7c-5vt69",
             "message": "Container started",
-            "count": 3,
+            "count": 9,
             "first_seen": "2026-11-11T14:31:28+00:00",
-            "last_seen": "2026-11-11T14:31:40+00:00"
+            "last_seen": "2026-11-11T14:47:10+00:00"
           },
           {
             "type": "Normal",
@@ -203,7 +205,7 @@
       },
       "raw_excerpt": null,
       "error": null,
-      "collected_at": "2026-11-11T14:31:50.963655Z",
+      "collected_at": "2026-11-11T14:57:05.681351Z",
       "redacted": true,
       "redactions": {}
     },
@@ -212,17 +214,17 @@
       "summary": {
         "container": "api",
         "previous": {
-          "available": false,
-          "note": "unable to retrieve container logs for containerd://b00ed03fa6b54c8523eb2d15731dd0f7179e97b34828e40e66ddb233f0af8ff3"
+          "available": true,
+          "lines": 6
         },
         "current": {
           "available": true,
           "lines": 6
         }
       },
-      "raw_excerpt": "=== current container ===\nlevel=info msg=\"pricing-api 3.8.0 starting\"\nlevel=error msg=\"cache: dial tcp redis:6379: connect: connection refused\" fallback=in-memory\nlevel=warn msg=\"running without shared cache; prices are cached per pod\"\nlevel=fatal msg=\"config: MAX_CONNECTIONS=\\\"ten\\\" is not an integer\"\nlevel=info msg=\"shutting down\"\nlevel=error msg=\"metrics: failed to flush 12 points to statsd:8125: connection refused\"\n",
+      "raw_excerpt": "=== previous container ===\nlevel=info msg=\"pricing-api 3.8.0 starting\"\nlevel=error msg=\"cache: dial tcp redis:6379: connect: connection refused\" fallback=in-memory\nlevel=warn msg=\"running without shared cache; prices are cached per pod\"\nlevel=fatal msg=\"config: MAX_CONNECTIONS=\\\"ten\\\" is not an integer\"\nlevel=info msg=\"shutting down\"\nlevel=error msg=\"metrics: failed to flush 12 points to statsd:8125: connection refused\"\n\n=== current container ===\nlevel=info msg=\"pricing-api 3.8.0 starting\"\nlevel=error msg=\"cache: dial tcp redis:6379: connect: connection refused\" fallback=in-memory\nlevel=warn msg=\"running without shared cache; prices are cached per pod\"\nlevel=fatal msg=\"config: MAX_CONNECTIONS=\\\"ten\\\" is not an integer\"\nlevel=info msg=\"shutting down\"\nlevel=error msg=\"metrics: failed to flush 12 points to statsd:8125: connection refused\"\n",
       "error": null,
-      "collected_at": "2026-11-11T14:31:50.962723Z",
+      "collected_at": "2026-11-11T14:57:05.682080Z",
       "redacted": true,
       "redactions": {}
     }

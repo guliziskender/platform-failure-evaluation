@@ -87,8 +87,8 @@ uv run ruff check . && uv run ruff format .
 
 ## Rules (non-negotiable)
 
-- **Read-only.** Only `get`/`list`/`watch` on pods, pods/log, events, deployments, replicasets,
-  statefulsets. Adding any API call means updating the RBAC in the Helm chart, deploy/README.md
+- **Read-only.** Only `get`/`list`/`watch` on pods, pods/log, events, persistentvolumeclaims,
+  deployments, replicasets, statefulsets. Adding any API call means updating the RBAC in the Helm chart, deploy/README.md
   and the README (`tests/test_helm.py` fails until the chart allows it).
 - **Never read Secret objects or env var values**, only names (`env_names`, `env_from`).
   `tests/test_collectors.py` and the integration test assert the fake secret never appears.

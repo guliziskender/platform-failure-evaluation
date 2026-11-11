@@ -5,6 +5,7 @@
     "kind": "deployment",
     "pod": "stock-api-7f48c6f579-4xmcr",
     "container": "api",
+    "also_failing": [],
     "owners": [
       {
         "kind": "ReplicaSet",
@@ -39,10 +40,10 @@
             },
             {
               "type": "Progressing",
-              "status": "True",
-              "reason": "ReplicaSetUpdated",
-              "message": "ReplicaSet \"stock-api-7f48c6f579\" is progressing.",
-              "last_update": "2026-11-11T14:31:28+00:00"
+              "status": "False",
+              "reason": "ProgressDeadlineExceeded",
+              "message": "ReplicaSet \"stock-api-7f48c6f579\" has timed out progressing.",
+              "last_update": "2026-11-11T14:41:28+00:00"
             }
           ]
         },
@@ -104,6 +105,9 @@
               "env_names": [
                 "DB_HOST"
               ],
+              "mounts": [
+                "/var/run/secrets/kubernetes.io/serviceaccount"
+              ],
               "ready": false,
               "started": true,
               "restart_count": 0,
@@ -119,7 +123,7 @@
       },
       "raw_excerpt": null,
       "error": null,
-      "collected_at": "2026-11-11T14:31:51.094863Z",
+      "collected_at": "2026-11-11T14:57:05.921735Z",
       "redacted": true,
       "redactions": {}
     },
@@ -139,9 +143,9 @@
             "reason": "Unhealthy",
             "object": "Pod/stock-api-7f48c6f579-4xmcr",
             "message": "Readiness probe failed: HTTP probe failed with statuscode: 503",
-            "count": 5,
+            "count": 310,
             "first_seen": "2026-11-11T14:31:28+00:00",
-            "last_seen": "2026-11-11T14:31:48+00:00"
+            "last_seen": "2026-11-11T14:56:31+00:00"
           },
           {
             "type": "Warning",
@@ -210,7 +214,7 @@
       },
       "raw_excerpt": null,
       "error": null,
-      "collected_at": "2026-11-11T14:31:51.096759Z",
+      "collected_at": "2026-11-11T14:57:05.926400Z",
       "redacted": true,
       "redactions": {}
     },
@@ -224,12 +228,13 @@
         },
         "current": {
           "available": true,
-          "lines": 6
+          "lines": 48,
+          "truncated": true
         }
       },
-      "raw_excerpt": "=== current container ===\nstock-api 4.1.0 listening on :80 (readiness: /cgi-bin/ready checks inventory-db)\nreadiness: database inventory-db:5432 unreachable: lookup inventory-db: no such host\nreadiness: database inventory-db:5432 unreachable: lookup inventory-db: no such host\nreadiness: database inventory-db:5432 unreachable: lookup inventory-db: no such host\nreadiness: database inventory-db:5432 unreachable: lookup inventory-db: no such host\nreadiness: database inventory-db:5432 unreachable: lookup inventory-db: no such host\n",
+      "raw_excerpt": "=== current container ===\nreadiness: database inventory-db:5432 unreachable: lookup inventory-db: no such host\nreadiness: database inventory-db:5432 unreachable: lookup inventory-db: no such host\nreadiness: database inventory-db:5432 unreachable: lookup inventory-db: no such host\nreadiness: database inventory-db:5432 unreachable: lookup inventory-db: no such host\nreadiness: database inventory-db:5432 unreachable: lookup inventory-db: no such host\nreadiness: database inventory-db:5432 unreachable: lookup inventory-db: no such host\nreadiness: database inventory-db:5432 unreachable: lookup inventory-db: no such host\nreadiness: database inventory-db:5432 unreachable: lookup inventory-db: no such host\nreadiness: database inventory-db:5432 unreachable: lookup inventory-db: no such host\nreadiness: database inventory-db:5432 unreachable: lookup inventory-db: no such host\nreadiness: database inventory-db:5432 unreachable: lookup inventory-db: no such host\nreadiness: database inventory-db:5432 unreachable: lookup inventory-db: no such host\nreadiness: database inventory-db:5432 unreachable: lookup inventory-db: no such host\nreadiness: database inventory-db:5432 unreachable: lookup inventory-db: no such host\nreadiness: database inventory-db:5432 unreachable: lookup inventory-db: no such host\nreadiness: database inventory-db:5432 unreachable: lookup inventory-db: no such host\nreadiness: database inventory-db:5432 unreachable: lookup inventory-db: no such host\nreadiness: database inventory-db:5432 unreachable: lookup inventory-db: no such host\nreadiness: database inventory-db:5432 unreachable: lookup inventory-db: no such host\nreadiness: database inventory-db:5432 unreachable: lookup inventory-db: no such host\nreadiness: database inventory-db:5432 unreachable: lookup inventory-db: no such host\nreadiness: database inventory-db:5432 unreachable: lookup inventory-db: no such host\nreadiness: database inventory-db:5432 unreachable: lookup inventory-db: no such host\nreadiness: database inventory-db:5432 unreachable: lookup inventory-db: no such host\nreadiness: database inventory-db:5432 unreachable: lookup inventory-db: no such host\nreadiness: database inventory-db:5432 unreachable: lookup inventory-db: no such host\nreadiness: database inventory-db:5432 unreachable: lookup inventory-db: no such host\nreadiness: database inventory-db:5432 unreachable: lookup inventory-db: no such host\nreadiness: database inventory-db:5432 unreachable: lookup inventory-db: no such host\nreadiness: database inventory-db:5432 unreachable: lookup inventory-db: no such host\nreadiness: database inventory-db:5432 unreachable: lookup inventory-db: no such host\nreadiness: database inventory-db:5432 unreachable: lookup inventory-db: no such host\nreadiness: database inventory-db:5432 unreachable: lookup inventory-db: no such host\nreadiness: database inventory-db:5432 unreachable: lookup inventory-db: no such host\nreadiness: database inventory-db:5432 unreachable: lookup inventory-db: no such host\nreadiness: database inventory-db:5432 unreachable: lookup inventory-db: no such host\nreadiness: database inventory-db:5432 unreachable: lookup inventory-db: no such host\nreadiness: database inventory-db:5432 unreachable: lookup inventory-db: no such host\nreadiness: database inventory-db:5432 unreachable: lookup inventory-db: no such host\nreadiness: database inventory-db:5432 unreachable: lookup inventory-db: no such host\nreadiness: database inventory-db:5432 unreachable: lookup inventory-db: no such host\nreadiness: database inventory-db:5432 unreachable: lookup inventory-db: no such host\nreadiness: database inventory-db:5432 unreachable: lookup inventory-db: no such host\nreadiness: database inventory-db:5432 unreachable: lookup inventory-db: no such host\nreadiness: database inventory-db:5432 unreachable: lookup inventory-db: no such host\nreadiness: database inventory-db:5432 unreachable: lookup inventory-db: no such host\nreadiness: database inventory-db:5432 unreachable: lookup inventory-db: no such host\nreadiness: database inventory-db:5432 unreachable: lookup inventory-db: no such host\n",
       "error": null,
-      "collected_at": "2026-11-11T14:31:51.095880Z",
+      "collected_at": "2026-11-11T14:57:05.924373Z",
       "redacted": true,
       "redactions": {}
     }

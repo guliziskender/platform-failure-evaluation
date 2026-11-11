@@ -5,6 +5,9 @@
     "kind": "deployment",
     "pod": "cart-service-778b6bcd87-vf9bn",
     "container": "api",
+    "also_failing": [
+      "worker"
+    ],
     "owners": [
       {
         "kind": "ReplicaSet",
@@ -39,10 +42,10 @@
             },
             {
               "type": "Progressing",
-              "status": "True",
-              "reason": "ReplicaSetUpdated",
-              "message": "ReplicaSet \"cart-service-778b6bcd87\" is progressing.",
-              "last_update": "2026-11-11T14:31:27+00:00"
+              "status": "False",
+              "reason": "ProgressDeadlineExceeded",
+              "message": "ReplicaSet \"cart-service-778b6bcd87\" has timed out progressing.",
+              "last_update": "2026-11-11T14:41:27+00:00"
             }
           ]
         },
@@ -93,21 +96,24 @@
               "env_names": [
                 "PORT"
               ],
+              "mounts": [
+                "/var/run/secrets/kubernetes.io/serviceaccount"
+              ],
               "ready": false,
               "started": false,
-              "restart_count": 2,
+              "restart_count": 9,
               "state": {
                 "waiting": {
                   "reason": "CrashLoopBackOff",
-                  "message": "back-off 20s restarting failed container=api pod=cart-service-778b6bcd87-vf9bn_pfa-lab(2049df7d-3d77-4ccc-8549-e7fc1e44dfb2)"
+                  "message": "back-off 5m0s restarting failed container=api pod=cart-service-778b6bcd87-vf9bn_pfa-lab(2049df7d-3d77-4ccc-8549-e7fc1e44dfb2)"
                 }
               },
               "last_state": {
                 "terminated": {
                   "reason": "Error",
                   "exit_code": 1,
-                  "started_at": "2026-11-11T14:31:43+00:00",
-                  "finished_at": "2026-11-11T14:31:43+00:00"
+                  "started_at": "2026-11-11T14:52:33+00:00",
+                  "finished_at": "2026-11-11T14:52:33+00:00"
                 }
               },
               "image_id": "docker.io/library/busybox@sha256:73aaf090f3d85aa34ee199857f03fa3a95c8ede2ffd4cc2cdb5b94e566b11662"
@@ -122,23 +128,24 @@
               "args": [
                 "echo \"cart-service worker 1.12.0 starting, config /etc/cart/worker.yaml\"\ncat /etc/cart/worker.yaml >/dev/null 2>&1 || {\n  echo \"error: open /etc/cart/worker.yaml: no such file or directory\" >&2\n  exit 2\n}\nexec sleep 3600\n"
               ],
+              "mounts": [
+                "/var/run/secrets/kubernetes.io/serviceaccount"
+              ],
               "ready": false,
               "started": false,
-              "restart_count": 2,
+              "restart_count": 9,
               "state": {
-                "terminated": {
-                  "reason": "Error",
-                  "exit_code": 2,
-                  "started_at": "2026-11-11T14:31:43+00:00",
-                  "finished_at": "2026-11-11T14:31:43+00:00"
+                "waiting": {
+                  "reason": "CrashLoopBackOff",
+                  "message": "back-off 5m0s restarting failed container=worker pod=cart-service-778b6bcd87-vf9bn_pfa-lab(2049df7d-3d77-4ccc-8549-e7fc1e44dfb2)"
                 }
               },
               "last_state": {
                 "terminated": {
                   "reason": "Error",
                   "exit_code": 2,
-                  "started_at": "2026-11-11T14:31:28+00:00",
-                  "finished_at": "2026-11-11T14:31:28+00:00"
+                  "started_at": "2026-11-11T14:52:33+00:00",
+                  "finished_at": "2026-11-11T14:52:33+00:00"
                 }
               },
               "image_id": "docker.io/library/busybox@sha256:73aaf090f3d85aa34ee199857f03fa3a95c8ede2ffd4cc2cdb5b94e566b11662"
@@ -148,7 +155,7 @@
       },
       "raw_excerpt": null,
       "error": null,
-      "collected_at": "2026-11-11T14:31:50.989965Z",
+      "collected_at": "2026-11-11T14:57:05.726138Z",
       "redacted": true,
       "redactions": {}
     },
@@ -168,45 +175,45 @@
             "reason": "BackOff",
             "object": "Pod/cart-service-778b6bcd87-vf9bn",
             "message": "Back-off restarting failed container api in pod cart-service-778b6bcd87-vf9bn_pfa-lab(2049df7d-3d77-4ccc-8549-e7fc1e44dfb2)",
-            "count": 4,
+            "count": 30,
             "first_seen": "2026-11-11T14:31:28+00:00",
-            "last_seen": "2026-11-11T14:31:43+00:00"
+            "last_seen": "2026-11-11T14:52:17+00:00"
           },
           {
             "type": "Warning",
             "reason": "BackOff",
             "object": "Pod/cart-service-778b6bcd87-vf9bn",
             "message": "Back-off restarting failed container worker in pod cart-service-778b6bcd87-vf9bn_pfa-lab(2049df7d-3d77-4ccc-8549-e7fc1e44dfb2)",
-            "count": 2,
+            "count": 10,
             "first_seen": "2026-11-11T14:31:28+00:00",
-            "last_seen": "2026-11-11T14:31:43+00:00"
+            "last_seen": "2026-11-11T14:38:30+00:00"
           },
           {
             "type": "Normal",
             "reason": "Pulled",
             "object": "Pod/cart-service-778b6bcd87-vf9bn",
             "message": "Container image \"busybox:1.36\" already present on machine and can be accessed by the pod",
-            "count": 6,
+            "count": 14,
             "first_seen": "2026-11-11T14:31:28+00:00",
-            "last_seen": "2026-11-11T14:31:43+00:00"
+            "last_seen": "2026-11-11T14:52:33+00:00"
           },
           {
             "type": "Normal",
             "reason": "Created",
             "object": "Pod/cart-service-778b6bcd87-vf9bn",
             "message": "Container created",
-            "count": 6,
+            "count": 8,
             "first_seen": "2026-11-11T14:31:28+00:00",
-            "last_seen": "2026-11-11T14:31:43+00:00"
+            "last_seen": "2026-11-11T14:32:07+00:00"
           },
           {
             "type": "Normal",
             "reason": "Started",
             "object": "Pod/cart-service-778b6bcd87-vf9bn",
             "message": "Container started",
-            "count": 6,
+            "count": 8,
             "first_seen": "2026-11-11T14:31:28+00:00",
-            "last_seen": "2026-11-11T14:31:43+00:00"
+            "last_seen": "2026-11-11T14:32:07+00:00"
           },
           {
             "type": "Normal",
@@ -239,7 +246,7 @@
       },
       "raw_excerpt": null,
       "error": null,
-      "collected_at": "2026-11-11T14:31:50.991903Z",
+      "collected_at": "2026-11-11T14:57:05.729945Z",
       "redacted": true,
       "redactions": {}
     },
@@ -254,11 +261,23 @@
         "current": {
           "available": true,
           "lines": 2
+        },
+        "others": {
+          "worker": {
+            "previous": {
+              "available": true,
+              "lines": 2
+            },
+            "current": {
+              "available": true,
+              "lines": 2
+            }
+          }
         }
       },
-      "raw_excerpt": "=== previous container ===\nFATAL: required environment variable REDIS_URL is not set\ncart-service api 1.12.0 starting\n\n=== current container ===\nFATAL: required environment variable REDIS_URL is not set\ncart-service api 1.12.0 starting\n",
+      "raw_excerpt": "=== previous container ===\nFATAL: required environment variable REDIS_URL is not set\ncart-service api 1.12.0 starting\n\n=== current container ===\nFATAL: required environment variable REDIS_URL is not set\ncart-service api 1.12.0 starting\n\n=== worker: previous container ===\ncart-service worker 1.12.0 starting, config /etc/cart/worker.yaml\nerror: open /etc/cart/worker.yaml: no such file or directory\n\n=== worker: current container ===\ncart-service worker 1.12.0 starting, config /etc/cart/worker.yaml\nerror: open /etc/cart/worker.yaml: no such file or directory\n",
       "error": null,
-      "collected_at": "2026-11-11T14:31:50.990714Z",
+      "collected_at": "2026-11-11T14:57:05.735343Z",
       "redacted": true,
       "redactions": {}
     }

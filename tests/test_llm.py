@@ -134,3 +134,20 @@ def test_schema_matches_the_answer_model():
 
 def test_schema_is_plain_json():
     assert json.loads(json.dumps(ANSWER_SCHEMA)) == ANSWER_SCHEMA
+
+
+def test_escapes_a_model_wrote_twice_are_decoded():
+    # qwen3:8b wrote the path as "\\u002Fapp\\u002Fpayment-gateway", which JSON parses to the
+    # literal text /app...; shown as is, a user would read the escapes.
+    reply = llm_reply(
+        likely_cause="The command \\u002Fapp\\u002Fpayment-gateway is not in the image.",
+        fix=["Use a command that exists, e.g. \\u002Fbin\\u002Fsh"],
+    )
+    answer = parse_answer(reply)
+    assert answer.likely_cause == "The command /app/payment-gateway is not in the image."
+    assert answer.fix == ["Use a command that exists, e.g. /bin/sh"]
+
+
+def test_escaped_control_characters_stay_visible_text():
+    answer = parse_answer(llm_reply(likely_cause="bell \\u0007 here"))
+    assert answer.likely_cause == "bell \\u0007 here"

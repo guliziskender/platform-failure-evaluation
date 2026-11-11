@@ -420,9 +420,9 @@ def _connect_and_resolve(
         if exc.status == 403:
             _fail(
                 f"no permission to read namespace {namespace!r} (Kubernetes API 403 Forbidden). "
-                "pfa needs get/list on pods, pods/log, events, deployments, replicasets and "
-                "statefulsets there. In-cluster with rbac.scope=namespaces, add the namespace "
-                "to the chart's rbac.namespaces.",
+                "pfa needs get/list on pods, pods/log, events, persistentvolumeclaims, "
+                "deployments, replicasets and statefulsets there. In-cluster with "
+                "rbac.scope=namespaces, add the namespace to the chart's rbac.namespaces.",
                 code=2,
             )
         _fail(f"Kubernetes API {exc.status}: {exc.reason}", code=2)

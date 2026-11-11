@@ -5,6 +5,7 @@
     "kind": "deployment",
     "pod": "checkout-api-754754fccd-gvm4g",
     "container": "api",
+    "also_failing": [],
     "owners": [
       {
         "kind": "ReplicaSet",
@@ -42,7 +43,7 @@
               "status": "False",
               "reason": "MinimumReplicasUnavailable",
               "message": "Deployment does not have minimum availability.",
-              "last_update": "2026-11-11T14:28:43+00:00"
+              "last_update": "2026-11-11T14:55:09+00:00"
             }
           ]
         },
@@ -95,9 +96,12 @@
                 "DB_PASSWORD",
                 "LOG_LEVEL"
               ],
+              "mounts": [
+                "/var/run/secrets/kubernetes.io/serviceaccount"
+              ],
               "ready": false,
               "started": false,
-              "restart_count": 1017,
+              "restart_count": 1022,
               "state": {
                 "waiting": {
                   "reason": "CrashLoopBackOff",
@@ -108,8 +112,8 @@
                 "terminated": {
                   "reason": "Error",
                   "exit_code": 1,
-                  "started_at": "2026-11-11T14:28:42+00:00",
-                  "finished_at": "2026-11-11T14:28:42+00:00"
+                  "started_at": "2026-11-11T14:55:08+00:00",
+                  "finished_at": "2026-11-11T14:55:08+00:00"
                 }
               },
               "image_id": "docker.io/library/busybox@sha256:73aaf090f3d85aa34ee199857f03fa3a95c8ede2ffd4cc2cdb5b94e566b11662"
@@ -119,7 +123,7 @@
       },
       "raw_excerpt": null,
       "error": null,
-      "collected_at": "2026-11-11T14:31:50.970640Z",
+      "collected_at": "2026-11-11T14:57:05.695085Z",
       "redacted": true,
       "redactions": {}
     },
@@ -132,31 +136,40 @@
           "ReplicaSet/checkout-api-754754fccd",
           "Deployment/checkout-api"
         ],
-        "total": 2,
+        "total": 3,
         "events": [
           {
             "type": "Warning",
             "reason": "BackOff",
             "object": "Pod/checkout-api-754754fccd-gvm4g",
             "message": "Back-off restarting failed container api in pod checkout-api-754754fccd-gvm4g_pfa-lab(8d5dff6f-1bc7-41c0-9161-c63f2d67a959)",
-            "count": 3667,
+            "count": 3686,
             "first_seen": "2026-10-26T14:47:00+00:00",
-            "last_seen": "2026-11-11T14:30:11+00:00"
+            "last_seen": "2026-11-11T14:55:09+00:00"
           },
           {
             "type": "Normal",
             "reason": "Pulled",
             "object": "Pod/checkout-api-754754fccd-gvm4g",
             "message": "Container image \"busybox:1.36\" already present on machine and can be accessed by the pod",
-            "count": 1018,
+            "count": 1023,
             "first_seen": "2026-10-26T14:46:59+00:00",
-            "last_seen": "2026-11-11T14:28:42+00:00"
+            "last_seen": "2026-11-11T14:55:08+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "Created",
+            "object": "Pod/checkout-api-754754fccd-gvm4g",
+            "message": "Container created",
+            "count": 1020,
+            "first_seen": "2026-10-26T14:46:59+00:00",
+            "last_seen": "2026-11-11T14:39:21+00:00"
           }
         ]
       },
       "raw_excerpt": null,
       "error": null,
-      "collected_at": "2026-11-11T14:31:50.972606Z",
+      "collected_at": "2026-11-11T14:57:05.698803Z",
       "redacted": true,
       "redactions": {}
     },
@@ -175,7 +188,7 @@
       },
       "raw_excerpt": "=== previous container ===\nFATAL: required environment variable DATABASE_URL is not set\ncheckout-api v2.4.1 starting\nloading configuration from environment\ndb config: user=checkout password=<REDACTED:password>\n\n=== current container ===\nFATAL: required environment variable DATABASE_URL is not set\ncheckout-api v2.4.1 starting\nloading configuration from environment\ndb config: user=checkout password=<REDACTED:password>\n",
       "error": null,
-      "collected_at": "2026-11-11T14:31:50.972815Z",
+      "collected_at": "2026-11-11T14:57:05.698231Z",
       "redacted": true,
       "redactions": {
         "password": 2

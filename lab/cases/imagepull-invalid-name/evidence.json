@@ -5,6 +5,7 @@
     "kind": "deployment",
     "pod": "notify-worker-6f454f8d9-jl2ft",
     "container": "worker",
+    "also_failing": [],
     "owners": [
       {
         "kind": "ReplicaSet",
@@ -83,6 +84,9 @@
             {
               "name": "worker",
               "image": "busybox:1.36:latest",
+              "mounts": [
+                "/var/run/secrets/kubernetes.io/serviceaccount"
+              ],
               "ready": false,
               "started": false,
               "restart_count": 0,
@@ -98,7 +102,7 @@
       },
       "raw_excerpt": null,
       "error": null,
-      "collected_at": "2026-11-11T14:31:51.007135Z",
+      "collected_at": "2026-11-11T14:57:05.761976Z",
       "redacted": true,
       "redactions": {}
     },
@@ -118,15 +122,15 @@
             "reason": "InspectFailed",
             "object": "Pod/notify-worker-6f454f8d9-jl2ft",
             "message": "Failed to apply default image tag \"busybox:1.36:latest\": couldn't parse image name \"busybox:1.36:latest\": invalid reference format",
-            "count": 9899,
+            "count": 10039,
             "first_seen": "2026-11-02T15:26:40+00:00",
-            "last_seen": "2026-11-11T14:26:45+00:00"
+            "last_seen": "2026-11-11T14:56:47+00:00"
           }
         ]
       },
       "raw_excerpt": null,
       "error": null,
-      "collected_at": "2026-11-11T14:31:51.008747Z",
+      "collected_at": "2026-11-11T14:57:05.766905Z",
       "redacted": true,
       "redactions": {}
     },
@@ -145,7 +149,7 @@
       },
       "raw_excerpt": null,
       "error": null,
-      "collected_at": "2026-11-11T14:31:51.007672Z",
+      "collected_at": "2026-11-11T14:57:05.763155Z",
       "redacted": true,
       "redactions": {}
     }

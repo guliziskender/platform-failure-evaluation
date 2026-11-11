@@ -78,6 +78,7 @@ def test_diagnoses_a_lab_case_from_inside_the_cluster():
         ("get", "deployments.apps"),
         ("list", "replicasets.apps"),
         ("get", "statefulsets.apps"),
+        ("get", "persistentvolumeclaims"),
     ],
 )
 def test_service_account_can_read_what_pfa_needs(verb, resource):
@@ -94,6 +95,8 @@ def test_service_account_can_read_what_pfa_needs(verb, resource):
         ("create", "pods/exec"),
         ("patch", "deployments.apps"),
         ("update", "deployments.apps/scale"),
+        ("delete", "persistentvolumeclaims"),
+        ("get", "persistentvolumes"),
     ],
 )
 def test_service_account_cannot_do_anything_else(verb, resource):

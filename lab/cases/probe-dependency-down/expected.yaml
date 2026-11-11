@@ -2,8 +2,7 @@
 workload: {kind: deployment, name: stock-api}
 failure_type: probe_failure
 difficulty: hard
-known_gap: >-
-  The probe rules use the first failing probe event (connection refused, from before the server started), not the 503 that repeats.
+rules_confidence: medium
 trap: >-
   The readiness probe is configured correctly and answers truthfully: the app is not ready
   because its database is missing. Changing the probe would send traffic to a pod that cannot

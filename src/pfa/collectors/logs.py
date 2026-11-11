@@ -37,24 +37,32 @@ class LogsCollector:
 
         summary: dict[str, Any] = {"container": target.container}
         sections: list[str] = []
-        # Previous logs first: for crash loops they hold the actual crash.
-        for label, previous in (("previous", True), ("current", False)):
-            info, text = self._read(target, previous)
-            summary[label] = info
-            if text:
-                sections.append(f"=== {label} container ===\n{text}")
+        # The target container's sections keep the plain header, so older saved evidence reads
+        # the same. Other failing containers get theirs labelled: "=== worker: previous ...".
+        for name in [target.container, *target.also_failing]:
+            info: dict[str, Any] = {}
+            prefix = "" if name == target.container else f"{name}: "
+            # Previous logs first: for crash loops they hold the actual crash.
+            for label, previous in (("previous", True), ("current", False)):
+                info[label], text = self._read(target, name, previous)
+                if text:
+                    sections.append(f"=== {prefix}{label} container ===\n{text}")
+            if name == target.container:
+                summary.update(info)
+            else:
+                summary.setdefault("others", {})[name] = info
         return Evidence(
             source=self.name,
             summary=summary,
             raw_excerpt="\n".join(sections) or None,
         )
 
-    def _read(self, target: Target, previous: bool) -> tuple[dict[str, Any], str]:
+    def _read(self, target: Target, container: str, previous: bool) -> tuple[dict[str, Any], str]:
         try:
             text = self.clients.core.read_namespaced_pod_log(
                 target.pod,
                 target.namespace,
-                container=target.container,
+                container=container,
                 previous=previous,
                 tail_lines=self.tail_lines,
                 _request_timeout=self.clients.timeout,

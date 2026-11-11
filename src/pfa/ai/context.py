@@ -79,6 +79,8 @@ def _render(
     target += f", pod {t.pod}" if t.pod else ", no pod exists"
     if t.container:
         target += f", container {t.container}"
+    if t.also_failing:
+        target += f". Also failing: {', '.join(t.also_failing)} (diagnose each)"
     parts.append(_section("Target", _text(target)))
 
     classification = [f"type: {c.failure_type.value}", f"problem: {c.problem}"]

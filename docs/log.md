@@ -661,3 +661,59 @@ to stay at 100%, and 16/21 is the honest score now. A percentage is the wrong ga
 misses are expected. `pfa eval --fail-on-new-misses` exits 1 only on a miss whose case has no
 `known_gap`, so any regression still fails CI, and fixing a gap fails the unit tests until its
 `known_gap` is removed. Everything else in that run passed, including 16/21 on live kind evidence.
+
+## 2026-11-11: Fixes from the hard cases
+
+**Done** (each with unit tests; four mutation-checked)
+- `crash_log_error` quotes the most severe error line (fatal/panic before error), not the last.
+  When that line names an env var the container sets, it says the app rejects its value
+  (medium).
+- Every failing container is diagnosed. `Target.also_failing` lists the pod's other containers
+  failing *now* (not an old restart). The logs collector reads their logs into labelled
+  sections (`=== worker: previous container ===`), and `EvidenceView.logs` gives each container
+  only its own. `analyze` runs the rules per container, and the answer names each cause,
+  at the confidence of the least sure one.
+- Probe rules use each probe's current failure (latest, then most frequent). The
+  connection-refused event from before the server started no longer wins over the 503 that
+  repeats.
+- `dns_failures` recognises failed lookups as Go, Node, Java, libpq, glibc and busybox print
+  them. New `crash_dns_lookup_failed` (medium: the lookup surely fails; why is not visible), and
+  a 5xx readiness probe whose logs show one says the probe is right.
+- New `crash_missing_file`: "open X: no such file or directory", with or without a volume
+  mounted there (container summaries now list mount paths).
+- `pending_pvc`: high only when the claim says why (missing claim, StorageClass not found);
+  medium from the pod's side alone, which was confident and wrong before.
+- `k8s_state` reads each claim the pod mounts, with the claim's own events. One new
+  permission: get on `persistentvolumeclaims` (chart, deploy guide, README, CLAUDE.md, the 403
+  message). A 404 means the claim is missing; any other error keeps the pod's state.
+  `make test-helm`: get pvc is allowed, delete pvc and get persistentvolumes are refused.
+- AI answers: `\uXXXX` escapes a model wrote twice are decoded (printable ones only).
+
+**What broke / surprised**
+- The RBAC test caught the new API call being invisible: called through a local alias
+  (`core = self.clients.core`), the source scan missed it. Calls are written out in full now.
+- With no pod state in the evidence, scoping logs by container returned nothing; the target's
+  container name is the fallback.
+- qwen3:8b still missed the two-container case after the fix, so I checked the prompt before
+  blaming the model. The worker's logs were in it, but its rule finding was not: other
+  containers' hits went only into the rules' own answer, and the hints held just the api
+  container's finding, at high certainty, which the model is told to trust. Now `Report.rule_hits`
+  carries every container's findings, named by container, and the prompt's Target line says
+  "Also failing: worker (diagnose each)". qwen3:8b then got the case right (medium).
+
+**Results (saved evidence; rules also live)**
+
+| Answered by | Before the fixes | After | Confident and wrong |
+| --- | --- | --- | --- |
+| rules | 16/21 | 21/21 (live too) | 3 -> 0 |
+| claude-opus-5-5 | 20/21 | 21/21 | 1 -> 0 |
+| qwen3:8b | 18/21 | 21/21 | 3 -> 0 |
+
+The rules were fixed on these cases, so their 21/21 is no longer an unseen-case score. The
+models were not changed; they gained from better evidence (the claim, the other container's
+logs) and hints. The final qwen3:8b run took 85 minutes because the Mac slept through most of
+it (pmset log); every request was still 15 to 65 s, and none timed out. Long local runs now use
+`caffeinate -i -w <pid>`.
+
+**Next:** the hard cases are all passing now, so they no longer find weaknesses. The next
+honest signal needs new cases written before any fix (or real failures from step 4).

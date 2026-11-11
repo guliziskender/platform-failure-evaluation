@@ -38,8 +38,17 @@ def run_rules(view: EvidenceView, classification: Classification) -> list[RuleHi
     )
 
 
-def answer_from_rules(classification: Classification, hits: list[RuleHit]) -> Diagnosis:
-    """The --no-llm answer: the best rule hit, or an honest "unsure"."""
+def answer_from_rules(
+    classification: Classification,
+    hits: list[RuleHit],
+    label: str = "",
+    others: list[tuple[str, RuleHit]] | None = None,
+) -> Diagnosis:
+    """The --no-llm answer: the best rule hit, or an honest "unsure".
+
+    `others` holds the best hit for each other failing container. Each one with a different
+    cause is part of the answer: fixing only the first would leave the pod broken.
+    """
     if not hits:
         if classification.failure_type is FailureType.NONE:
             return Diagnosis(
@@ -65,15 +74,29 @@ def answer_from_rules(classification: Classification, hits: list[RuleHit]) -> Di
     failure_type = classification.failure_type
     if failure_type in (FailureType.UNKNOWN, FailureType.NONE):
         failure_type = best.failure_type
+    extra = [(lbl, h) for lbl, h in others or [] if h.cause != best.cause]
+    cause, fix, certainty, evidence = best.cause, best.fix, best.certainty, best.evidence
+    if extra and label:
+        parts = [(label, best), *extra]
+        cause = f"{len(parts)} containers fail, for different reasons. " + " ".join(
+            f"{_upper_first(lbl)}: {h.cause}" for lbl, h in parts
+        )
+        fix = [f"{_upper_first(lbl)}: {f}" for lbl, h in parts for f in h.fix]
+        certainty = max((h.certainty for _, h in parts), key=_CERTAINTY_ORDER.__getitem__)
+        evidence = [e for _, h in parts for e in h.evidence]
     return Diagnosis(
         failure_type=failure_type,
         problem=classification.problem,
-        likely_cause=best.cause,
-        fix=best.fix,
-        confidence=best.certainty,
-        evidence_used=_dedupe(best.evidence + classification.signals),
-        rule_hits=[h.rule for h in hits],
+        likely_cause=cause,
+        fix=fix,
+        confidence=certainty,
+        evidence_used=_dedupe(evidence + classification.signals),
+        rule_hits=_dedupe([h.rule for h in hits] + [h.rule for _, h in extra]),
     )
+
+
+def _upper_first(text: str) -> str:
+    return text[:1].upper() + text[1:]
 
 
 # =============================================================================================
@@ -451,7 +474,64 @@ def pending_pvc(v: EvidenceView) -> RuleHit | None:
         r"unbound immediate PersistentVolumeClaims|persistentvolumeclaim .* not found", message
     ):
         return None
-    pvcs = ", ".join(v.pod.get("pvcs", [])) or "its PVC"
+    claims = v.summary("k8s_state").get("claims", [])
+    names = v.pod.get("pvcs", []) if v.pod else []
+    evidence = [f"scheduler: {message}"]
+    for claim in claims:
+        name = claim["name"]
+        if claim.get("missing"):
+            return _hit(
+                "pending_pvc",
+                FailureType.PENDING,
+                finding=f"The pod's PersistentVolumeClaim {name} does not exist.",
+                cause=f"The pod mounts PersistentVolumeClaim {name}, which does not exist in "
+                f"namespace {v.target.namespace}.",
+                fix=[f"Create the claim {name}, or fix claimName in the pod spec"],
+                certainty="high",
+                evidence=[*evidence, f"claim {name}: not found"],
+            )
+        failed = [e for e in claim.get("events", []) if e.get("reason") == "ProvisioningFailed"]
+        sc = claim.get("storage_class")
+        if failed and (
+            m := re.search(r'storageclass[\w.]* "([^"]+)" not found', failed[0]["message"])
+        ):
+            return _hit(
+                "pending_pvc",
+                FailureType.PENDING,
+                finding=f"Claim {name} asks for StorageClass {m.group(1)}, which does not exist.",
+                cause=f"PersistentVolumeClaim {name} asks for storageClassName {m.group(1)}, "
+                "which does not exist in the cluster, so no volume is provisioned and the pod "
+                "cannot be scheduled.",
+                fix=[
+                    "List the StorageClasses that exist: kubectl get storageclass",
+                    f"Recreate claim {name} with one of them (storageClassName cannot be "
+                    f"changed on an existing claim), or create StorageClass {m.group(1)}",
+                ],
+                certainty="high",
+                evidence=[
+                    *evidence,
+                    f"claim {name} event ProvisioningFailed: {failed[0]['message']}",
+                ],
+            )
+        if failed:
+            return _hit(
+                "pending_pvc",
+                FailureType.PENDING,
+                finding=f"Provisioning a volume for claim {name} fails.",
+                cause=f"PersistentVolumeClaim {name} (StorageClass {sc or 'default'}) cannot get "
+                f"a volume: {failed[0]['message']}",
+                fix=[
+                    f"Fix what the provisioner reports: kubectl describe pvc {name}",
+                    "Check the StorageClass's provisioner is running",
+                ],
+                certainty="medium",
+                evidence=[
+                    *evidence,
+                    f"claim {name} event ProvisioningFailed: {failed[0]['message']}",
+                ],
+            )
+    # Only the pod's side is visible: it waits for a claim, but not why the claim is stuck.
+    pvcs = ", ".join(names) or "its PVC"
     return _hit(
         "pending_pvc",
         FailureType.PENDING,
@@ -462,8 +542,9 @@ def pending_pvc(v: EvidenceView) -> RuleHit | None:
             f"Check the claim: kubectl get pvc {pvcs.split(', ')[0]} and kubectl describe pvc",
             "Make sure the StorageClass exists and its provisioner is running",
         ],
-        certainty="high",
-        evidence=[f"scheduler: {message}"],
+        certainty="medium",
+        evidence=evidence
+        + [f"claim {c['name']}: {c.get('phase') or c.get('error')}" for c in claims],
     )
 
 
@@ -502,13 +583,23 @@ _PROBE_EVENT = re.compile(r"^(Liveness|Readiness|Startup) probe failed: (.*)", r
 
 
 def _probe_failures(v: EvidenceView) -> list[tuple[str, str, dict]]:
-    """(probe kind, failure text, event) for each Unhealthy event."""
-    out = []
+    """(probe kind, failure text, event): how each probe fails now.
+
+    One per probe kind: the latest failure, ties to the most frequent. A probe often fails
+    differently while the app starts (connection refused) than once it runs (HTTP 503); the
+    early failure is history, not the diagnosis.
+    """
+    current: dict[str, tuple[str, str, dict]] = {}
     for e in v.events_where("Unhealthy"):
         m = _PROBE_EVENT.match(e["message"])
-        if m:
-            out.append((m.group(1).lower(), m.group(2), e))
-    return out
+        if not m:
+            continue
+        kind = m.group(1).lower()
+        rank = (e.get("last_seen") or "", e.get("count", 1))
+        best = current.get(kind)
+        if best is None or rank > (best[2].get("last_seen") or "", best[2].get("count", 1)):
+            current[kind] = (kind, m.group(2), e)
+    return list(current.values())
 
 
 def _probe_port(probe: dict) -> str | None:
@@ -619,6 +710,15 @@ def probe_http_status(v: EvidenceView) -> RuleHit | None:
             cause = f"The app requires authentication on {path} ({code}); probes send none."
             fix = ["Expose an unauthenticated health endpoint and probe that"]
             certainty = "high"
+        elif code >= 500 and (failures := dns_failures(v.logs)):
+            host, line = failures[-1]
+            dns_cause, fix = _dns_advice(v, host)
+            cause = (
+                f"The app answers {code} on {path} because a dependency is missing, not because "
+                f'the probe is wrong. Its logs: "{line}". {dns_cause}'
+            )
+            fix = [*fix, "Leave the probe as it is: it correctly keeps traffic away until then"]
+            certainty = "medium"
         elif code >= 500:
             cause = (
                 f"The app answers {code} on {path}: it reports itself unhealthy, often because "
@@ -889,30 +989,61 @@ def crash_signal(v: EvidenceView) -> RuleHit | None:
     )
 
 
-_ERROR_LINE = re.compile(r"\b(fatal|error|exception|panic|traceback|failed|cannot|refused)\b", re.I)
+# Error lines, most severe first. The cause of a crash is usually its most severe line, not its
+# last one: apps log side effects (failed flushes, closed connections) while shutting down.
+_SEVERITY = [
+    re.compile(r"\b(fatal|panic|critical|crit|emerg)\b|traceback|unhandled exception", re.I),
+    re.compile(r"\b(error|exception|failed|cannot|refused|err)\b", re.I),
+]
+# An env var name, as apps print it in an error about its value.
+_ENV_NAME = re.compile(r"\b([A-Z][A-Z0-9]*_[A-Z0-9_]+|[A-Z]{4,})\b")
+
+
+def _error_lines(logs: str) -> list[str]:
+    """Error lines of the most severe level present, in log order; [] if none."""
+    lines = [ln.strip() for ln in logs.splitlines() if ln.strip() and not ln.startswith("===")]
+    for level in _SEVERITY:
+        found = [ln for ln in lines if level.search(ln)]
+        if found:
+            return _dedupe(found)
+    return []
 
 
 @rule
 def crash_log_error(v: EvidenceView) -> RuleHit | None:
-    """Fallback for crashes: point at the most relevant error line in the logs."""
+    """Fallback for crashes: point at the most severe error line in the logs."""
     term = v.termination()
     code = term.get("exit_code")
     if code in (None, 0) or term.get("reason") == "OOMKilled" or code in KILLED_EXIT_CODES:
         return None
     lines = [ln for ln in v.logs.splitlines() if ln and not ln.startswith("===")]
-    errors = [ln.strip() for ln in lines if _ERROR_LINE.search(ln)]
+    errors = _error_lines(v.logs)
     if errors:
+        line = errors[-1][:300]
+        fix = [
+            "Fix the error the log line names (configuration, dependency, or code)",
+            f"Full logs: kubectl logs {v.target.pod} -c {v.container_name} --previous",
+        ]
+        certainty: Certainty = "low"
+        # The line names an env var the container sets: its value is what the app rejects.
+        env_names = set(v.container.get("env_names", []))
+        named = [n for n in _ENV_NAME.findall(line) if n in env_names]
+        cause = f'{_who_fails(v)} and exits with code {code}. Its most severe log line: "{line}"'
+        if named:
+            cause += f". It names {named[0]}, which the container sets: the app rejects its value."
+            fix = [
+                f"Check the value of {named[0]} in the container's env (or its ConfigMap/Secret) "
+                "against what the log line says the app expects, and roll out again",
+                *fix[1:],
+            ]
+            certainty = "medium"
         return _hit(
             "crash_log_error",
             FailureType.CRASH_LOOP,
             finding=f"The {v.container_label} exits with code {code}; its logs report an error.",
-            cause=f"{_who_fails(v)} and exits with code {code}. Last error in its logs: "
-            f'"{errors[-1][:300]}"',
-            fix=[
-                "Fix the error the log line names (configuration, dependency, or code)",
-                f"Full logs: kubectl logs {v.target.pod} -c {v.container_name} --previous",
-            ],
-            certainty="low",
+            cause=cause,
+            fix=fix,
+            certainty=certainty,
             evidence=[f"termination: exit {code}"] + [f"log: {e[:300]}" for e in errors[-3:]],
         )
     if not lines:
@@ -930,6 +1061,124 @@ def crash_log_error(v: EvidenceView) -> RuleHit | None:
             evidence=[f"termination: exit {code}", "logs: empty"],
         )
     return None
+
+
+# How apps and libraries report a hostname that does not resolve: Go, glibc/Python, Node, Java,
+# libpq, busybox. Group 1 is the host.
+_DNS_FAILURE = [
+    re.compile(r"lookup ([A-Za-z0-9][\w.-]*)(?: on [\d.:\[\]a-f]+)?: no such host"),
+    re.compile(r"getaddrinfo (?:ENOTFOUND|EAI_AGAIN) ([A-Za-z0-9][\w.-]*)"),
+    re.compile(r"UnknownHostException: ([A-Za-z0-9][\w.-]*)"),
+    re.compile(r'could not translate host name "([^"]+)" to address'),
+    re.compile(r"can't resolve '([^']+)'"),
+    re.compile(
+        r"([A-Za-z0-9][\w.-]*)(?::\d+)?: (?:Name or service not known|nodename nor servname)"
+    ),
+]
+
+
+def dns_failures(logs: str) -> list[tuple[str, str]]:
+    """(host, log line) for each hostname the logs say does not resolve, first seen first."""
+    found: dict[str, str] = {}
+    for ln in logs.splitlines():
+        for pattern in _DNS_FAILURE:
+            if m := pattern.search(ln):
+                found.setdefault(m.group(1).rstrip("."), ln.strip()[:300])
+    return list(found.items())
+
+
+def _dns_advice(v: EvidenceView, host: str) -> tuple[str, list[str]]:
+    """What a failed lookup of `host` means, and what to check. A short name is a Service in
+    the pod's namespace; pfa cannot read Services, so it says what to check, not what it saw."""
+    ns = v.target.namespace
+    short = host.split(".")[0]
+    in_cluster = "." not in host or host.endswith((".svc", ".svc.cluster.local", ".cluster.local"))
+    if in_cluster:
+        cause = (
+            f"The hostname {host} does not resolve: there is no Service named {short} in "
+            f"namespace {ns} (or it is in another namespace and needs {short}.<namespace>)."
+        )
+        fix = [
+            f"Check the Service exists: kubectl get svc {short} -n {ns}",
+            f"Create the {short} Service (or deploy what it fronts), or point the app at the "
+            "right Service name",
+        ]
+    else:
+        cause = f"The hostname {host} does not resolve from inside the cluster."
+        fix = [
+            f"Check the name {host} for typos and that it exists in DNS",
+            "Check the cluster's DNS can resolve external names (kubectl run a busybox pod and "
+            f"nslookup {host})",
+        ]
+    return cause, fix
+
+
+@rule
+def crash_dns_lookup_failed(v: EvidenceView) -> RuleHit | None:
+    term = v.termination()
+    if term.get("exit_code") in (None, 0) or term.get("reason") == "OOMKilled":
+        return None
+    failures = dns_failures(v.logs)
+    if not failures:
+        return None
+    host, line = failures[-1]
+    cause, fix = _dns_advice(v, host)
+    return _hit(
+        "crash_dns_lookup_failed",
+        FailureType.CRASH_LOOP,
+        finding=f"The app cannot resolve {host} and exits.",
+        cause=f"{_who_fails(v)}: it cannot reach a dependency. {cause}",
+        fix=fix,
+        # The lookup failure is certain; why (no Service, wrong name, DNS down) is not.
+        certainty="medium",
+        evidence=[f"log: {line}", f"termination: exit {term.get('exit_code')}"],
+    )
+
+
+_MISSING_FILE = re.compile(
+    r"(?:open|stat|read|load(?:ing)?|reading)\s+['\"]?(/[\w./-]+)['\"]?\s*:\s*no such file or "
+    r"directory|\[Errno 2\] No such file or directory: '(/[^']+)'|ENOENT[^']*'(/[^']+)'",
+    re.I,
+)
+
+
+@rule
+def crash_missing_file(v: EvidenceView) -> RuleHit | None:
+    term = v.termination()
+    if term.get("exit_code") in (None, 0) or term.get("reason") == "OOMKilled":
+        return None
+    m = _MISSING_FILE.search(v.logs)
+    if not m:
+        return None
+    path = next(g for g in m.groups() if g)
+    line = _line_containing(v.logs, m.group(0))
+    mounts = v.container.get("mounts", [])
+    covering = [mp for mp in mounts if path == mp or path.startswith(mp.rstrip("/") + "/")]
+    directory = path.rsplit("/", 1)[0] or "/"
+    if covering:
+        cause = (
+            f"it cannot open {path}. A volume is mounted at {covering[0]}, but it has no "
+            f"{path.rsplit('/', 1)[-1]}: the ConfigMap/Secret key or file name is wrong."
+        )
+        fix = [f"Check the keys of the volume mounted at {covering[0]} match {path}"]
+    else:
+        cause = (
+            f"it cannot open {path}: the file is not in the image and nothing is mounted at "
+            f"{directory}."
+        )
+        fix = [
+            f"Mount the file at {path} (e.g. a ConfigMap with key {path.rsplit('/', 1)[-1]} "
+            f"mounted at {directory}), or fix the path the app is given",
+        ]
+    return _hit(
+        "crash_missing_file",
+        FailureType.CRASH_LOOP,
+        finding=f"The app exits because {path} does not exist.",
+        cause=f"{_who_fails(v)} because {cause}",
+        fix=fix,
+        certainty="medium",
+        evidence=[f"log: {line}", f"mounts: {', '.join(mounts) or 'none'}"],
+    )
 
 
 # =============================================================================================

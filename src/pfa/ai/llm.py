@@ -10,7 +10,7 @@ import json
 import re
 from typing import Any
 
-from pydantic import BaseModel, ConfigDict, ValidationError
+from pydantic import BaseModel, ConfigDict, ValidationError, field_validator
 
 from pfa.ai.context import Prompt, build_prompt
 from pfa.ai.providers.base import LLMProvider, ProviderError
@@ -31,6 +31,23 @@ class LLMAnswer(BaseModel):
     fix: list[str]
     confidence: Confidence
     evidence_used: list[str]
+
+    @field_validator("problem", "likely_cause", "fix", "evidence_used")
+    @classmethod
+    def _decode_leftover_escapes(cls, value: str | list[str]) -> str | list[str]:
+        """Some models escape twice, so `\\u002F` survives JSON parsing as the text "\\u002F"
+        (seen from qwen3:8b: "\\u002Fapp\\u002Fpayment-gateway"). Decode printable ones."""
+        if isinstance(value, list):
+            return [_LEFTOVER_ESCAPE.sub(_unescape, v) for v in value]
+        return _LEFTOVER_ESCAPE.sub(_unescape, value)
+
+
+_LEFTOVER_ESCAPE = re.compile(r"\\u([0-9a-fA-F]{4})")
+
+
+def _unescape(m: re.Match[str]) -> str:
+    char = chr(int(m.group(1), 16))
+    return char if char.isprintable() else m.group(0)
 
 
 # Written out by hand: structured-output APIs accept only a subset of JSON Schema, and this

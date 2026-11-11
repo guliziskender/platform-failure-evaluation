@@ -1,0 +1,35 @@
+{
+  "apiVersion": "v1",
+  "kind": "PersistentVolumeClaim",
+  "metadata": {
+    "annotations": {
+      "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"v1\",\"kind\":\"PersistentVolumeClaim\",\"metadata\":{\"annotations\":{},\"labels\":{\"app.kubernetes.io/part-of\":\"pfa-lab\"},\"name\":\"metrics-data\",\"namespace\":\"pfa-lab\"},\"spec\":{\"accessModes\":[\"ReadWriteOnce\"],\"resources\":{\"requests\":{\"storage\":\"1Gi\"}},\"storageClassName\":\"fast-ssd\"}}\n"
+    },
+    "creationTimestamp": "2026-11-11T14:31:27Z",
+    "finalizers": [
+      "kubernetes.io/pvc-protection"
+    ],
+    "labels": {
+      "app.kubernetes.io/part-of": "pfa-lab"
+    },
+    "name": "metrics-data",
+    "namespace": "pfa-lab",
+    "resourceVersion": "1145726",
+    "uid": "edfbef7b-d17a-4525-bd23-338ce454b9bf"
+  },
+  "spec": {
+    "accessModes": [
+      "ReadWriteOnce"
+    ],
+    "resources": {
+      "requests": {
+        "storage": "1Gi"
+      }
+    },
+    "storageClassName": "fast-ssd",
+    "volumeMode": "Filesystem"
+  },
+  "status": {
+    "phase": "Pending"
+  }
+}

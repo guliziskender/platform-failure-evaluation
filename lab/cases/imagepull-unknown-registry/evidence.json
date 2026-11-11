@@ -5,6 +5,7 @@
     "kind": "deployment",
     "pod": "billing-ui-599f78df5c-qhksw",
     "container": "web",
+    "also_failing": [],
     "owners": [
       {
         "kind": "ReplicaSet",
@@ -83,6 +84,9 @@
             {
               "name": "web",
               "image": "registry.pfa-lab.invalid/billing/ui:3.2.0",
+              "mounts": [
+                "/var/run/secrets/kubernetes.io/serviceaccount"
+              ],
               "ready": false,
               "started": false,
               "restart_count": 0,
@@ -98,7 +102,7 @@
       },
       "raw_excerpt": null,
       "error": null,
-      "collected_at": "2026-11-11T14:31:51.023252Z",
+      "collected_at": "2026-11-11T14:57:05.800220Z",
       "redacted": true,
       "redactions": {}
     },
@@ -118,24 +122,24 @@
             "reason": "Failed",
             "object": "Pod/billing-ui-599f78df5c-qhksw",
             "message": "Error: ImagePullBackOff",
-            "count": 9484,
+            "count": 9616,
             "first_seen": "2026-11-02T15:26:41+00:00",
-            "last_seen": "2026-11-11T14:26:54+00:00"
+            "last_seen": "2026-11-11T14:56:49+00:00"
           },
           {
             "type": "Normal",
             "reason": "BackOff",
             "object": "Pod/billing-ui-599f78df5c-qhksw",
             "message": "Back-off pulling image \"registry.pfa-lab.invalid/billing/ui:3.2.0\"",
-            "count": 9484,
+            "count": 9616,
             "first_seen": "2026-11-02T15:26:41+00:00",
-            "last_seen": "2026-11-11T14:26:54+00:00"
+            "last_seen": "2026-11-11T14:56:49+00:00"
           }
         ]
       },
       "raw_excerpt": null,
       "error": null,
-      "collected_at": "2026-11-11T14:31:51.024950Z",
+      "collected_at": "2026-11-11T14:57:05.803567Z",
       "redacted": true,
       "redactions": {}
     },
@@ -154,7 +158,7 @@
       },
       "raw_excerpt": null,
       "error": null,
-      "collected_at": "2026-11-11T14:31:51.023647Z",
+      "collected_at": "2026-11-11T14:57:05.801679Z",
       "redacted": true,
       "redactions": {}
     }

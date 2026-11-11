@@ -5,6 +5,7 @@
     "kind": "deployment",
     "pod": "video-encoder-bd66c676c-488dc",
     "container": "encoder",
+    "also_failing": [],
     "owners": [
       {
         "kind": "ReplicaSet",
@@ -66,6 +67,9 @@
               "command": [
                 "sleep",
                 "3600"
+              ],
+              "mounts": [
+                "/var/run/secrets/kubernetes.io/serviceaccount"
               ]
             }
           ],
@@ -78,7 +82,7 @@
       },
       "raw_excerpt": null,
       "error": null,
-      "collected_at": "2026-11-11T14:31:51.077636Z",
+      "collected_at": "2026-11-11T14:57:05.890743Z",
       "redacted": true,
       "redactions": {}
     },
@@ -106,7 +110,7 @@
       },
       "raw_excerpt": null,
       "error": null,
-      "collected_at": "2026-11-11T14:31:51.079008Z",
+      "collected_at": "2026-11-11T14:57:05.893140Z",
       "redacted": true,
       "redactions": {}
     },
@@ -127,7 +131,7 @@
       },
       "raw_excerpt": null,
       "error": null,
-      "collected_at": "2026-11-11T14:31:51.077416Z",
+      "collected_at": "2026-11-11T14:57:05.890267Z",
       "redacted": true,
       "redactions": {}
     }

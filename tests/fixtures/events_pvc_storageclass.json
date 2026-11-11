@@ -1,0 +1,33 @@
+[
+  {
+    "apiVersion": "v1",
+    "count": 102,
+    "eventTime": null,
+    "firstTimestamp": "2026-11-11T14:31:27Z",
+    "involvedObject": {
+      "apiVersion": "v1",
+      "kind": "PersistentVolumeClaim",
+      "name": "metrics-data",
+      "namespace": "pfa-lab",
+      "resourceVersion": "1145726",
+      "uid": "edfbef7b-d17a-4525-bd23-338ce454b9bf"
+    },
+    "kind": "Event",
+    "lastTimestamp": "2026-11-11T14:56:42Z",
+    "message": "storageclass.storage.k8s.io \"fast-ssd\" not found",
+    "metadata": {
+      "creationTimestamp": "2026-11-11T14:31:27Z",
+      "name": "metrics-data.18e7041a5dc303ab",
+      "namespace": "pfa-lab",
+      "resourceVersion": "1149124",
+      "uid": "971a46c3-7fbc-4382-86fc-a50e68fc2468"
+    },
+    "reason": "ProvisioningFailed",
+    "reportingComponent": "persistentvolume-controller",
+    "reportingInstance": "",
+    "source": {
+      "component": "persistentvolume-controller"
+    },
+    "type": "Warning"
+  }
+]

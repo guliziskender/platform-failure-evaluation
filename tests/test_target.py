@@ -3,6 +3,7 @@ from kubernetes.client import V1LabelSelector, V1LabelSelectorRequirement
 
 from pfa.engine.target import (
     TargetNotFound,
+    also_failing,
     label_selector,
     pick_container,
     pick_pod,
@@ -150,3 +151,29 @@ def test_label_selector_with_expressions():
         ],
     )
     assert label_selector(sel) == "app=web,tier in (a,b),!canary"
+
+
+# --- every failing container (lab case crashloop-two-containers) ------------------------------
+
+
+def test_also_failing_lists_the_other_crashing_container():
+    two = pod("crashloop_two_containers")
+    assert {pick_container(two), *also_failing(two)} == {"api", "worker"}
+    assert len(also_failing(two)) == 1
+
+
+def test_also_failing_skips_a_container_that_only_restarted_long_ago():
+    def worker_recovered(data):
+        cs = next(c for c in data["status"]["containerStatuses"] if c["name"] == "worker")
+        cs.update({"ready": True, "state": {"running": {"startedAt": "2026-10-01T00:00:00Z"}}})
+        cs["lastState"] = {
+            "terminated": {"exitCode": 2, "reason": "Error", "finishedAt": "2026-10-01T00:00:00Z"}
+        }
+
+    two = pod("crashloop_two_containers", worker_recovered)
+    assert pick_container(two) == "api"
+    assert also_failing(two) == []
+
+
+def test_single_container_pod_has_nothing_else_failing(oom_pod):
+    assert also_failing(oom_pod) == []

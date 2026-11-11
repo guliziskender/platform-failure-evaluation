@@ -5,6 +5,7 @@
     "kind": "deployment",
     "pod": "admin-portal-6d5f44559c-khxnw",
     "container": "web",
+    "also_failing": [],
     "owners": [
       {
         "kind": "ReplicaSet",
@@ -39,10 +40,10 @@
             },
             {
               "type": "Progressing",
-              "status": "True",
-              "reason": "ReplicaSetUpdated",
-              "message": "ReplicaSet \"admin-portal-6d5f44559c\" is progressing.",
-              "last_update": "2026-11-11T14:31:27+00:00"
+              "status": "False",
+              "reason": "ProgressDeadlineExceeded",
+              "message": "ReplicaSet \"admin-portal-6d5f44559c\" has timed out progressing.",
+              "last_update": "2026-11-11T14:41:27+00:00"
             }
           ]
         },
@@ -87,6 +88,9 @@
                 "sleep",
                 "3600"
               ],
+              "mounts": [
+                "/var/run/secrets/kubernetes.io/serviceaccount"
+              ],
               "ready": false,
               "started": false,
               "restart_count": 0,
@@ -105,7 +109,7 @@
       },
       "raw_excerpt": null,
       "error": null,
-      "collected_at": "2026-11-11T14:31:51.014857Z",
+      "collected_at": "2026-11-11T14:57:05.783387Z",
       "redacted": true,
       "redactions": {}
     },
@@ -122,57 +126,57 @@
         "events": [
           {
             "type": "Warning",
-            "reason": "Failed",
-            "object": "Pod/admin-portal-6d5f44559c-khxnw",
-            "message": "Failed to pull image \"busybox:1.63\": rpc error: code = NotFound desc = failed to pull and unpack image \"docker.io/library/busybox:1.63\": failed to resolve reference \"docker.io/library/busybox:1.63\": docker.io/library/busybox:1.63: not found",
-            "count": 2,
-            "first_seen": "2026-11-11T14:31:29+00:00",
-            "last_seen": "2026-11-11T14:31:46+00:00"
-          },
-          {
-            "type": "Warning",
-            "reason": "Failed",
-            "object": "Pod/admin-portal-6d5f44559c-khxnw",
-            "message": "Error: ErrImagePull",
-            "count": 2,
-            "first_seen": "2026-11-11T14:31:29+00:00",
-            "last_seen": "2026-11-11T14:31:46+00:00"
-          },
-          {
-            "type": "Warning",
             "reason": "FailedToRetrieveImagePullSecret",
             "object": "Pod/admin-portal-6d5f44559c-khxnw",
             "message": "Unable to retrieve some image pull secrets (regcred); attempting to pull the image may not succeed.",
-            "count": 3,
+            "count": 118,
             "first_seen": "2026-11-11T14:31:28+00:00",
-            "last_seen": "2026-11-11T14:31:45+00:00"
+            "last_seen": "2026-11-11T14:56:38+00:00"
           },
           {
             "type": "Warning",
             "reason": "Failed",
             "object": "Pod/admin-portal-6d5f44559c-khxnw",
             "message": "Error: ImagePullBackOff",
-            "count": 1,
+            "count": 6,
             "first_seen": "2026-11-11T14:31:29+00:00",
-            "last_seen": "2026-11-11T14:31:29+00:00"
+            "last_seen": "2026-11-11T14:33:17+00:00"
           },
           {
-            "type": "Normal",
-            "reason": "Pulling",
+            "type": "Warning",
+            "reason": "Failed",
             "object": "Pod/admin-portal-6d5f44559c-khxnw",
-            "message": "Pulling image \"busybox:1.63\"",
-            "count": 2,
-            "first_seen": "2026-11-11T14:31:28+00:00",
-            "last_seen": "2026-11-11T14:31:45+00:00"
+            "message": "Failed to pull image \"busybox:1.63\": rpc error: code = NotFound desc = failed to pull and unpack image \"docker.io/library/busybox:1.63\": failed to resolve reference \"docker.io/library/busybox:1.63\": docker.io/library/busybox:1.63: not found",
+            "count": 4,
+            "first_seen": "2026-11-11T14:31:29+00:00",
+            "last_seen": "2026-11-11T14:33:03+00:00"
+          },
+          {
+            "type": "Warning",
+            "reason": "Failed",
+            "object": "Pod/admin-portal-6d5f44559c-khxnw",
+            "message": "Error: ErrImagePull",
+            "count": 4,
+            "first_seen": "2026-11-11T14:31:29+00:00",
+            "last_seen": "2026-11-11T14:33:03+00:00"
           },
           {
             "type": "Normal",
             "reason": "BackOff",
             "object": "Pod/admin-portal-6d5f44559c-khxnw",
             "message": "Back-off pulling image \"busybox:1.63\"",
-            "count": 1,
+            "count": 109,
             "first_seen": "2026-11-11T14:31:29+00:00",
-            "last_seen": "2026-11-11T14:31:29+00:00"
+            "last_seen": "2026-11-11T14:56:38+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "Pulling",
+            "object": "Pod/admin-portal-6d5f44559c-khxnw",
+            "message": "Pulling image \"busybox:1.63\"",
+            "count": 5,
+            "first_seen": "2026-11-11T14:31:28+00:00",
+            "last_seen": "2026-11-11T14:34:37+00:00"
           },
           {
             "type": "Normal",
@@ -205,7 +209,7 @@
       },
       "raw_excerpt": null,
       "error": null,
-      "collected_at": "2026-11-11T14:31:51.016747Z",
+      "collected_at": "2026-11-11T14:57:05.787486Z",
       "redacted": true,
       "redactions": {}
     },
@@ -224,7 +228,7 @@
       },
       "raw_excerpt": null,
       "error": null,
-      "collected_at": "2026-11-11T14:31:51.015426Z",
+      "collected_at": "2026-11-11T14:57:05.785169Z",
       "redacted": true,
       "redactions": {}
     }

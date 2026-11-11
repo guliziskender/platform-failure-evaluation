@@ -5,6 +5,7 @@ Works purely on Evidence summaries (not live API objects), so saved evidence can
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from functools import cached_property
@@ -14,6 +15,8 @@ from pfa.models import Evidence, Target
 
 # A failure this recent still counts while the container is up again (matches the event window).
 RECENT = timedelta(hours=1)
+# "=== previous container ===" (the target container) or "=== worker: previous container ===".
+_LOG_HEADER = re.compile(r"=== (?:([\w.-]+): )?(?:previous|current) container ===")
 
 
 @dataclass
@@ -137,7 +140,18 @@ class EvidenceView:
 
     @property
     def logs(self) -> str:
-        return self.excerpt("logs")
+        """The target container's logs only: rules must not blame it for a sidecar's errors."""
+        return self.logs_of(self.target.container or self.container_name)
+
+    def logs_of(self, container: str) -> str:
+        collected_for = self.summary("logs").get("container")
+        keep = []
+        for section in re.split(r"(?m)^(?==== )", self.excerpt("logs")):
+            m = _LOG_HEADER.match(section)
+            owner = (m.group(1) if m and m.group(1) else None) or collected_for
+            if owner == container or collected_for is None:
+                keep.append(section)
+        return "".join(keep)
 
 
 def _parse_time(value: str | None) -> datetime | None:

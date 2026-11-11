@@ -5,6 +5,7 @@
     "kind": "deployment",
     "pod": "orders-api-67ffc96d6f-g6crp",
     "container": "migrate",
+    "also_failing": [],
     "owners": [
       {
         "kind": "ReplicaSet",
@@ -92,9 +93,12 @@
               "args": [
                 "echo \"applying migration 0042_add_orders_index\"\necho 'ERROR: relation \"orders_idx\" already exists' >&2\nexit 1\n"
               ],
+              "mounts": [
+                "/var/run/secrets/kubernetes.io/serviceaccount"
+              ],
               "ready": false,
               "started": false,
-              "restart_count": 503,
+              "restart_count": 508,
               "state": {
                 "waiting": {
                   "reason": "CrashLoopBackOff",
@@ -105,8 +109,8 @@
                 "terminated": {
                   "reason": "Error",
                   "exit_code": 1,
-                  "started_at": "2026-11-11T14:29:20+00:00",
-                  "finished_at": "2026-11-11T14:29:20+00:00"
+                  "started_at": "2026-11-11T14:55:10+00:00",
+                  "finished_at": "2026-11-11T14:55:10+00:00"
                 }
               },
               "image_id": "docker.io/library/busybox@sha256:73aaf090f3d85aa34ee199857f03fa3a95c8ede2ffd4cc2cdb5b94e566b11662"
@@ -119,6 +123,9 @@
               "command": [
                 "sleep",
                 "3600"
+              ],
+              "mounts": [
+                "/var/run/secrets/kubernetes.io/serviceaccount"
               ],
               "ready": false,
               "started": false,
@@ -134,7 +141,7 @@
       },
       "raw_excerpt": null,
       "error": null,
-      "collected_at": "2026-11-11T14:31:50.952397Z",
+      "collected_at": "2026-11-11T14:57:05.662761Z",
       "redacted": true,
       "redactions": {}
     },
@@ -154,24 +161,24 @@
             "reason": "BackOff",
             "object": "Pod/orders-api-67ffc96d6f-g6crp",
             "message": "Back-off restarting failed container migrate in pod orders-api-67ffc96d6f-g6crp_pfa-lab(5e9a6154-a818-4b93-8b24-2b30299cbf70)",
-            "count": 1848,
+            "count": 1871,
             "first_seen": "2026-11-02T15:26:42+00:00",
-            "last_seen": "2026-11-11T14:26:51+00:00"
+            "last_seen": "2026-11-11T14:52:59+00:00"
           },
           {
             "type": "Normal",
             "reason": "Pulled",
             "object": "Pod/orders-api-67ffc96d6f-g6crp",
             "message": "Container image \"busybox:1.36\" already present on machine and can be accessed by the pod",
-            "count": 504,
+            "count": 509,
             "first_seen": "2026-11-02T15:26:40+00:00",
-            "last_seen": "2026-11-11T14:29:20+00:00"
+            "last_seen": "2026-11-11T14:55:10+00:00"
           }
         ]
       },
       "raw_excerpt": null,
       "error": null,
-      "collected_at": "2026-11-11T14:31:50.954217Z",
+      "collected_at": "2026-11-11T14:57:05.665806Z",
       "redacted": true,
       "redactions": {}
     },
@@ -188,9 +195,9 @@
           "lines": 2
         }
       },
-      "raw_excerpt": "=== previous container ===\napplying migration 0042_add_orders_index\nERROR: relation \"orders_idx\" already exists\n\n=== current container ===\napplying migration 0042_add_orders_index\nERROR: relation \"orders_idx\" already exists\n",
+      "raw_excerpt": "=== previous container ===\nERROR: relation \"orders_idx\" already exists\napplying migration 0042_add_orders_index\n\n=== current container ===\nERROR: relation \"orders_idx\" already exists\napplying migration 0042_add_orders_index\n",
       "error": null,
-      "collected_at": "2026-11-11T14:31:50.953502Z",
+      "collected_at": "2026-11-11T14:57:05.664094Z",
       "redacted": true,
       "redactions": {}
     }

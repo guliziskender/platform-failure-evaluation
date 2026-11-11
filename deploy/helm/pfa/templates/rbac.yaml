@@ -5,7 +5,7 @@ No Secrets: pfa reads env var names, never values, and never Secret objects.
 */ -}}
 {{- if .Values.rbac.create }}
 {{- $rules := list
-  (dict "apiGroups" (list "") "resources" (list "pods" "pods/log" "events") "verbs" (list "get" "list" "watch"))
+  (dict "apiGroups" (list "") "resources" (list "pods" "pods/log" "events" "persistentvolumeclaims") "verbs" (list "get" "list" "watch"))
   (dict "apiGroups" (list "apps") "resources" (list "deployments" "replicasets" "statefulsets") "verbs" (list "get" "list" "watch"))
 }}
 {{- $name := include "pfa.fullname" . }}

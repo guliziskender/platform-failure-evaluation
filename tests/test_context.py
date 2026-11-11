@@ -120,3 +120,17 @@ def test_references_stay_readable_inside_json():
     container = report.evidence[0].summary["pod"]["containers"][0]
     container["args"] = ['echo "password=$DB_PASSWORD"']
     assert "password=$DB_PASSWORD" in build_prompt(report).user
+
+
+def test_prompt_names_every_failing_container_and_its_findings():
+    # qwen3:8b missed the second container while its finding was left out of the hints.
+    from pathlib import Path
+
+    from pfa.engine.orchestrator import analyze, load_evidence
+
+    case = Path(__file__).parents[1] / "lab/cases/crashloop-two-containers/evidence.json"
+    report = analyze(*load_evidence(case))
+    user = build_prompt(report).user
+    assert "container api. Also failing: worker (diagnose each)" in user
+    assert "crash_missing_file: Container worker: The app exits because" in user
+    assert "=== worker: previous container ===" in user

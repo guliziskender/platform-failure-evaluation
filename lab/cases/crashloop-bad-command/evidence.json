@@ -5,6 +5,7 @@
     "kind": "deployment",
     "pod": "payment-gateway-5b8fc899df-cc4kj",
     "container": "gateway",
+    "also_failing": [],
     "owners": [
       {
         "kind": "ReplicaSet",
@@ -87,9 +88,12 @@
                 "/app/payment-gateway",
                 "--listen=:8443"
               ],
+              "mounts": [
+                "/var/run/secrets/kubernetes.io/serviceaccount"
+              ],
               "ready": false,
               "started": false,
-              "restart_count": 499,
+              "restart_count": 504,
               "state": {
                 "waiting": {
                   "reason": "CrashLoopBackOff",
@@ -102,7 +106,7 @@
                   "exit_code": 128,
                   "message": "failed to create containerd task: failed to create shim task: OCI runtime create failed: runc create failed: unable to start container process: error during container init: exec: \"/app/payment-gateway\": stat /app/payment-gateway: no such file or directory",
                   "started_at": "1970-01-01T00:00:00+00:00",
-                  "finished_at": "2026-11-11T14:28:37+00:00"
+                  "finished_at": "2026-11-11T14:54:20+00:00"
                 }
               },
               "image_id": "docker.io/library/busybox@sha256:73aaf090f3d85aa34ee199857f03fa3a95c8ede2ffd4cc2cdb5b94e566b11662"
@@ -112,7 +116,7 @@
       },
       "raw_excerpt": null,
       "error": null,
-      "collected_at": "2026-11-11T14:31:50.935787Z",
+      "collected_at": "2026-11-11T14:57:05.634664Z",
       "redacted": true,
       "redactions": {}
     },
@@ -132,9 +136,9 @@
             "reason": "BackOff",
             "object": "Pod/payment-gateway-5b8fc899df-cc4kj",
             "message": "Back-off restarting failed container gateway in pod payment-gateway-5b8fc899df-cc4kj_pfa-lab(3904ba8b-e76d-40c1-abd5-d09b7d9dba8c)",
-            "count": 1845,
+            "count": 1866,
             "first_seen": "2026-11-02T15:26:42+00:00",
-            "last_seen": "2026-11-11T14:27:17+00:00"
+            "last_seen": "2026-11-11T14:51:55+00:00"
           },
           {
             "type": "Warning",
@@ -150,9 +154,9 @@
             "reason": "Pulled",
             "object": "Pod/payment-gateway-5b8fc899df-cc4kj",
             "message": "Container image \"busybox:1.36\" already present on machine and can be accessed by the pod",
-            "count": 500,
+            "count": 505,
             "first_seen": "2026-11-02T15:26:40+00:00",
-            "last_seen": "2026-11-11T14:28:37+00:00"
+            "last_seen": "2026-11-11T14:54:20+00:00"
           },
           {
             "type": "Normal",
@@ -167,7 +171,7 @@
       },
       "raw_excerpt": null,
       "error": null,
-      "collected_at": "2026-11-11T14:31:50.935147Z",
+      "collected_at": "2026-11-11T14:57:05.635758Z",
       "redacted": true,
       "redactions": {}
     },
@@ -188,7 +192,7 @@
       },
       "raw_excerpt": null,
       "error": null,
-      "collected_at": "2026-11-11T14:31:50.941653Z",
+      "collected_at": "2026-11-11T14:57:05.645675Z",
       "redacted": true,
       "redactions": {}
     }

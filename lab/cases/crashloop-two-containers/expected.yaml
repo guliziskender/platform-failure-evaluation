@@ -2,8 +2,7 @@
 workload: {kind: deployment, name: cart-service}
 failure_type: crash_loop_backoff
 difficulty: hard
-known_gap: >-
-  The rules diagnose one container, the most broken one; the worker's failure is never mentioned.
+rules_confidence: medium
 trap: >-
   Two containers in one pod fail for two unrelated reasons. Fixing only the one a diagnosis
   names leaves the pod crashing, so the answer must name both.
@@ -17,4 +16,4 @@ fix: >-
   worker.yaml at /etc/cart).
 fix_keywords: [REDIS_URL, worker.yaml]
 ready_when: {restarts_at_least: 2}
-evidence_must_contain: ["REDIS_URL"]
+evidence_must_contain: ["REDIS_URL", "worker.yaml", "worker: previous container"]

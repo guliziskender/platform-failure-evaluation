@@ -5,6 +5,7 @@
     "kind": "deployment",
     "pod": "catalog-api-fd88d7c75-mvd2q",
     "container": "api",
+    "also_failing": [],
     "owners": [
       {
         "kind": "ReplicaSet",
@@ -101,6 +102,9 @@
                   "failure_threshold": 3
                 }
               },
+              "mounts": [
+                "/var/run/secrets/kubernetes.io/serviceaccount"
+              ],
               "ready": false,
               "started": true,
               "restart_count": 0,
@@ -116,7 +120,7 @@
       },
       "raw_excerpt": null,
       "error": null,
-      "collected_at": "2026-11-11T14:31:51.102941Z",
+      "collected_at": "2026-11-11T14:57:05.937862Z",
       "redacted": true,
       "redactions": {}
     },
@@ -136,15 +140,15 @@
             "reason": "Unhealthy",
             "object": "Pod/catalog-api-fd88d7c75-mvd2q",
             "message": "Readiness probe failed: HTTP probe failed with statuscode: 404",
-            "count": 43754,
+            "count": 44263,
             "first_seen": "2026-11-02T15:26:40+00:00",
-            "last_seen": "2026-11-11T14:31:42+00:00"
+            "last_seen": "2026-11-11T14:56:43+00:00"
           }
         ]
       },
       "raw_excerpt": null,
       "error": null,
-      "collected_at": "2026-11-11T14:31:51.104550Z",
+      "collected_at": "2026-11-11T14:57:05.940615Z",
       "redacted": true,
       "redactions": {}
     },
@@ -163,7 +167,7 @@
       },
       "raw_excerpt": "=== current container ===\ncatalog-api listening on :80, health at /healthz\n",
       "error": null,
-      "collected_at": "2026-11-11T14:31:51.104031Z",
+      "collected_at": "2026-11-11T14:57:05.939652Z",
       "redacted": true,
       "redactions": {}
     }
