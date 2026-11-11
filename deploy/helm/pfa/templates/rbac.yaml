@@ -1,0 +1,67 @@
+{{- /*
+Read-only access, and only to what pfa reads. tests/test_helm.py checks these rules against
+every Kubernetes API call in pfa's source, so a new call fails the tests until it is added here.
+No Secrets: pfa reads env var names, never values, and never Secret objects.
+*/ -}}
+{{- if .Values.rbac.create }}
+{{- $rules := list
+  (dict "apiGroups" (list "") "resources" (list "pods" "pods/log" "events") "verbs" (list "get" "list" "watch"))
+  (dict "apiGroups" (list "apps") "resources" (list "deployments" "replicasets" "statefulsets") "verbs" (list "get" "list" "watch"))
+}}
+{{- $name := include "pfa.fullname" . }}
+{{- $sa := include "pfa.serviceAccountName" . }}
+{{- if eq .Values.rbac.scope "cluster" }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ $name }}-read
+  labels:
+    {{- include "pfa.labels" . | nindent 4 }}
+rules:
+  {{- toYaml $rules | nindent 2 }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ $name }}-read
+  labels:
+    {{- include "pfa.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ $name }}-read
+subjects:
+  - kind: ServiceAccount
+    name: {{ $sa }}
+    namespace: {{ .Release.Namespace }}
+{{- else }}
+{{- range .Values.rbac.namespaces }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ $name }}-read
+  namespace: {{ . }}
+  labels:
+    {{- include "pfa.labels" $ | nindent 4 }}
+rules:
+  {{- toYaml $rules | nindent 2 }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ $name }}-read
+  namespace: {{ . }}
+  labels:
+    {{- include "pfa.labels" $ | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ $name }}-read
+subjects:
+  - kind: ServiceAccount
+    name: {{ $sa }}
+    namespace: {{ $.Release.Namespace }}
+{{- end }}
+{{- end }}
+{{- end }}

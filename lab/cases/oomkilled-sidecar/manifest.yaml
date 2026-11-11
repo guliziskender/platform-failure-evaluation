@@ -17,6 +17,9 @@ spec:
           command: ["sleep", "3600"]
         - name: log-shipper
           image: polinux/stress
+          # Untagged means re-pulled on every restart; use the cached copy so the lab does not
+          # depend on Docker Hub (or Docker Desktop's mirror) being up.
+          imagePullPolicy: IfNotPresent
           command: ["sh", "-c"]
           args:
             - |

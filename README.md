@@ -13,6 +13,18 @@ uv tool install --editable .
 pfa --help
 ```
 
+## Run in a cluster (Helm)
+
+```bash
+helm install pfa deploy/helm/pfa -n pfa --create-namespace --set image.repository=<your registry>/pfa
+kubectl -n pfa exec deploy/pfa -- pfa diagnose checkout-api -n shop
+```
+
+Read-only by design: get/list/watch on `pods`, `pods/log`, `events`, `deployments`,
+`replicasets` and `statefulsets`, and nothing else (no Secrets, no writes). A per-namespace
+variant is one flag. Nothing leaves the cluster unless you set a provider and `ai.sendData=true`.
+Full guide, including the data table and uninstall: [deploy/README.md](deploy/README.md).
+
 ## Commands
 
 ```bash
@@ -189,4 +201,5 @@ its fix would work.
 make test               # unit tests, no cluster needed
 make test-integration   # pfa collect and diagnose --no-llm against every lab case
 make test-llm           # AI diagnosis of every lab case (needs a provider; sends fake lab data)
+make test-helm          # build the image, install the chart locally, diagnose from inside it
 ```

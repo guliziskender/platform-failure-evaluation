@@ -1,0 +1,24 @@
+{{- with .Values.diagnose }}
+{{- if .name }}
+{{- $args := list "diagnose" .name "-n" .namespace "-o" .output }}
+{{- if .kind }}{{- $args = append $args "--kind" | append .kind }}{{- end }}
+{{- if .noLlm }}{{- $args = append $args "--no-llm" }}{{- end }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  # Named after its arguments: a new target is a new Job (Job specs cannot be changed).
+  name: {{ printf "%s-diagnose-%s" (include "pfa.fullname" $) ($args | join " " | sha256sum | trunc 8) }}
+  labels:
+    {{- include "pfa.labels" $ | nindent 4 }}
+spec:
+  backoffLimit: 0
+  ttlSecondsAfterFinished: {{ .ttlSecondsAfterFinished }}
+  template:
+    metadata:
+      labels:
+        {{- include "pfa.selectorLabels" $ | nindent 8 }}
+    spec:
+      restartPolicy: Never
+      {{- include "pfa.podSpec" (merge (dict "args" $args) $) | nindent 6 }}
+{{- end }}
+{{- end }}

@@ -1,0 +1,325 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-11T12:10:56.624378Z",
+  "answered_by": "rules",
+  "evidence": "live",
+  "total": 15,
+  "correct": 15,
+  "type_correct": 15,
+  "cause_correct": 15,
+  "fix_correct": 15,
+  "confident_wrong": 0,
+  "errors": 0,
+  "results": [
+    {
+      "case": "crashloop-bad-command",
+      "expected": "crash_loop_backoff",
+      "answered": "crash_loop_backoff",
+      "confidence": "high",
+      "source": "rules",
+      "type_ok": true,
+      "cause_ok": true,
+      "fix_ok": true,
+      "correct": true,
+      "confident_wrong": false,
+      "missing": [],
+      "error": null,
+      "known_gap": null,
+      "seconds": 0.05,
+      "cause": "The container command (/app/payment-gateway --listen=:8443) does not exist in the image: a typo, a wrong path, or a binary/shell the image does not include.",
+      "fix": [
+        "Check the command and args in the pod spec against what the image contains",
+        "For minimal images (distroless, scratch), there is no sh/bash; call the binary directly"
+      ]
+    },
+    {
+      "case": "crashloop-init-migration",
+      "expected": "crash_loop_backoff",
+      "answered": "crash_loop_backoff",
+      "confidence": "low",
+      "source": "rules",
+      "type_ok": true,
+      "cause_ok": true,
+      "fix_ok": true,
+      "correct": true,
+      "confident_wrong": false,
+      "missing": [],
+      "error": null,
+      "known_gap": null,
+      "seconds": 0.02,
+      "cause": "Init container migrate fails, so the app containers never start. It fails at startup and exits with code 1. Last error in its logs: \"ERROR: relation \"orders_idx\" already exists\"",
+      "fix": [
+        "Fix the error the log line names (configuration, dependency, or code)",
+        "Full logs: kubectl logs orders-api-67ffc96d6f-g6crp -c migrate --previous"
+      ]
+    },
+    {
+      "case": "crashloop-missing-env",
+      "expected": "crash_loop_backoff",
+      "answered": "crash_loop_backoff",
+      "confidence": "high",
+      "source": "rules",
+      "type_ok": true,
+      "cause_ok": true,
+      "fix_ok": true,
+      "correct": true,
+      "confident_wrong": false,
+      "missing": [],
+      "error": null,
+      "known_gap": null,
+      "seconds": 0.01,
+      "cause": "The app exits on startup because the required environment variable DATABASE_URL is not set on the container.",
+      "fix": [
+        "Add DATABASE_URL to the container's env (from a Secret if it holds credentials) and roll out again"
+      ]
+    },
+    {
+      "case": "imagepull-bad-tag",
+      "expected": "image_pull_backoff",
+      "answered": "image_pull_backoff",
+      "confidence": "high",
+      "source": "rules",
+      "type_ok": true,
+      "cause_ok": true,
+      "fix_ok": true,
+      "correct": true,
+      "confident_wrong": false,
+      "missing": [],
+      "error": null,
+      "known_gap": null,
+      "seconds": 0.01,
+      "cause": "The registry answers \"not found\" for busybox:1.36.1-uclbic: the image does not exist. The tag \"1.36.1-uclbic\" (or the repository name) is wrong, or that version was never pushed.",
+      "fix": [
+        "Check which tags exist for busybox (registry UI, `crane ls busybox`, or `docker manifest inspect busybox:1.36.1-uclbic`)",
+        "Correct the tag in the workload's container image and roll out again"
+      ]
+    },
+    {
+      "case": "imagepull-invalid-name",
+      "expected": "image_pull_backoff",
+      "answered": "image_pull_backoff",
+      "confidence": "high",
+      "source": "rules",
+      "type_ok": true,
+      "cause_ok": true,
+      "fix_ok": true,
+      "correct": true,
+      "confident_wrong": false,
+      "missing": [],
+      "error": null,
+      "known_gap": null,
+      "seconds": 0.01,
+      "cause": "The image reference 'busybox:1.36:latest' is not valid syntax (e.g. uppercase letters, spaces, or an empty variable substituted into it).",
+      "fix": [
+        "Fix the image field: registry/repository:tag, lowercase, no spaces"
+      ]
+    },
+    {
+      "case": "imagepull-unknown-registry",
+      "expected": "image_pull_backoff",
+      "answered": "image_pull_backoff",
+      "confidence": "medium",
+      "source": "rules",
+      "type_ok": true,
+      "cause_ok": true,
+      "fix_ok": true,
+      "correct": true,
+      "confident_wrong": false,
+      "missing": [],
+      "error": null,
+      "known_gap": null,
+      "seconds": 0.01,
+      "cause": "Pulls go through the registry mirror registry-mirror:1273, which answered \"500 Internal Server Error\" for an image from registry registry.pfa-lab.invalid: the mirror could not fetch it. Usually that registry hostname is wrong or unreachable from the mirror; otherwise the mirror itself is failing.",
+      "fix": [
+        "Check the registry hostname registry.pfa-lab.invalid in the image reference",
+        "Check that the mirror registry-mirror:1273 can reach that registry (its logs and upstream settings)"
+      ]
+    },
+    {
+      "case": "oomkilled-growing-cache",
+      "expected": "oom_killed",
+      "answered": "oom_killed",
+      "confidence": "high",
+      "source": "rules",
+      "type_ok": true,
+      "cause_ok": true,
+      "fix_ok": true,
+      "correct": true,
+      "confident_wrong": false,
+      "missing": [],
+      "error": null,
+      "known_gap": null,
+      "seconds": 0.01,
+      "cause": "The process needs more memory than its 200Mi memory limit, so the kernel kills it each time it reaches the limit. Either the limit is too low for the workload or the app is leaking memory.",
+      "fix": [
+        "Raise resources.limits.memory above the app's real peak usage, e.g. to 448Mi (check usage with kubectl top pod or your metrics)",
+        "If memory grows without bound, look for a leak or make the app load less at once (cache size, batch size, JVM -Xmx / heap settings)"
+      ]
+    },
+    {
+      "case": "oomkilled-low-limit",
+      "expected": "oom_killed",
+      "answered": "oom_killed",
+      "confidence": "high",
+      "source": "rules",
+      "type_ok": true,
+      "cause_ok": true,
+      "fix_ok": true,
+      "correct": true,
+      "confident_wrong": false,
+      "missing": [],
+      "error": null,
+      "known_gap": null,
+      "seconds": 0.01,
+      "cause": "The process needs more memory than its 128Mi memory limit, so the kernel kills it each time it reaches the limit. Either the limit is too low for the workload or the app is leaking memory.",
+      "fix": [
+        "Raise resources.limits.memory above the app's real peak usage, e.g. to 256Mi (check usage with kubectl top pod or your metrics)",
+        "If memory grows without bound, look for a leak or make the app load less at once (cache size, batch size, JVM -Xmx / heap settings)"
+      ]
+    },
+    {
+      "case": "oomkilled-sidecar",
+      "expected": "oom_killed",
+      "answered": "oom_killed",
+      "confidence": "high",
+      "source": "rules",
+      "type_ok": true,
+      "cause_ok": true,
+      "fix_ok": true,
+      "correct": true,
+      "confident_wrong": false,
+      "missing": [],
+      "error": null,
+      "known_gap": null,
+      "seconds": 0.01,
+      "cause": "The process needs more memory than its 64Mi memory limit, so the kernel kills it each time it reaches the limit. Either the limit is too low for the workload or the app is leaking memory.",
+      "fix": [
+        "Raise resources.limits.memory above the app's real peak usage, e.g. to 128Mi (check usage with kubectl top pod or your metrics)",
+        "If memory grows without bound, look for a leak or make the app load less at once (cache size, batch size, JVM -Xmx / heap settings)"
+      ]
+    },
+    {
+      "case": "pending-cpu-units",
+      "expected": "pending",
+      "answered": "pending",
+      "confidence": "high",
+      "source": "rules",
+      "type_ok": true,
+      "cause_ok": true,
+      "fix_ok": true,
+      "correct": true,
+      "confident_wrong": false,
+      "missing": [],
+      "error": null,
+      "known_gap": null,
+      "seconds": 0.01,
+      "cause": "The CPU request is 4000 cores (shown as trainer: cpu=4k). That is almost certainly a unit mistake: \"4000\" means 4000 whole cores, while \"4000m\" means 4000 millicores (4 cores).",
+      "fix": [
+        "Change the CPU request to \"4000m\" (or whatever the app really needs)",
+        "Keep requests within what one node can offer, or the pod never schedules"
+      ]
+    },
+    {
+      "case": "pending-missing-configmap",
+      "expected": "pending",
+      "answered": "pending",
+      "confidence": "high",
+      "source": "rules",
+      "type_ok": true,
+      "cause_ok": true,
+      "fix_ok": true,
+      "correct": true,
+      "confident_wrong": false,
+      "missing": [],
+      "error": null,
+      "known_gap": null,
+      "seconds": 0.01,
+      "cause": "The pod mounts configmap 'email-templates', which does not exist in the namespace.",
+      "fix": [
+        "Create the configmap 'email-templates', or fix its name in the pod's volumes"
+      ]
+    },
+    {
+      "case": "pending-node-selector",
+      "expected": "pending",
+      "answered": "pending",
+      "confidence": "high",
+      "source": "rules",
+      "type_ok": true,
+      "cause_ok": true,
+      "fix_ok": true,
+      "correct": true,
+      "confident_wrong": false,
+      "missing": [],
+      "error": null,
+      "known_gap": null,
+      "seconds": 0.01,
+      "cause": "The pod's nodeSelector {'hardware': 'gpu-a100'} match no node in the cluster, so it can never be scheduled.",
+      "fix": [
+        "Compare with node labels: kubectl get nodes --show-labels",
+        "Fix the nodeSelector / affinity, or label the intended nodes"
+      ]
+    },
+    {
+      "case": "probe-readiness-404",
+      "expected": "probe_failure",
+      "answered": "probe_failure",
+      "confidence": "high",
+      "source": "rules",
+      "type_ok": true,
+      "cause_ok": true,
+      "fix_ok": true,
+      "correct": true,
+      "confident_wrong": false,
+      "missing": [],
+      "error": null,
+      "known_gap": null,
+      "seconds": 0.01,
+      "cause": "The readiness probe requests path /ready, which the app does not serve (404).",
+      "fix": [
+        "Point the probe at the app's real health endpoint instead of /ready"
+      ]
+    },
+    {
+      "case": "probe-slow-start",
+      "expected": "probe_failure",
+      "answered": "probe_failure",
+      "confidence": "medium",
+      "source": "rules",
+      "type_ok": true,
+      "cause_ok": true,
+      "fix_ok": true,
+      "correct": true,
+      "confident_wrong": false,
+      "missing": [],
+      "error": null,
+      "known_gap": null,
+      "seconds": 0.01,
+      "cause": "The app is not listening on port http when the liveness probe runs: either it starts slower than the probe allows (initialDelaySeconds=2, no startupProbe) or it listens on a different port than declared.",
+      "fix": [
+        "Check the logs for the port the app actually binds to",
+        "If startup is just slow, add a startupProbe (or raise initialDelaySeconds)"
+      ]
+    },
+    {
+      "case": "probe-wrong-port",
+      "expected": "probe_failure",
+      "answered": "probe_failure",
+      "confidence": "high",
+      "source": "rules",
+      "type_ok": true,
+      "cause_ok": true,
+      "fix_ok": true,
+      "correct": true,
+      "confident_wrong": false,
+      "missing": [],
+      "error": null,
+      "known_gap": null,
+      "seconds": 0.01,
+      "cause": "The liveness probe points at port 8080, where nothing listens (the app serves on http=80/TCP). Every probe gets connection refused, so the kubelet restarts a container that may be perfectly healthy.",
+      "fix": [
+        "Point the liveness probe at port 80 (or the named port) instead of 8080"
+      ]
+    }
+  ]
+}

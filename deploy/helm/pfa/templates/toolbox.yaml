@@ -1,0 +1,21 @@
+{{- if .Values.toolbox.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "pfa.fullname" . }}
+  labels:
+    {{- include "pfa.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "pfa.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "pfa.selectorLabels" . | nindent 8 }}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+    spec:
+      {{- include "pfa.podSpec" (merge (dict "command" (list "sleep" "infinity")) .) | nindent 6 }}
+{{- end }}

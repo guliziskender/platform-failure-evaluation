@@ -251,6 +251,20 @@ def test_hosted_send_is_announced_before_it_happens(monkeypatch):
     assert "to fake.example" in result.stderr
 
 
+def test_forbidden_says_which_namespace_and_what_access_is_needed(monkeypatch):
+    from kubernetes.client.exceptions import ApiException
+
+    def forbidden(*args, **kwargs):
+        raise ApiException(status=403, reason="Forbidden")
+
+    monkeypatch.setattr(cli, "load_clients", lambda *a: None)
+    monkeypatch.setattr(cli, "resolve_target", forbidden)
+    result = invoke("diagnose", "memhog", "-n", "default", "--no-llm")
+    assert result.exit_code == 2
+    assert "no permission to read namespace 'default'" in result.output
+    assert "rbac.namespaces" in result.output
+
+
 def test_not_found_names_the_kube_context(monkeypatch):
     from pfa.engine.target import TargetNotFound
 

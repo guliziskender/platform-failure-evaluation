@@ -407,6 +407,14 @@ def _connect_and_resolve(
     except TargetNotFound as exc:
         _fail(f"{exc} (kube context: {_context_name(settings)})", code=1)
     except ApiException as exc:
+        if exc.status == 403:
+            _fail(
+                f"no permission to read namespace {namespace!r} (Kubernetes API 403 Forbidden). "
+                "pfa needs get/list on pods, pods/log, events, deployments, replicasets and "
+                "statefulsets there. In-cluster with rbac.scope=namespaces, add the namespace "
+                "to the chart's rbac.namespaces.",
+                code=2,
+            )
         _fail(f"Kubernetes API {exc.status}: {exc.reason}", code=2)
     except HTTPError as exc:
         _fail(f"cannot reach the Kubernetes API: {exc}", code=2)

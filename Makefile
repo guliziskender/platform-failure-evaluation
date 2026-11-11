@@ -1,5 +1,5 @@
 # Developer shortcuts. The lab targets your current kube context (local clusters only).
-.PHONY: lab-up lab-down lab-status lab-reset lab-snapshot test test-integration test-llm eval eval-live lint
+.PHONY: lab-up lab-down lab-status lab-reset lab-snapshot test test-integration test-llm test-helm eval eval-live image lint
 
 lab-up:
 	uv run python lab/lab.py up
@@ -20,7 +20,7 @@ test:
 	uv run pytest
 
 test-integration:
-	uv run pytest -m "integration and not llm"
+	uv run pytest -m "integration and not llm and not helm"
 
 # Sends (fake) lab evidence to the configured AI provider. Needs PFA_PROVIDER etc.
 test-llm:
@@ -33,6 +33,14 @@ eval:
 # Same, on evidence read from the running lab. Leaves the saved snapshots alone.
 eval-live: lab-up
 	uv run pfa eval --no-llm --live
+
+# Build the image and install the chart into the local cluster, then check it from inside.
+test-helm:
+	uv run pytest -m helm -v
+
+# Build pfa:dev and load it into the current local cluster (kind, Docker Desktop, minikube).
+image:
+	deploy/load-image.sh
 
 lint:
 	uv run ruff check . && uv run ruff format --check .

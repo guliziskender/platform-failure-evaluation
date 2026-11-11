@@ -20,6 +20,8 @@ make lab-snapshot                # refresh lab/cases/*/evidence.json after chang
 uv run pytest                    # unit tests (no cluster needed)
 make test-integration            # brings the lab up, runs pfa collect on every lab case
 make test-llm                    # AI diagnosis of every lab case with the configured provider
+make image                       # build pfa:dev and load it into the local cluster
+make test-helm                   # install the chart locally, diagnose from inside, check RBAC
 make eval                        # score the rules on saved evidence; saves to eval/results/
 make eval-live                   # lab up, then score on evidence read from the running lab
 uv run pfa eval --history        # saved runs over time; --fail-under N exits 1 for CI
@@ -67,6 +69,10 @@ uv run ruff check . && uv run ruff format .
   evidence summaries, never live API objects, so saved evidence replays identically.
 - `src/pfa/collectors/`: deterministic evidence: `k8s_state`, `k8s_events`, `logs`. Events keep
   the target pod's own events at any age; only owner events are cut to the time window.
+- `deploy/helm/pfa/`: Helm chart. Read-only RBAC (`templates/rbac.yaml`), toolbox Deployment
+  to `kubectl exec` into, optional diagnose Job. The API key only ever comes from a Secret the
+  user creates. `tests/test_helm.py` checks the RBAC equals the API calls in `src/`.
+  `deploy/README.md` is the install guide. `Dockerfile` at the root: non-root, read-only rootfs.
 - `lab/`: broken-pod lab, three cases per failure type (`cases/<id>/manifest.yaml` + `expected.yaml`
   ground truth). `lab/lab.py` writes to the cluster, so it is deliberately not part of `pfa`. It uses
   pfa's kube context for every kubectl call (`lab_context`), so lab and pfa see one cluster.
@@ -74,7 +80,8 @@ uv run ruff check . && uv run ruff format .
 ## Rules (non-negotiable)
 
 - **Read-only.** Only `get`/`list`/`watch` on pods, pods/log, events, deployments, replicasets,
-  statefulsets. Adding any API call means updating the RBAC in the Helm chart and the README.
+  statefulsets. Adding any API call means updating the RBAC in the Helm chart, deploy/README.md
+  and the README (`tests/test_helm.py` fails until the chart allows it).
 - **Never read Secret objects or env var values**, only names (`env_names`, `env_from`).
   `tests/test_collectors.py` and the integration test assert the fake secret never appears.
 - **All evidence is redacted before anything reads it.** `collect_evidence` redacts each

@@ -1,0 +1,16 @@
+pfa is installed in namespace {{ .Release.Namespace }}. It can only read pods, logs, events,
+deployments, replicasets and statefulsets{{ if eq .Values.rbac.scope "namespaces" }} in: {{ join ", " .Values.rbac.namespaces }}{{ else }}, in every namespace{{ end }}.
+
+Data: {{ if eq .Values.ai.provider "none" }}no AI provider, so pfa answers from its rules. Nothing leaves the cluster.
+{{- else if .Values.ai.sendData }}redacted evidence is sent to the {{ .Values.ai.provider }} model.
+{{- else }}AI provider {{ .Values.ai.provider }} is set, but sendData is false: only a local model is used, nothing leaves the cluster.
+{{- end }}
+{{ if .Values.toolbox.enabled }}
+Diagnose a workload:
+  kubectl -n {{ .Release.Namespace }} exec deploy/{{ include "pfa.fullname" . }} -- pfa diagnose <name> -n <namespace>
+{{- end }}
+{{- if .Values.diagnose.name }}
+
+Diagnosis Job for {{ .Values.diagnose.name }} in {{ .Values.diagnose.namespace }}:
+  kubectl -n {{ .Release.Namespace }} logs -l app.kubernetes.io/instance={{ .Release.Name }} --tail=-1
+{{- end }}

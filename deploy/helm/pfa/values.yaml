@@ -1,0 +1,67 @@
+# Platform Failure Assistant (pfa). Read-only by design: see templates/rbac.yaml.
+
+image:
+  repository: pfa
+  tag: ""  # default: the chart's appVersion
+  pullPolicy: IfNotPresent
+
+# The AI layer. Default: no provider, so pfa answers from its rules and nothing leaves the
+# cluster.
+ai:
+  provider: none  # none | anthropic | ollama
+  model: ""  # default: claude-opus-5-5 for anthropic, qwen3:8b for ollama
+  # Must be true before evidence (redacted) is sent to a hosted model or a non-local Ollama.
+  sendData: false
+  ollamaUrl: ""  # e.g. http://ollama.ollama.svc:11434
+  # The API key comes from a Secret you create; this chart never creates or reads it:
+  #   kubectl -n <release namespace> create secret generic pfa-anthropic \
+  #     --from-literal=ANTHROPIC_API_KEY=sk-ant-...
+  existingSecret: ""
+  existingSecretKey: ANTHROPIC_API_KEY
+  timeoutSeconds: null  # per AI call; default 30, or 120 for ollama
+
+# What pfa may read. Only get/list/watch on pods, pods/log, events, deployments, replicasets
+# and statefulsets. Never Secrets, never any write.
+rbac:
+  create: true
+  # cluster: one ClusterRole, pfa can diagnose any namespace.
+  # namespaces: a Role in each namespace listed below, for teams that refuse cluster-wide access.
+  scope: cluster
+  namespaces: []
+
+serviceAccount:
+  create: true
+  name: ""  # default: the release's full name
+
+# A small idle pod to run diagnoses in:
+#   kubectl -n <release namespace> exec deploy/<release> -- pfa diagnose <name> -n <namespace>
+toolbox:
+  enabled: true
+
+# Or a one-off Job that diagnoses one workload and exits; read it with kubectl logs.
+diagnose:
+  name: ""  # pod, deployment or statefulset; empty = no Job
+  namespace: default
+  kind: ""  # pod | deployment | statefulset; empty = auto-detect
+  output: text  # text | json | markdown
+  noLlm: false
+  ttlSecondsAfterFinished: 3600
+
+resources:
+  requests: {cpu: 10m, memory: 96Mi}
+  limits: {memory: 256Mi}
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 10001
+  runAsGroup: 10001
+  seccompProfile: {type: RuntimeDefault}
+
+securityContext:
+  readOnlyRootFilesystem: true
+  allowPrivilegeEscalation: false
+  capabilities: {drop: [ALL]}
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

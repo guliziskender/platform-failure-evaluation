@@ -1,0 +1,20 @@
+{{- /* pfa's config file. Nothing secret here: the API key comes from ai.existingSecret. */ -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "pfa.fullname" . }}
+  labels:
+    {{- include "pfa.labels" . | nindent 4 }}
+data:
+  config.yaml: |
+    provider: {{ .Values.ai.provider }}
+    send_data: {{ .Values.ai.sendData }}
+    {{- with .Values.ai.model }}
+    model: {{ . | quote }}
+    {{- end }}
+    {{- with .Values.ai.ollamaUrl }}
+    ollama_url: {{ . | quote }}
+    {{- end }}
+    {{- with .Values.ai.timeoutSeconds }}
+    llm_timeout: {{ . }}
+    {{- end }}

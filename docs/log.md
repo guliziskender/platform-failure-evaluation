@@ -520,3 +520,58 @@ case.
 - On these 15 cases, an 8B local model matches Opus. They are clear-cut failures with the cause
   in the evidence; harder cases are needed to tell models apart.
 
+## 2026-11-11: Helm chart and read-only RBAC (milestone 3)
+
+Goal: install pfa into someone else's cluster safely.
+
+**Built**
+- `Dockerfile`: python:3.12-slim, a uv build stage, non-root (uid 10001). Bytecode is
+  compiled at build time, so it runs with a read-only root filesystem.
+- `deploy/helm/pfa`:
+  - RBAC: a ClusterRole with get/list/watch on pods, pods/log, events, deployments, replicasets
+    and statefulsets. Or, with `rbac.scope=namespaces`, a Role per listed namespace.
+  - Config: a ConfigMap for pfa's config file. The API key comes only from a user-created
+    Secret.
+  - Workloads: a toolbox Deployment to `kubectl exec` into, and an optional one-off diagnose Job.
+  - Pod security: runAsNonRoot, readOnlyRootFilesystem, no privilege escalation, drop ALL
+    capabilities, seccomp RuntimeDefault, memory limit.
+- `deploy/README.md`: the install guide (access table, install, per-namespace scope, Anthropic
+  and in-cluster Ollama, a "what leaves the cluster" table, uninstall).
+- A 403 now says which namespace is missing, and what access pfa needs there.
+
+**Tests**
+- `tests/test_helm.py` renders the chart:
+  - The RBAC equals the API calls found in pfa's source: anything pfa needs is granted,
+    nothing more.
+  - Pods are locked down, the default sends nothing, and the key only comes from a Secret.
+  - The rendered config passes pfa's strict loader, and bad values fail at render time.
+  - Mutation checked: granting secrets or delete, forgetting pods/log, or a writable root
+    filesystem each fail.
+- `make test-helm` builds and loads the image, installs the chart, and diagnoses a lab case
+  from inside the cluster. `kubectl auth can-i` then gives the API server's own answer: the
+  reads are yes; secrets, configmaps, delete, exec, patch and scale are no. With namespace
+  scope, pfa is refused outside the list with the new message.
+
+**Decisions**
+- Toolbox Deployment rather than a Job per diagnosis: `kubectl exec ... pfa diagnose x` is one
+  command, and Jobs cannot be edited, so every new target would need a new Job. The Job is still
+  there for automation. The toolbox is also where the watcher will run later.
+- The chart never creates the API key Secret. Values and release history would hold the key.
+- An in-cluster Ollama still needs `sendData`: pfa cannot verify where a URL leads, so only
+  localhost counts as local. The guide says so.
+- Watch is granted though pfa only gets and lists today; the watcher will need it, and it reveals
+  nothing more than list does.
+
+**What broke / surprised**
+- Docker Desktop's cluster runs its own containerd, so images from `docker build` are invisible
+  to it (ErrImageNeverPull). `deploy/load-image.sh` imports them into its node, as `kind load`
+  does for kind.
+- The lab's OOM cases used `polinux/stress` without a tag, so Kubernetes re-pulled it on every
+  restart. Docker Desktop's registry mirror started answering 500 for Docker Hub, so between
+  crashes these pods showed ErrImagePull, and pfa (correctly, for that moment) diagnosed an image
+  pull failure. The lab now uses the cached image (`imagePullPolicy: IfNotPresent`).
+
+**Not done:** no published image (needs a registry and CI), no NetworkPolicy, and the image is
+445 MB. The chart has only been installed on Docker Desktop's cluster, not yet on kind or a
+real one.
+

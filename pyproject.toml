@@ -36,6 +36,7 @@ addopts = "-m 'not integration'"
 markers = [
     "integration: needs a live kind cluster (run with -m integration)",
     "llm: calls a real AI provider (run with make test-llm)",
+    "helm: installs the Helm chart into a local cluster (run with make test-helm)",
 ]
 
 [tool.ruff]
