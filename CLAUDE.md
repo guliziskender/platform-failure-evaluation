@@ -80,7 +80,8 @@ uv run ruff check . && uv run ruff format .
   cluster fails instead of skipping, live eval, same gate), `publish` (image `:edge` on master;
   `:<version>` plus the OCI chart on a `v<version>` tag, refused unless pyproject, Chart
   `version` and `appVersion` all equal it). Release: bump the three, push, tag `v<version>`.
-- `lab/`: broken-pod lab, three cases per failure type (`cases/<id>/manifest.yaml` + `expected.yaml`
+- `lab/`: broken-pod lab, three standard cases per failure type plus hard ones (`difficulty: hard`,
+  a `trap` each; scored apart) (`cases/<id>/manifest.yaml` + `expected.yaml`
   ground truth). `lab/lab.py` writes to the cluster, so it is deliberately not part of `pfa`. It uses
   pfa's kube context for every kubectl call (`lab_context`), so lab and pfa see one cluster.
 
