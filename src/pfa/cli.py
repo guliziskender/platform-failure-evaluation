@@ -234,6 +234,13 @@ def eval_command(
             "--fail-under", min=0, max=100, help="Exit 1 if under this percentage is correct."
         ),
     ] = None,
+    fail_on_new_misses: Annotated[
+        bool,
+        typer.Option(
+            "--fail-on-new-misses",
+            help="Exit 1 if a case without a known_gap in its expected.yaml is wrong (for CI).",
+        ),
+    ] = False,
     no_llm: Annotated[bool, typer.Option("--no-llm", help="Score the rules only.")] = False,
     provider_name: Annotated[
         str | None,
@@ -313,6 +320,9 @@ def eval_command(
         _fail("no case got an answer, so this run says nothing about accuracy (not saved).", code=2)
     if fail_under is not None and run.correct * 100 < fail_under * run.total:
         _fail(f"{run.correct}/{run.total} correct is under --fail-under {fail_under}%.", code=1)
+    new_misses = [r.case for r in run.results if not r.correct and not r.known_gap]
+    if fail_on_new_misses and new_misses:
+        _fail(f"wrong on cases with no known_gap: {', '.join(new_misses)}.", code=1)
 
 
 # --- pfa config -----------------------------------------------------------------------------

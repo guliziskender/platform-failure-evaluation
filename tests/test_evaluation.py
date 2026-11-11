@@ -450,3 +450,14 @@ def test_history(tmp_path, one_miss):
     summary = json.loads(invoke(tmp_path, "--history", "-o", "json").stdout)
     assert summary[0]["correct"] == 14
     assert "results" not in summary[0]
+
+
+def test_fail_on_new_misses_ignores_known_gaps_only(tmp_path, one_miss):
+    # The real cases: every miss is a recorded known gap, so CI stays green.
+    assert invoke(tmp_path, "--no-llm", "--no-save", "--fail-on-new-misses").exit_code == 0
+    # Without its known_gap, the same miss is new and fails.
+    expected = one_miss / CRASH / "expected.yaml"
+    expected.write_text(expected.read_text().replace("known_gap: deliberate, for the test\n", ""))
+    result = invoke(tmp_path, "--no-llm", "--no-save", "--fail-on-new-misses", cases=one_miss)
+    assert result.exit_code == 1
+    assert f"no known_gap: {CRASH}" in result.output

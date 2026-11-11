@@ -164,7 +164,8 @@ make eval-live                                     # bring the lab up, score on 
 uv run pfa eval --provider anthropic --send-data   # score a model (sends the redacted lab evidence)
 uv run pfa eval --provider ollama --model qwen3:8b # score a local model
 uv run pfa eval --history                          # every saved run, oldest first
-uv run pfa eval --no-llm --fail-under 80           # exit 1 under 80% correct, for CI
+uv run pfa eval --no-llm --fail-under 80           # exit 1 under 80% correct
+uv run pfa eval --no-llm --fail-on-new-misses      # CI: exit 1 on any miss not recorded as a known_gap
 ```
 
 The default replays each case's saved evidence, so it needs no cluster and every model sees the

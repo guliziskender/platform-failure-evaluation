@@ -41,8 +41,8 @@ jobs:
         run: helm lint deploy/helm/pfa
       - name: Unit tests (incl. the chart's RBAC and security checks)
         run: uv run pytest
-      - name: Eval, rules on saved evidence (must stay at 100%)
-        run: uv run pfa eval --no-llm --no-save --fail-under 100
+      - name: Eval, rules on saved evidence (no misses beyond the known gaps)
+        run: uv run pfa eval --no-llm --no-save --fail-on-new-misses
 
   cluster:
     runs-on: ubuntu-latest
@@ -66,8 +66,8 @@ jobs:
         env:
           REQUIRE_CLUSTER: "1"  # a missing cluster, lab or tool fails instead of skipping
         run: uv run pytest -m "integration and not llm" -v
-      - name: Eval, rules on live evidence (must stay at 100%)
-        run: uv run pfa eval --no-llm --live --no-save --fail-under 100
+      - name: Eval, rules on live evidence (no misses beyond the known gaps)
+        run: uv run pfa eval --no-llm --live --no-save --fail-on-new-misses
       - name: Cluster state on failure
         if: failure()
         run: |

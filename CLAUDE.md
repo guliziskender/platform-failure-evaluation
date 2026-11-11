@@ -24,7 +24,8 @@ make image                       # build pfa:dev and load it into the local clus
 make test-helm                   # install the chart locally, diagnose from inside, check RBAC
 make eval                        # score the rules on saved evidence; saves to eval/results/
 make eval-live                   # lab up, then score on evidence read from the running lab
-uv run pfa eval --history        # saved runs over time; --fail-under N exits 1 for CI
+uv run pfa eval --history        # saved runs over time
+uv run pfa eval --no-llm --fail-on-new-misses  # CI gate: exit 1 on a miss with no known_gap
 uv run pfa eval --provider anthropic --send-data  # score a model the same way
 uv run ruff check . && uv run ruff format .
 ```
@@ -73,9 +74,10 @@ uv run ruff check . && uv run ruff format .
   to `kubectl exec` into, optional diagnose Job. The API key only ever comes from a Secret the
   user creates. `tests/test_helm.py` checks the RBAC equals the API calls in `src/`.
   `deploy/README.md` is the install guide. `Dockerfile` at the root: non-root, read-only rootfs.
-- `.github/workflows/ci.yml`: `checks` (lint, unit tests, chart tests, rules eval at 100%),
+- `.github/workflows/ci.yml`: `checks` (lint, unit tests, chart tests, rules eval
+  `--fail-on-new-misses`),
   `cluster` (kind: lab, integration + Helm install tests with `REQUIRE_CLUSTER=1` so a missing
-  cluster fails instead of skipping, live eval at 100%), `publish` (image `:edge` on master;
+  cluster fails instead of skipping, live eval, same gate), `publish` (image `:edge` on master;
   `:<version>` plus the OCI chart on a `v<version>` tag, refused unless pyproject, Chart
   `version` and `appVersion` all equal it). Release: bump the three, push, tag `v<version>`.
 - `lab/`: broken-pod lab, three cases per failure type (`cases/<id>/manifest.yaml` + `expected.yaml`
