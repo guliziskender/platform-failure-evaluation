@@ -16,4 +16,5 @@ fix: >-
   worker.yaml at /etc/cart).
 fix_keywords: [REDIS_URL, worker.yaml]
 ready_when: {restarts_at_least: 2}
-evidence_must_contain: ["REDIS_URL", "worker.yaml", "worker: previous container"]
+# Both containers' logs, whichever of the two pfa picks first (it depends on which crashed last).
+evidence_must_contain: ["REDIS_URL", "worker.yaml", ": previous container ==="]
