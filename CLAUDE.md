@@ -73,6 +73,11 @@ uv run ruff check . && uv run ruff format .
   to `kubectl exec` into, optional diagnose Job. The API key only ever comes from a Secret the
   user creates. `tests/test_helm.py` checks the RBAC equals the API calls in `src/`.
   `deploy/README.md` is the install guide. `Dockerfile` at the root: non-root, read-only rootfs.
+- `.github/workflows/ci.yml`: `checks` (lint, unit tests, chart tests, rules eval at 100%),
+  `cluster` (kind: lab, integration + Helm install tests with `REQUIRE_CLUSTER=1` so a missing
+  cluster fails instead of skipping, live eval at 100%), `publish` (image `:edge` on master;
+  `:<version>` plus the OCI chart on a `v<version>` tag, refused unless pyproject, Chart
+  `version` and `appVersion` all equal it). Release: bump the three, push, tag `v<version>`.
 - `lab/`: broken-pod lab, three cases per failure type (`cases/<id>/manifest.yaml` + `expected.yaml`
   ground truth). `lab/lab.py` writes to the cluster, so it is deliberately not part of `pfa`. It uses
   pfa's kube context for every kubectl call (`lab_context`), so lab and pfa see one cluster.

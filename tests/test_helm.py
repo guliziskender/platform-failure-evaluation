@@ -216,3 +216,18 @@ def test_job_runs_the_diagnosis_and_is_named_after_it():
 )
 def test_bad_values_fail_with_a_clear_message(sets, message):
     assert message in render_error(*sets)
+
+
+# --- release ----------------------------------------------------------------------------------
+
+
+def test_versions_agree_and_the_default_image_is_the_published_one():
+    # CI publishes ghcr.io/<owner>/pfa:<version> for a v<version> tag, and refuses the tag
+    # unless all three versions equal it; the chart's default image is then that release.
+    import tomllib
+
+    chart = yaml.safe_load((CHART / "Chart.yaml").read_text())
+    project = tomllib.loads((ROOT / "pyproject.toml").read_text())["project"]["version"]
+    assert chart["version"] == chart["appVersion"] == project
+    (spec,) = pod_specs(render())
+    assert spec["containers"][0]["image"] == f"ghcr.io/guliziskender/pfa:{project}"

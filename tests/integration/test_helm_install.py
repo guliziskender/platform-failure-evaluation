@@ -13,6 +13,8 @@ from pathlib import Path
 
 import pytest
 
+from .require import unavailable
+
 ROOT = Path(__file__).resolve().parents[2]
 RELEASE = NAMESPACE = "pfa-helm-test"
 SA = f"system:serviceaccount:{NAMESPACE}:{RELEASE}"
@@ -27,7 +29,7 @@ def run(*args: str, check: bool = True) -> subprocess.CompletedProcess:
 def helm_install(*sets: str) -> None:
     args = ["helm", "upgrade", "--install", RELEASE, str(ROOT / "deploy/helm/pfa")]
     args += ["-n", NAMESPACE, "--create-namespace", "--wait", "--timeout", "120s"]
-    for s in ("image.tag=dev", "image.pullPolicy=Never", *sets):
+    for s in ("image.repository=pfa", "image.tag=dev", "image.pullPolicy=Never", *sets):
         args += ["--set", s]
     run(*args)
 
@@ -46,12 +48,12 @@ def can_i(verb: str, resource: str, namespace: str) -> bool:
 @pytest.fixture(scope="module", autouse=True)
 def installed():
     if not shutil.which("helm") or not shutil.which("docker"):
-        pytest.skip("needs helm and docker")
+        unavailable("needs helm and docker")
     if run("kubectl", "get", "ns", "pfa-lab", check=False).returncode != 0:
-        pytest.skip("needs the lab: make lab-up")
+        unavailable("needs the lab: make lab-up")
     load = run(str(ROOT / "deploy/load-image.sh"), check=False)
     if load.returncode != 0:
-        pytest.skip(f"cannot load the image: {load.stderr.strip()}")
+        unavailable(f"cannot load the image: {load.stderr.strip()}")
     helm_install()
     yield
     run("helm", "uninstall", RELEASE, "-n", NAMESPACE, "--wait", check=False)

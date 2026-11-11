@@ -1,5 +1,7 @@
 # Platform Failure Assistant (`pfa`)
 
+[![ci](https://github.com/guliziskender/platform-failure-evaluation/actions/workflows/ci.yml/badge.svg)](https://github.com/guliziskender/platform-failure-evaluation/actions/workflows/ci.yml)
+
 Turns Kubernetes and Docker failures into a plain-language diagnosis with a concrete fix.
 Read-only: it never changes anything in the cluster.
 
@@ -16,13 +18,14 @@ pfa --help
 ## Run in a cluster (Helm)
 
 ```bash
-helm install pfa deploy/helm/pfa -n pfa --create-namespace --set image.repository=<your registry>/pfa
+helm install pfa oci://ghcr.io/guliziskender/charts/pfa --version 0.1.0 -n pfa --create-namespace
 kubectl -n pfa exec deploy/pfa -- pfa diagnose checkout-api -n shop
 ```
 
 Read-only by design: get/list/watch on `pods`, `pods/log`, `events`, `deployments`,
 `replicasets` and `statefulsets`, and nothing else (no Secrets, no writes). A per-namespace
-variant is one flag. Nothing leaves the cluster unless you set a provider and `ai.sendData=true`.
+variant is one flag. The chart and a multi-arch image are published to ghcr.io by CI for
+every release, after the tests pass on a kind cluster. Nothing leaves the cluster unless you set a provider and `ai.sendData=true`.
 Full guide, including the data table and uninstall: [deploy/README.md](deploy/README.md).
 
 ## Commands

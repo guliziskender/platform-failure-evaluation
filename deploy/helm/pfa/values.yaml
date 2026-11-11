@@ -1,7 +1,7 @@
 # Platform Failure Assistant (pfa). Read-only by design: see templates/rbac.yaml.
 
 image:
-  repository: pfa
+  repository: ghcr.io/guliziskender/pfa  # built and published by .github/workflows/ci.yml
   tag: ""  # default: the chart's appVersion
   pullPolicy: IfNotPresent
 

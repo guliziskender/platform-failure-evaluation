@@ -23,21 +23,30 @@ escalation, all Linux capabilities dropped, and the runtime's default seccomp pr
 ## Prerequisites
 
 - Kubernetes 1.25 or later, and Helm 3.8 or later.
-- The pfa image in a registry your cluster can pull from. No public image is published yet:
+- Nothing else: the chart and the image are published on GitHub's registry by CI
+  (`.github/workflows/ci.yml`) for every release tag, after the tests, a Helm install and a
+  live eval have passed on a kind cluster:
+  - chart: `oci://ghcr.io/guliziskender/charts/pfa` (version = pfa's version)
+  - image: `ghcr.io/guliziskender/pfa:<version>` (linux/amd64 and linux/arm64, about 72 MB to
+    pull); `:edge` is the latest commit on master.
+
+  Air-gapped cluster or your own registry: build and push the image yourself, then add
+  `--set image.repository=registry.example.com/platform/pfa`:
 
   ```bash
   docker build -t registry.example.com/platform/pfa:0.1.0 .
   docker push registry.example.com/platform/pfa:0.1.0
   ```
 
-  For a local cluster (kind, Docker Desktop, minikube), `make image` builds `pfa:dev` and loads
-  it into the cluster directly; then install with `--set image.tag=dev --set image.pullPolicy=Never`.
+  From a checkout, `deploy/helm/pfa` works wherever the commands below say
+  `oci://ghcr.io/guliziskender/charts/pfa`. For a local cluster (kind, Docker Desktop,
+  minikube), `make image` builds `pfa:dev` and loads it into the cluster directly; then install
+  with `--set image.repository=pfa --set image.tag=dev --set image.pullPolicy=Never`.
 
 ## Install (rules only: nothing leaves the cluster)
 
 ```bash
-helm install pfa deploy/helm/pfa -n pfa --create-namespace \
-  --set image.repository=registry.example.com/platform/pfa
+helm install pfa oci://ghcr.io/guliziskender/charts/pfa --version 0.1.0 -n pfa --create-namespace
 ```
 
 Diagnose a workload from the small toolbox pod the chart runs:
@@ -50,7 +59,7 @@ kubectl -n pfa exec deploy/pfa -- pfa diagnose checkout-api -n shop -o markdown
 Or run one diagnosis as a Job and read its output:
 
 ```bash
-helm upgrade pfa deploy/helm/pfa -n pfa --reuse-values \
+helm upgrade pfa oci://ghcr.io/guliziskender/charts/pfa --version 0.1.0 -n pfa --reuse-values \
   --set diagnose.name=checkout-api --set diagnose.namespace=shop
 kubectl -n pfa logs -l app.kubernetes.io/instance=pfa --tail=-1
 ```
@@ -61,7 +70,7 @@ For teams that do not grant cluster-wide read access: a Role and RoleBinding in 
 namespace, and no ClusterRole.
 
 ```bash
-helm install pfa deploy/helm/pfa -n pfa --create-namespace \
+helm install pfa oci://ghcr.io/guliziskender/charts/pfa --version 0.1.0 -n pfa --create-namespace \
   --set rbac.scope=namespaces --set 'rbac.namespaces={shop,payments}'
 ```
 
@@ -78,7 +87,7 @@ the key into the pod's environment.
 
 ```bash
 kubectl -n pfa create secret generic pfa-anthropic --from-literal=ANTHROPIC_API_KEY=sk-ant-...
-helm upgrade pfa deploy/helm/pfa -n pfa --reuse-values \
+helm upgrade pfa oci://ghcr.io/guliziskender/charts/pfa --version 0.1.0 -n pfa --reuse-values \
   --set ai.provider=anthropic --set ai.existingSecret=pfa-anthropic --set ai.sendData=true
 ```
 
@@ -87,7 +96,7 @@ Without `ai.sendData=true`, pfa refuses to send anything and answers from its ru
 ### Ollama in your cluster (the model also runs in your cluster)
 
 ```bash
-helm upgrade pfa deploy/helm/pfa -n pfa --reuse-values \
+helm upgrade pfa oci://ghcr.io/guliziskender/charts/pfa --version 0.1.0 -n pfa --reuse-values \
   --set ai.provider=ollama --set ai.ollamaUrl=http://ollama.ollama.svc:11434 \
   --set ai.model=qwen3:8b --set ai.sendData=true
 ```

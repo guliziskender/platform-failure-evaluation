@@ -18,6 +18,8 @@ from typer.testing import CliRunner
 from pfa.cli import app
 from pfa.evaluation import missing_keywords
 
+from .require import unavailable
+
 pytestmark = pytest.mark.integration
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -34,7 +36,7 @@ def lab():
     try:
         subprocess.run(["kubectl", "cluster-info"], check=True, capture_output=True, timeout=15)
     except (subprocess.CalledProcessError, FileNotFoundError, subprocess.TimeoutExpired):
-        pytest.skip("no reachable Kubernetes cluster")
+        unavailable("no reachable Kubernetes cluster")
     result = subprocess.run(
         [sys.executable, str(ROOT / "lab" / "lab.py"), "up"], capture_output=True, text=True
     )
