@@ -23,3 +23,9 @@ resources:
   - cases/pending-missing-configmap/manifest.yaml
   - cases/probe-readiness-404/manifest.yaml
   - cases/probe-slow-start/manifest.yaml
+  - cases/crashloop-misleading-errors/manifest.yaml
+  - cases/crashloop-two-containers/manifest.yaml
+  - cases/crashloop-missing-service/manifest.yaml
+  - cases/imagepull-secret-red-herring/manifest.yaml
+  - cases/probe-dependency-down/manifest.yaml
+  - cases/pending-pvc-storageclass/manifest.yaml

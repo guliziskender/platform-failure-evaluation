@@ -1,0 +1,228 @@
+{
+  "target": {
+    "namespace": "pfa-lab",
+    "name": "shipping-api",
+    "kind": "deployment",
+    "pod": "shipping-api-b76df6b49-vqdrn",
+    "container": "api",
+    "owners": [
+      {
+        "kind": "ReplicaSet",
+        "name": "shipping-api-b76df6b49"
+      },
+      {
+        "kind": "Deployment",
+        "name": "shipping-api"
+      }
+    ]
+  },
+  "evidence": [
+    {
+      "source": "k8s_state",
+      "summary": {
+        "workload": {
+          "kind": "deployment",
+          "name": "shipping-api",
+          "replicas_desired": 1,
+          "replicas_ready": 0,
+          "replicas_updated": 1,
+          "replicas_available": 0,
+          "generation": 1,
+          "observed_generation": 1,
+          "conditions": [
+            {
+              "type": "Progressing",
+              "status": "True",
+              "reason": "NewReplicaSetAvailable",
+              "message": "ReplicaSet \"shipping-api-b76df6b49\" has successfully progressed.",
+              "last_update": "2026-11-11T14:31:28+00:00"
+            },
+            {
+              "type": "Available",
+              "status": "False",
+              "reason": "MinimumReplicasUnavailable",
+              "message": "Deployment does not have minimum availability.",
+              "last_update": "2026-11-11T14:31:43+00:00"
+            }
+          ]
+        },
+        "pod": {
+          "name": "shipping-api-b76df6b49-vqdrn",
+          "phase": "Running",
+          "node": "desktop-control-plane",
+          "qos_class": "BestEffort",
+          "created": "2026-11-11T14:31:27+00:00",
+          "started": "2026-11-11T14:31:28+00:00",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "False",
+              "reason": "ContainersNotReady",
+              "message": "containers with unready status: [api]"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "False",
+              "reason": "ContainersNotReady",
+              "message": "containers with unready status: [api]"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "api",
+              "image": "busybox:1.36",
+              "command": [
+                "sh",
+                "-c"
+              ],
+              "args": [
+                "echo \"shipping-api 2.0.3 starting\"\necho \"connecting to postgres at $DB_HOST:5432\"\nif ! nslookup \"$DB_HOST\" >/dev/null 2>&1; then\n  dns=$(awk '/^nameserver/ {print $2; exit}' /etc/resolv.conf)\n  echo \"FATAL: db: dial tcp: lookup $DB_HOST on $dns:53: no such host\" >&2\n  exit 1\nfi\nexec sleep 3600\n"
+              ],
+              "env_names": [
+                "DB_HOST"
+              ],
+              "ready": false,
+              "started": false,
+              "restart_count": 2,
+              "state": {
+                "terminated": {
+                  "reason": "Error",
+                  "exit_code": 1,
+                  "started_at": "2026-11-11T14:31:43+00:00",
+                  "finished_at": "2026-11-11T14:31:43+00:00"
+                }
+              },
+              "last_state": {
+                "terminated": {
+                  "reason": "Error",
+                  "exit_code": 1,
+                  "started_at": "2026-11-11T14:31:28+00:00",
+                  "finished_at": "2026-11-11T14:31:28+00:00"
+                }
+              },
+              "image_id": "docker.io/library/busybox@sha256:73aaf090f3d85aa34ee199857f03fa3a95c8ede2ffd4cc2cdb5b94e566b11662"
+            }
+          ]
+        }
+      },
+      "raw_excerpt": null,
+      "error": null,
+      "collected_at": "2026-11-11T14:31:50.980249Z",
+      "redacted": true,
+      "redactions": {}
+    },
+    {
+      "source": "k8s_events",
+      "summary": {
+        "window_minutes": 60,
+        "objects": [
+          "Pod/shipping-api-b76df6b49-vqdrn",
+          "ReplicaSet/shipping-api-b76df6b49",
+          "Deployment/shipping-api"
+        ],
+        "total": 7,
+        "events": [
+          {
+            "type": "Warning",
+            "reason": "BackOff",
+            "object": "Pod/shipping-api-b76df6b49-vqdrn",
+            "message": "Back-off restarting failed container api in pod shipping-api-b76df6b49-vqdrn_pfa-lab(8091da2b-7c71-4303-8a52-3c96a6cdc959)",
+            "count": 2,
+            "first_seen": "2026-11-11T14:31:29+00:00",
+            "last_seen": "2026-11-11T14:31:43+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "Pulled",
+            "object": "Pod/shipping-api-b76df6b49-vqdrn",
+            "message": "Container image \"busybox:1.36\" already present on machine and can be accessed by the pod",
+            "count": 3,
+            "first_seen": "2026-11-11T14:31:28+00:00",
+            "last_seen": "2026-11-11T14:31:43+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "Created",
+            "object": "Pod/shipping-api-b76df6b49-vqdrn",
+            "message": "Container created",
+            "count": 3,
+            "first_seen": "2026-11-11T14:31:28+00:00",
+            "last_seen": "2026-11-11T14:31:43+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "Started",
+            "object": "Pod/shipping-api-b76df6b49-vqdrn",
+            "message": "Container started",
+            "count": 3,
+            "first_seen": "2026-11-11T14:31:28+00:00",
+            "last_seen": "2026-11-11T14:31:43+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "Scheduled",
+            "object": "Pod/shipping-api-b76df6b49-vqdrn",
+            "message": "Successfully assigned pfa-lab/shipping-api-b76df6b49-vqdrn to desktop-control-plane",
+            "count": 1,
+            "first_seen": "2026-11-11T14:31:27.997357+00:00",
+            "last_seen": "2026-11-11T14:31:27.997357+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "SuccessfulCreate",
+            "object": "ReplicaSet/shipping-api-b76df6b49",
+            "message": "Created pod: shipping-api-b76df6b49-vqdrn",
+            "count": 1,
+            "first_seen": "2026-11-11T14:31:27+00:00",
+            "last_seen": "2026-11-11T14:31:27+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "ScalingReplicaSet",
+            "object": "Deployment/shipping-api",
+            "message": "Scaled up replica set shipping-api-b76df6b49 from 0 to 1",
+            "count": 1,
+            "first_seen": "2026-11-11T14:31:27+00:00",
+            "last_seen": "2026-11-11T14:31:27+00:00"
+          }
+        ]
+      },
+      "raw_excerpt": null,
+      "error": null,
+      "collected_at": "2026-11-11T14:31:50.982198Z",
+      "redacted": true,
+      "redactions": {}
+    },
+    {
+      "source": "logs",
+      "summary": {
+        "container": "api",
+        "previous": {
+          "available": false,
+          "note": "unable to retrieve container logs for containerd://09e92d137fdf583f68c6fa6b892dd09b67ad3ff1ff791278e4a535e9ce7f684d"
+        },
+        "current": {
+          "available": true,
+          "lines": 3
+        }
+      },
+      "raw_excerpt": "=== current container ===\nshipping-api 2.0.3 starting\nconnecting to postgres at orders-db:5432\nFATAL: db: dial tcp: lookup orders-db on 10.96.0.10:53: no such host\n",
+      "error": null,
+      "collected_at": "2026-11-11T14:31:50.982632Z",
+      "redacted": true,
+      "redactions": {}
+    }
+  ]
+}

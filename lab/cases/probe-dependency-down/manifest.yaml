@@ -1,0 +1,40 @@
+# stock-api is up, and its readiness endpoint honestly reports that it cannot reach its
+# database: inventory-db has no Service. The probe is right; the dependency is missing.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stock-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: stock-api}
+  template:
+    metadata:
+      labels: {app: stock-api}
+    spec:
+      containers:
+        - name: api
+          image: busybox:1.36
+          command: ["sh", "-c"]
+          args:
+            - |
+              mkdir -p /www/cgi-bin
+              cat > /www/cgi-bin/ready <<'SH'
+              #!/bin/sh
+              if nslookup "$DB_HOST" >/dev/null 2>&1; then
+                printf 'Status: 200 OK\r\nContent-Type: text/plain\r\n\r\nready\n'
+              else
+                echo "readiness: database $DB_HOST:5432 unreachable: lookup $DB_HOST: no such host" >&2
+                printf 'Status: 503 Service Unavailable\r\nContent-Type: text/plain\r\n\r\ndb down\n'
+              fi
+              SH
+              chmod +x /www/cgi-bin/ready
+              echo "stock-api 4.1.0 listening on :80 (readiness: /cgi-bin/ready checks $DB_HOST)"
+              exec httpd -f -p 80 -h /www
+          env:
+            - {name: DB_HOST, value: inventory-db}
+          ports:
+            - {name: http, containerPort: 80}
+          readinessProbe:
+            httpGet: {path: /cgi-bin/ready, port: http}
+            periodSeconds: 5

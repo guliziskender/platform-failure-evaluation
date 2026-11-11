@@ -39,10 +39,10 @@
             },
             {
               "type": "Progressing",
-              "status": "True",
-              "reason": "ReplicaSetUpdated",
-              "message": "ReplicaSet \"catalog-api-fd88d7c75\" is progressing.",
-              "last_update": "2026-11-02T15:26:39+00:00"
+              "status": "False",
+              "reason": "ProgressDeadlineExceeded",
+              "message": "ReplicaSet \"catalog-api-fd88d7c75\" has timed out progressing.",
+              "last_update": "2026-11-02T15:36:39+00:00"
             }
           ]
         },
@@ -116,7 +116,7 @@
       },
       "raw_excerpt": null,
       "error": null,
-      "collected_at": "2026-11-02T15:27:28.527739Z",
+      "collected_at": "2026-11-11T14:31:51.102941Z",
       "redacted": true,
       "redactions": {}
     },
@@ -129,76 +129,22 @@
           "ReplicaSet/catalog-api-fd88d7c75",
           "Deployment/catalog-api"
         ],
-        "total": 7,
+        "total": 1,
         "events": [
           {
             "type": "Warning",
             "reason": "Unhealthy",
             "object": "Pod/catalog-api-fd88d7c75-mvd2q",
             "message": "Readiness probe failed: HTTP probe failed with statuscode: 404",
-            "count": 17,
+            "count": 43754,
             "first_seen": "2026-11-02T15:26:40+00:00",
-            "last_seen": "2026-11-02T15:27:26+00:00"
-          },
-          {
-            "type": "Normal",
-            "reason": "Pulled",
-            "object": "Pod/catalog-api-fd88d7c75-mvd2q",
-            "message": "Container image \"busybox:1.36\" already present on machine and can be accessed by the pod",
-            "count": 1,
-            "first_seen": "2026-11-02T15:26:40+00:00",
-            "last_seen": "2026-11-02T15:26:40+00:00"
-          },
-          {
-            "type": "Normal",
-            "reason": "Created",
-            "object": "Pod/catalog-api-fd88d7c75-mvd2q",
-            "message": "Container created",
-            "count": 1,
-            "first_seen": "2026-11-02T15:26:40+00:00",
-            "last_seen": "2026-11-02T15:26:40+00:00"
-          },
-          {
-            "type": "Normal",
-            "reason": "Started",
-            "object": "Pod/catalog-api-fd88d7c75-mvd2q",
-            "message": "Container started",
-            "count": 1,
-            "first_seen": "2026-11-02T15:26:40+00:00",
-            "last_seen": "2026-11-02T15:26:40+00:00"
-          },
-          {
-            "type": "Normal",
-            "reason": "Scheduled",
-            "object": "Pod/catalog-api-fd88d7c75-mvd2q",
-            "message": "Successfully assigned pfa-lab/catalog-api-fd88d7c75-mvd2q to desktop-control-plane",
-            "count": 1,
-            "first_seen": "2026-11-02T15:26:39.673731+00:00",
-            "last_seen": "2026-11-02T15:26:39.673731+00:00"
-          },
-          {
-            "type": "Normal",
-            "reason": "SuccessfulCreate",
-            "object": "ReplicaSet/catalog-api-fd88d7c75",
-            "message": "Created pod: catalog-api-fd88d7c75-mvd2q",
-            "count": 1,
-            "first_seen": "2026-11-02T15:26:39+00:00",
-            "last_seen": "2026-11-02T15:26:39+00:00"
-          },
-          {
-            "type": "Normal",
-            "reason": "ScalingReplicaSet",
-            "object": "Deployment/catalog-api",
-            "message": "Scaled up replica set catalog-api-fd88d7c75 from 0 to 1",
-            "count": 1,
-            "first_seen": "2026-11-02T15:26:39+00:00",
-            "last_seen": "2026-11-02T15:26:39+00:00"
+            "last_seen": "2026-11-11T14:31:42+00:00"
           }
         ]
       },
       "raw_excerpt": null,
       "error": null,
-      "collected_at": "2026-11-02T15:27:28.529477Z",
+      "collected_at": "2026-11-11T14:31:51.104550Z",
       "redacted": true,
       "redactions": {}
     },
@@ -217,7 +163,7 @@
       },
       "raw_excerpt": "=== current container ===\ncatalog-api listening on :80, health at /healthz\n",
       "error": null,
-      "collected_at": "2026-11-02T15:27:28.528683Z",
+      "collected_at": "2026-11-11T14:31:51.104031Z",
       "redacted": true,
       "redactions": {}
     }

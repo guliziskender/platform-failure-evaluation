@@ -13,7 +13,7 @@ from rich.text import Text
 
 from pfa.ai.context import Prompt
 from pfa.config import OPTIONS, SECRET_OPTIONS, Settings
-from pfa.evaluation import CaseResult, EvalRun, by_failure_type, changes
+from pfa.evaluation import CaseResult, EvalRun, by_difficulty, by_failure_type, changes
 from pfa.models import Diagnosis, Evidence, Report, Target
 
 _CONFIDENCE_STYLE = {"high": "green", "medium": "yellow", "low": "red", "unsure": "red"}
@@ -275,6 +275,11 @@ def print_eval(
         ),
         soft_wrap=True,
     )
+    levels = by_difficulty(run)
+    if "hard" in levels:
+        console.print(
+            Text(" · ".join(f"{name} {right}/{total}" for name, (right, total) in levels.items()))
+        )
     console.print(Text(f"Confident and wrong: {run.confident_wrong}"))
     if run.errors:
         console.print(Text(f"No answer: {run.errors} (counted as wrong)", style="red"))

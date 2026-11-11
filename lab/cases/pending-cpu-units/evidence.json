@@ -80,7 +80,7 @@
       },
       "raw_excerpt": null,
       "error": null,
-      "collected_at": "2026-11-02T15:27:28.504528Z",
+      "collected_at": "2026-11-11T14:31:51.060980Z",
       "redacted": true,
       "redactions": {}
     },
@@ -100,15 +100,15 @@
             "reason": "FailedScheduling",
             "object": "Pod/ml-trainer-8558d584bb-c7vtm",
             "message": "0/1 nodes are available: 1 Insufficient cpu. no new claims to deallocate, preemption: 0/1 nodes are available: 1 Preemption is not helpful for scheduling.",
-            "count": 102,
-            "first_seen": "2026-11-02T06:01:34.248078+00:00",
-            "last_seen": "2026-11-02T15:09:38.868149+00:00"
+            "count": 125,
+            "first_seen": "2026-11-10T08:51:34.351027+00:00",
+            "last_seen": "2026-11-11T14:23:45.131960+00:00"
           }
         ]
       },
       "raw_excerpt": null,
       "error": null,
-      "collected_at": "2026-11-02T15:27:28.506228Z",
+      "collected_at": "2026-11-11T14:31:51.062362Z",
       "redacted": true,
       "redactions": {}
     },
@@ -129,7 +129,7 @@
       },
       "raw_excerpt": null,
       "error": null,
-      "collected_at": "2026-11-02T15:27:28.504739Z",
+      "collected_at": "2026-11-11T14:31:51.060776Z",
       "redacted": true,
       "redactions": {}
     }

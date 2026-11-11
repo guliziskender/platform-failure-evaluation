@@ -43,6 +43,9 @@ EvidenceMode = Literal["replay", "live"]
 
 # One entry per fact the answer must state. A list entry accepts any of its alternatives.
 Keywords = list[str | list[str]]
+# standard: one clear failure. hard: a trap (misleading logs or events, two failures at once,
+# a cause outside the pod). Reported separately, so hard cases never hide a standard regression.
+Difficulty = Literal["standard", "hard"]
 
 
 class EvalError(Exception):
@@ -65,6 +68,7 @@ class EvalCase(BaseModel):
     cause_keywords: Keywords
     fix_keywords: Keywords
     known_gap: str | None = None  # why the rules are expected to miss this case
+    difficulty: Difficulty = "standard"
 
 
 class CaseResult(BaseModel):
@@ -81,6 +85,7 @@ class CaseResult(BaseModel):
     missing: list[str] = Field(default_factory=list)  # expected facts the answer did not state
     error: str | None = None  # no answer to score: the AI or the live collection failed
     known_gap: str | None = None
+    difficulty: Difficulty = "standard"
     seconds: float = 0.0
     # What was answered, so a miss can be read (and a too-strict answer key spotted) later.
     cause: str = ""
@@ -190,6 +195,7 @@ def score(case: EvalCase, report: Report, ai_expected: bool = False) -> CaseResu
         missing=[f"cause: {m}" for m in missing_cause] + [f"fix: {m}" for m in missing_fix],
         error=error,
         known_gap=case.known_gap,
+        difficulty=case.difficulty,
         cause=d.likely_cause,
         fix=d.fix,
     )
@@ -209,6 +215,7 @@ def _no_report(case: EvalCase, message: str) -> CaseResult:
         confident_wrong=False,
         error=message,
         known_gap=case.known_gap,
+        difficulty=case.difficulty,
     )
 
 
@@ -251,6 +258,13 @@ def by_failure_type(run: EvalRun) -> dict[str, tuple[int, int]]:
     totals = Counter(r.expected.value for r in run.results)
     correct = Counter(r.expected.value for r in run.results if r.correct)
     return {name: (correct[name], totals[name]) for name in sorted(totals)}
+
+
+def by_difficulty(run: EvalRun) -> dict[str, tuple[int, int]]:
+    """{difficulty: (correct, total)}, standard first."""
+    totals = Counter(r.difficulty for r in run.results)
+    correct = Counter(r.difficulty for r in run.results if r.correct)
+    return {name: (correct[name], totals[name]) for name in ("standard", "hard") if totals[name]}
 
 
 def changes(run: EvalRun, previous: EvalRun) -> tuple[list[str], list[str]]:

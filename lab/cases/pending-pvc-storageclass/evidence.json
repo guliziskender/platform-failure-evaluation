@@ -1,0 +1,151 @@
+{
+  "target": {
+    "namespace": "pfa-lab",
+    "name": "metrics-store",
+    "kind": "deployment",
+    "pod": "metrics-store-59d6c6fdf9-5ntm7",
+    "container": "store",
+    "owners": [
+      {
+        "kind": "ReplicaSet",
+        "name": "metrics-store-59d6c6fdf9"
+      },
+      {
+        "kind": "Deployment",
+        "name": "metrics-store"
+      }
+    ]
+  },
+  "evidence": [
+    {
+      "source": "k8s_state",
+      "summary": {
+        "workload": {
+          "kind": "deployment",
+          "name": "metrics-store",
+          "replicas_desired": 1,
+          "replicas_ready": 0,
+          "replicas_updated": 1,
+          "replicas_available": 0,
+          "generation": 1,
+          "observed_generation": 1,
+          "conditions": [
+            {
+              "type": "Available",
+              "status": "False",
+              "reason": "MinimumReplicasUnavailable",
+              "message": "Deployment does not have minimum availability.",
+              "last_update": "2026-11-11T14:31:27+00:00"
+            },
+            {
+              "type": "Progressing",
+              "status": "True",
+              "reason": "ReplicaSetUpdated",
+              "message": "ReplicaSet \"metrics-store-59d6c6fdf9\" is progressing.",
+              "last_update": "2026-11-11T14:31:27+00:00"
+            }
+          ]
+        },
+        "pod": {
+          "name": "metrics-store-59d6c6fdf9-5ntm7",
+          "phase": "Pending",
+          "qos_class": "BestEffort",
+          "created": "2026-11-11T14:31:27+00:00",
+          "conditions": [
+            {
+              "type": "PodScheduled",
+              "status": "False",
+              "reason": "Unschedulable",
+              "message": "0/1 nodes are available: pod has unbound immediate PersistentVolumeClaims. not found"
+            }
+          ],
+          "containers": [
+            {
+              "name": "store",
+              "image": "busybox:1.36",
+              "command": [
+                "sleep",
+                "3600"
+              ]
+            }
+          ],
+          "pvcs": [
+            "metrics-data"
+          ]
+        }
+      },
+      "raw_excerpt": null,
+      "error": null,
+      "collected_at": "2026-11-11T14:31:51.086978Z",
+      "redacted": true,
+      "redactions": {}
+    },
+    {
+      "source": "k8s_events",
+      "summary": {
+        "window_minutes": 60,
+        "objects": [
+          "Pod/metrics-store-59d6c6fdf9-5ntm7",
+          "ReplicaSet/metrics-store-59d6c6fdf9",
+          "Deployment/metrics-store"
+        ],
+        "total": 3,
+        "events": [
+          {
+            "type": "Warning",
+            "reason": "FailedScheduling",
+            "object": "Pod/metrics-store-59d6c6fdf9-5ntm7",
+            "message": "0/1 nodes are available: pod has unbound immediate PersistentVolumeClaims. not found",
+            "count": 1,
+            "first_seen": "2026-11-11T14:31:27.912146+00:00",
+            "last_seen": "2026-11-11T14:31:27.912146+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "SuccessfulCreate",
+            "object": "ReplicaSet/metrics-store-59d6c6fdf9",
+            "message": "Created pod: metrics-store-59d6c6fdf9-5ntm7",
+            "count": 1,
+            "first_seen": "2026-11-11T14:31:27+00:00",
+            "last_seen": "2026-11-11T14:31:27+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "ScalingReplicaSet",
+            "object": "Deployment/metrics-store",
+            "message": "Scaled up replica set metrics-store-59d6c6fdf9 from 0 to 1",
+            "count": 1,
+            "first_seen": "2026-11-11T14:31:27+00:00",
+            "last_seen": "2026-11-11T14:31:27+00:00"
+          }
+        ]
+      },
+      "raw_excerpt": null,
+      "error": null,
+      "collected_at": "2026-11-11T14:31:51.088493Z",
+      "redacted": true,
+      "redactions": {}
+    },
+    {
+      "source": "logs",
+      "summary": {
+        "container": "store",
+        "previous": {
+          "available": true,
+          "lines": 0,
+          "empty": true
+        },
+        "current": {
+          "available": true,
+          "lines": 0,
+          "empty": true
+        }
+      },
+      "raw_excerpt": null,
+      "error": null,
+      "collected_at": "2026-11-11T14:31:51.086747Z",
+      "redacted": true,
+      "redactions": {}
+    }
+  ]
+}

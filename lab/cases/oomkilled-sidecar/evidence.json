@@ -3,12 +3,12 @@
     "namespace": "pfa-lab",
     "name": "search-api",
     "kind": "deployment",
-    "pod": "search-api-76f496fc59-w6z2f",
+    "pod": "search-api-59b74f7477-qglrj",
     "container": "log-shipper",
     "owners": [
       {
         "kind": "ReplicaSet",
-        "name": "search-api-76f496fc59"
+        "name": "search-api-59b74f7477"
       },
       {
         "kind": "Deployment",
@@ -27,32 +27,32 @@
           "replicas_ready": 0,
           "replicas_updated": 1,
           "replicas_available": 0,
-          "generation": 1,
-          "observed_generation": 1,
+          "generation": 2,
+          "observed_generation": 2,
           "conditions": [
             {
               "type": "Progressing",
               "status": "True",
               "reason": "NewReplicaSetAvailable",
-              "message": "ReplicaSet \"search-api-76f496fc59\" has successfully progressed.",
-              "last_update": "2026-11-02T15:26:42+00:00"
+              "message": "ReplicaSet \"search-api-59b74f7477\" has successfully progressed.",
+              "last_update": "2026-11-11T12:05:26+00:00"
             },
             {
               "type": "Available",
               "status": "False",
               "reason": "MinimumReplicasUnavailable",
               "message": "Deployment does not have minimum availability.",
-              "last_update": "2026-11-02T15:27:27+00:00"
+              "last_update": "2026-11-11T14:28:47+00:00"
             }
           ]
         },
         "pod": {
-          "name": "search-api-76f496fc59-w6z2f",
+          "name": "search-api-59b74f7477-qglrj",
           "phase": "Running",
           "node": "desktop-control-plane",
           "qos_class": "Burstable",
-          "created": "2026-11-02T15:26:39+00:00",
-          "started": "2026-11-02T15:26:39+00:00",
+          "created": "2026-11-11T12:05:25+00:00",
+          "started": "2026-11-11T12:05:25+00:00",
           "conditions": [
             {
               "type": "PodReadyToStartContainers",
@@ -89,10 +89,18 @@
               ],
               "ready": true,
               "started": true,
-              "restart_count": 0,
+              "restart_count": 1,
               "state": {
                 "running": {
-                  "started_at": "2026-11-02T15:26:40+00:00"
+                  "started_at": "2026-11-11T13:05:26+00:00"
+                }
+              },
+              "last_state": {
+                "terminated": {
+                  "reason": "Completed",
+                  "exit_code": 0,
+                  "started_at": "2026-11-11T12:05:26+00:00",
+                  "finished_at": "2026-11-11T13:05:26+00:00"
                 }
               },
               "image_id": "docker.io/library/busybox@sha256:73aaf090f3d85aa34ee199857f03fa3a95c8ede2ffd4cc2cdb5b94e566b11662"
@@ -117,21 +125,19 @@
               },
               "ready": false,
               "started": false,
-              "restart_count": 3,
+              "restart_count": 29,
               "state": {
-                "terminated": {
-                  "reason": "OOMKilled",
-                  "exit_code": 137,
-                  "started_at": "2026-11-02T15:27:26+00:00",
-                  "finished_at": "2026-11-02T15:27:26+00:00"
+                "waiting": {
+                  "reason": "CrashLoopBackOff",
+                  "message": "back-off 5m0s restarting failed container=log-shipper pod=search-api-59b74f7477-qglrj_pfa-lab(d5e971f5-2c71-4a5f-94a4-ab24b8985cf4)"
                 }
               },
               "last_state": {
                 "terminated": {
                   "reason": "OOMKilled",
                   "exit_code": 137,
-                  "started_at": "2026-11-02T15:26:57+00:00",
-                  "finished_at": "2026-11-02T15:26:57+00:00"
+                  "started_at": "2026-11-11T14:28:46+00:00",
+                  "finished_at": "2026-11-11T14:28:46+00:00"
                 }
               },
               "image_id": "docker.io/polinux/stress@sha256:b6144f84f9c15dac80deb48d3a646b55c7043ab1d83ea0a697c09097aaad21aa"
@@ -141,7 +147,7 @@
       },
       "raw_excerpt": null,
       "error": null,
-      "collected_at": "2026-11-02T15:27:28.495818Z",
+      "collected_at": "2026-11-11T14:31:51.052091Z",
       "redacted": true,
       "redactions": {}
     },
@@ -150,98 +156,44 @@
       "summary": {
         "window_minutes": 60,
         "objects": [
-          "Pod/search-api-76f496fc59-w6z2f",
-          "ReplicaSet/search-api-76f496fc59",
+          "Pod/search-api-59b74f7477-qglrj",
+          "ReplicaSet/search-api-59b74f7477",
           "Deployment/search-api"
         ],
-        "total": 9,
+        "total": 3,
         "events": [
           {
             "type": "Warning",
             "reason": "BackOff",
-            "object": "Pod/search-api-76f496fc59-w6z2f",
-            "message": "Back-off restarting failed container log-shipper in pod search-api-76f496fc59-w6z2f_pfa-lab(89252cf4-e97f-4c3f-80b9-ec448ba92426)",
-            "count": 3,
-            "first_seen": "2026-11-02T15:26:45+00:00",
-            "last_seen": "2026-11-02T15:27:27+00:00"
-          },
-          {
-            "type": "Normal",
-            "reason": "Created",
-            "object": "Pod/search-api-76f496fc59-w6z2f",
-            "message": "Container created",
-            "count": 5,
-            "first_seen": "2026-11-02T15:26:40+00:00",
-            "last_seen": "2026-11-02T15:27:26+00:00"
-          },
-          {
-            "type": "Normal",
-            "reason": "Started",
-            "object": "Pod/search-api-76f496fc59-w6z2f",
-            "message": "Container started",
-            "count": 5,
-            "first_seen": "2026-11-02T15:26:40+00:00",
-            "last_seen": "2026-11-02T15:27:26+00:00"
+            "object": "Pod/search-api-59b74f7477-qglrj",
+            "message": "Back-off restarting failed container log-shipper in pod search-api-59b74f7477-qglrj_pfa-lab(d5e971f5-2c71-4a5f-94a4-ab24b8985cf4)",
+            "count": 106,
+            "first_seen": "2026-11-11T12:05:28+00:00",
+            "last_seen": "2026-11-11T14:27:40+00:00"
           },
           {
             "type": "Normal",
             "reason": "Pulled",
-            "object": "Pod/search-api-76f496fc59-w6z2f",
-            "message": "Successfully pulled image \"polinux/stress\" in 949ms (949ms including waiting). Image size: 4041495 bytes.",
-            "count": 4,
-            "first_seen": "2026-11-02T15:26:42+00:00",
-            "last_seen": "2026-11-02T15:27:26+00:00"
-          },
-          {
-            "type": "Normal",
-            "reason": "Pulling",
-            "object": "Pod/search-api-76f496fc59-w6z2f",
-            "message": "Pulling image \"polinux/stress\"",
-            "count": 4,
-            "first_seen": "2026-11-02T15:26:40+00:00",
-            "last_seen": "2026-11-02T15:27:25+00:00"
+            "object": "Pod/search-api-59b74f7477-qglrj",
+            "message": "Container image \"polinux/stress\" already present on machine and can be accessed by the pod",
+            "count": 30,
+            "first_seen": "2026-11-11T12:05:26+00:00",
+            "last_seen": "2026-11-11T14:28:46+00:00"
           },
           {
             "type": "Normal",
             "reason": "Pulled",
-            "object": "Pod/search-api-76f496fc59-w6z2f",
+            "object": "Pod/search-api-59b74f7477-qglrj",
             "message": "Container image \"busybox:1.36\" already present on machine and can be accessed by the pod",
-            "count": 1,
-            "first_seen": "2026-11-02T15:26:40+00:00",
-            "last_seen": "2026-11-02T15:26:40+00:00"
-          },
-          {
-            "type": "Normal",
-            "reason": "Scheduled",
-            "object": "Pod/search-api-76f496fc59-w6z2f",
-            "message": "Successfully assigned pfa-lab/search-api-76f496fc59-w6z2f to desktop-control-plane",
-            "count": 1,
-            "first_seen": "2026-11-02T15:26:39.963052+00:00",
-            "last_seen": "2026-11-02T15:26:39.963052+00:00"
-          },
-          {
-            "type": "Normal",
-            "reason": "SuccessfulCreate",
-            "object": "ReplicaSet/search-api-76f496fc59",
-            "message": "Created pod: search-api-76f496fc59-w6z2f",
-            "count": 1,
-            "first_seen": "2026-11-02T15:26:39+00:00",
-            "last_seen": "2026-11-02T15:26:39+00:00"
-          },
-          {
-            "type": "Normal",
-            "reason": "ScalingReplicaSet",
-            "object": "Deployment/search-api",
-            "message": "Scaled up replica set search-api-76f496fc59 from 0 to 1",
-            "count": 1,
-            "first_seen": "2026-11-02T15:26:39+00:00",
-            "last_seen": "2026-11-02T15:26:39+00:00"
+            "count": 2,
+            "first_seen": "2026-11-11T12:05:26+00:00",
+            "last_seen": "2026-11-11T13:05:26+00:00"
           }
         ]
       },
       "raw_excerpt": null,
       "error": null,
-      "collected_at": "2026-11-02T15:27:28.498009Z",
+      "collected_at": "2026-11-11T14:31:51.053902Z",
       "redacted": true,
       "redactions": {}
     },
@@ -250,17 +202,17 @@
       "summary": {
         "container": "log-shipper",
         "previous": {
-          "available": false,
-          "note": "unable to retrieve container logs for containerd://0164200bbb60d013f5147efcdbe8024342db0a865b077e8e5648b6ecfc3a0b18"
+          "available": true,
+          "lines": 2
         },
         "current": {
           "available": true,
           "lines": 2
         }
       },
-      "raw_excerpt": "=== current container ===\nlog-shipper starting, buffering 200MB of logs in memory\nstress: info: [1] dispatching hogs: 0 cpu, 0 io, 1 vm, 0 hdd\n",
+      "raw_excerpt": "=== previous container ===\nlog-shipper starting, buffering 200MB of logs in memory\nstress: info: [1] dispatching hogs: 0 cpu, 0 io, 1 vm, 0 hdd\n\n=== current container ===\nlog-shipper starting, buffering 200MB of logs in memory\nstress: info: [1] dispatching hogs: 0 cpu, 0 io, 1 vm, 0 hdd\n",
       "error": null,
-      "collected_at": "2026-11-02T15:27:28.497643Z",
+      "collected_at": "2026-11-11T14:31:51.054224Z",
       "redacted": true,
       "redactions": {}
     }

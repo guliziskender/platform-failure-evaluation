@@ -1,0 +1,19 @@
+# Ground truth for this broken app, scored by `pfa eval`. A hard case: see `trap`.
+workload: {kind: deployment, name: pricing-api}
+failure_type: crash_loop_backoff
+difficulty: hard
+known_gap: >-
+  The crash rule quotes the last error line in the logs. Here that is the statsd flush during shutdown, not the fatal config error before it.
+trap: >-
+  The logs have three error lines and only one matters. The Redis error is a degraded-mode
+  warning (the app carries on without a cache), and the statsd error is printed while the app
+  shuts down, after the real failure. The last error line is not the cause.
+symptom: Pod restarts over and over and sits in CrashLoopBackOff.
+root_cause: >-
+  MAX_CONNECTIONS is set to "ten" on the Deployment; the app needs an integer, so it exits 1 at
+  startup. The Redis and statsd errors are side effects.
+cause_keywords: [MAX_CONNECTIONS]
+fix: Set MAX_CONNECTIONS to a number (e.g. "10") and roll out again.
+fix_keywords: [MAX_CONNECTIONS]
+ready_when: {restarts_at_least: 2}
+evidence_must_contain: ["MAX_CONNECTIONS", "redis", "statsd"]

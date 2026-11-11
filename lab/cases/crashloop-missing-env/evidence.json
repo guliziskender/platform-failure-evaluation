@@ -42,7 +42,7 @@
               "status": "False",
               "reason": "MinimumReplicasUnavailable",
               "message": "Deployment does not have minimum availability.",
-              "last_update": "2026-11-02T15:25:32+00:00"
+              "last_update": "2026-11-11T14:28:43+00:00"
             }
           ]
         },
@@ -97,7 +97,7 @@
               ],
               "ready": false,
               "started": false,
-              "restart_count": 522,
+              "restart_count": 1017,
               "state": {
                 "waiting": {
                   "reason": "CrashLoopBackOff",
@@ -108,8 +108,8 @@
                 "terminated": {
                   "reason": "Error",
                   "exit_code": 1,
-                  "started_at": "2026-11-02T15:25:32+00:00",
-                  "finished_at": "2026-11-02T15:25:32+00:00"
+                  "started_at": "2026-11-11T14:28:42+00:00",
+                  "finished_at": "2026-11-11T14:28:42+00:00"
                 }
               },
               "image_id": "docker.io/library/busybox@sha256:73aaf090f3d85aa34ee199857f03fa3a95c8ede2ffd4cc2cdb5b94e566b11662"
@@ -119,7 +119,7 @@
       },
       "raw_excerpt": null,
       "error": null,
-      "collected_at": "2026-11-02T15:27:28.441071Z",
+      "collected_at": "2026-11-11T14:31:50.970640Z",
       "redacted": true,
       "redactions": {}
     },
@@ -132,40 +132,31 @@
           "ReplicaSet/checkout-api-754754fccd",
           "Deployment/checkout-api"
         ],
-        "total": 3,
+        "total": 2,
         "events": [
           {
             "type": "Warning",
             "reason": "BackOff",
             "object": "Pod/checkout-api-754754fccd-gvm4g",
             "message": "Back-off restarting failed container api in pod checkout-api-754754fccd-gvm4g_pfa-lab(8d5dff6f-1bc7-41c0-9161-c63f2d67a959)",
-            "count": 1808,
+            "count": 3667,
             "first_seen": "2026-10-26T14:47:00+00:00",
-            "last_seen": "2026-11-02T15:24:27+00:00"
+            "last_seen": "2026-11-11T14:30:11+00:00"
           },
           {
             "type": "Normal",
             "reason": "Pulled",
             "object": "Pod/checkout-api-754754fccd-gvm4g",
             "message": "Container image \"busybox:1.36\" already present on machine and can be accessed by the pod",
-            "count": 523,
+            "count": 1018,
             "first_seen": "2026-10-26T14:46:59+00:00",
-            "last_seen": "2026-11-02T15:25:32+00:00"
-          },
-          {
-            "type": "Normal",
-            "reason": "Created",
-            "object": "Pod/checkout-api-754754fccd-gvm4g",
-            "message": "Container created",
-            "count": 516,
-            "first_seen": "2026-10-26T14:46:59+00:00",
-            "last_seen": "2026-11-02T14:49:13+00:00"
+            "last_seen": "2026-11-11T14:28:42+00:00"
           }
         ]
       },
       "raw_excerpt": null,
       "error": null,
-      "collected_at": "2026-11-02T15:27:28.443715Z",
+      "collected_at": "2026-11-11T14:31:50.972606Z",
       "redacted": true,
       "redactions": {}
     },
@@ -182,9 +173,9 @@
           "lines": 4
         }
       },
-      "raw_excerpt": "=== previous container ===\ncheckout-api v2.4.1 starting\nloading configuration from environment\ndb config: user=checkout password=<REDACTED:password>\nFATAL: required environment variable DATABASE_URL is not set\n\n=== current container ===\ncheckout-api v2.4.1 starting\nloading configuration from environment\ndb config: user=checkout password=<REDACTED:password>\nFATAL: required environment variable DATABASE_URL is not set\n",
+      "raw_excerpt": "=== previous container ===\nFATAL: required environment variable DATABASE_URL is not set\ncheckout-api v2.4.1 starting\nloading configuration from environment\ndb config: user=checkout password=<REDACTED:password>\n\n=== current container ===\nFATAL: required environment variable DATABASE_URL is not set\ncheckout-api v2.4.1 starting\nloading configuration from environment\ndb config: user=checkout password=<REDACTED:password>\n",
       "error": null,
-      "collected_at": "2026-11-02T15:27:28.442346Z",
+      "collected_at": "2026-11-11T14:31:50.972815Z",
       "redacted": true,
       "redactions": {
         "password": 2

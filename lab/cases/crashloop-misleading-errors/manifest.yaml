@@ -1,0 +1,36 @@
+# pricing-api exits at startup: MAX_CONNECTIONS="ten" is not a number. Its logs also hold two
+# errors that look like causes and are not: a cache it can live without, and a metrics flush
+# that fails only because the process is already shutting down.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pricing-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: pricing-api}
+  template:
+    metadata:
+      labels: {app: pricing-api}
+    spec:
+      containers:
+        - name: api
+          image: busybox:1.36
+          command: ["sh", "-c"]
+          args:
+            - |
+              echo "level=info msg=\"pricing-api 3.8.0 starting\""
+              echo "level=error msg=\"cache: dial tcp redis:6379: connect: connection refused\" fallback=in-memory"
+              echo "level=warn msg=\"running without shared cache; prices are cached per pod\""
+              case "$MAX_CONNECTIONS" in
+                ''|*[!0-9]*)
+                  echo "level=fatal msg=\"config: MAX_CONNECTIONS=\\\"$MAX_CONNECTIONS\\\" is not an integer\""
+                  echo "level=info msg=\"shutting down\""
+                  echo "level=error msg=\"metrics: failed to flush 12 points to statsd:8125: connection refused\""
+                  exit 1 ;;
+              esac
+              exec sleep 3600
+          env:
+            - {name: MAX_CONNECTIONS, value: "ten"}
+            - {name: CACHE_URL, value: "redis://redis:6379"}
+            - {name: STATSD_ADDR, value: "statsd:8125"}

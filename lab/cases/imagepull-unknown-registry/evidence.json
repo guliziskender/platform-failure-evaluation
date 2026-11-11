@@ -39,10 +39,10 @@
             },
             {
               "type": "Progressing",
-              "status": "True",
-              "reason": "ReplicaSetUpdated",
-              "message": "ReplicaSet \"billing-ui-599f78df5c\" is progressing.",
-              "last_update": "2026-11-02T15:26:39+00:00"
+              "status": "False",
+              "reason": "ProgressDeadlineExceeded",
+              "message": "ReplicaSet \"billing-ui-599f78df5c\" has timed out progressing.",
+              "last_update": "2026-11-02T15:36:39+00:00"
             }
           ]
         },
@@ -98,7 +98,7 @@
       },
       "raw_excerpt": null,
       "error": null,
-      "collected_at": "2026-11-02T15:27:28.468625Z",
+      "collected_at": "2026-11-11T14:31:51.023252Z",
       "redacted": true,
       "redactions": {}
     },
@@ -111,85 +111,31 @@
           "ReplicaSet/billing-ui-599f78df5c",
           "Deployment/billing-ui"
         ],
-        "total": 8,
+        "total": 2,
         "events": [
           {
             "type": "Warning",
             "reason": "Failed",
             "object": "Pod/billing-ui-599f78df5c-qhksw",
-            "message": "Failed to pull image \"registry.pfa-lab.invalid/billing/ui:3.2.0\": failed to pull and unpack image \"registry.pfa-lab.invalid/billing/ui:3.2.0\": failed to resolve reference \"registry.pfa-lab.invalid/billing/ui:3.2.0\": unexpected status from HEAD request to http://registry-mirror:1273/v2/billing/ui/manifests/3.2.0?ns=registry.pfa-lab.invalid: 500 Internal Server Error",
-            "count": 3,
-            "first_seen": "2026-11-02T15:26:40+00:00",
-            "last_seen": "2026-11-02T15:27:26+00:00"
-          },
-          {
-            "type": "Warning",
-            "reason": "Failed",
-            "object": "Pod/billing-ui-599f78df5c-qhksw",
-            "message": "Error: ErrImagePull",
-            "count": 3,
-            "first_seen": "2026-11-02T15:26:40+00:00",
-            "last_seen": "2026-11-02T15:27:26+00:00"
-          },
-          {
-            "type": "Warning",
-            "reason": "Failed",
-            "object": "Pod/billing-ui-599f78df5c-qhksw",
             "message": "Error: ImagePullBackOff",
-            "count": 2,
+            "count": 9484,
             "first_seen": "2026-11-02T15:26:41+00:00",
-            "last_seen": "2026-11-02T15:27:11+00:00"
-          },
-          {
-            "type": "Normal",
-            "reason": "Pulling",
-            "object": "Pod/billing-ui-599f78df5c-qhksw",
-            "message": "Pulling image \"registry.pfa-lab.invalid/billing/ui:3.2.0\"",
-            "count": 3,
-            "first_seen": "2026-11-02T15:26:40+00:00",
-            "last_seen": "2026-11-02T15:27:26+00:00"
+            "last_seen": "2026-11-11T14:26:54+00:00"
           },
           {
             "type": "Normal",
             "reason": "BackOff",
             "object": "Pod/billing-ui-599f78df5c-qhksw",
             "message": "Back-off pulling image \"registry.pfa-lab.invalid/billing/ui:3.2.0\"",
-            "count": 2,
+            "count": 9484,
             "first_seen": "2026-11-02T15:26:41+00:00",
-            "last_seen": "2026-11-02T15:27:11+00:00"
-          },
-          {
-            "type": "Normal",
-            "reason": "Scheduled",
-            "object": "Pod/billing-ui-599f78df5c-qhksw",
-            "message": "Successfully assigned pfa-lab/billing-ui-599f78df5c-qhksw to desktop-control-plane",
-            "count": 1,
-            "first_seen": "2026-11-02T15:26:39.668802+00:00",
-            "last_seen": "2026-11-02T15:26:39.668802+00:00"
-          },
-          {
-            "type": "Normal",
-            "reason": "SuccessfulCreate",
-            "object": "ReplicaSet/billing-ui-599f78df5c",
-            "message": "Created pod: billing-ui-599f78df5c-qhksw",
-            "count": 1,
-            "first_seen": "2026-11-02T15:26:39+00:00",
-            "last_seen": "2026-11-02T15:26:39+00:00"
-          },
-          {
-            "type": "Normal",
-            "reason": "ScalingReplicaSet",
-            "object": "Deployment/billing-ui",
-            "message": "Scaled up replica set billing-ui-599f78df5c from 0 to 1",
-            "count": 1,
-            "first_seen": "2026-11-02T15:26:39+00:00",
-            "last_seen": "2026-11-02T15:26:39+00:00"
+            "last_seen": "2026-11-11T14:26:54+00:00"
           }
         ]
       },
       "raw_excerpt": null,
       "error": null,
-      "collected_at": "2026-11-02T15:27:28.470697Z",
+      "collected_at": "2026-11-11T14:31:51.024950Z",
       "redacted": true,
       "redactions": {}
     },
@@ -208,7 +154,7 @@
       },
       "raw_excerpt": null,
       "error": null,
-      "collected_at": "2026-11-02T15:27:28.469478Z",
+      "collected_at": "2026-11-11T14:31:51.023647Z",
       "redacted": true,
       "redactions": {}
     }

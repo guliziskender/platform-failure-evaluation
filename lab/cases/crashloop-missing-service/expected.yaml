@@ -1,0 +1,21 @@
+# Ground truth for this broken app, scored by `pfa eval`. A hard case: see `trap`.
+workload: {kind: deployment, name: shipping-api}
+failure_type: crash_loop_backoff
+difficulty: hard
+known_gap: >-
+  The cause quotes the right log line, but no rule recognises a failed DNS lookup of a Service name, so the fix is generic.
+trap: >-
+  The cause is outside the pod: nothing is wrong with the container or its spec. The database
+  Service it connects to does not exist, so the name does not resolve. Restarting, more memory
+  or a new image will not help.
+symptom: Pod restarts over and over and sits in CrashLoopBackOff.
+root_cause: >-
+  shipping-api connects to orders-db:5432, but there is no Service named orders-db in the
+  namespace, so DNS lookup fails ("no such host") and the app exits 1.
+cause_keywords: [orders-db, [service, dns, no such host, resolve]]
+fix: >-
+  Create the orders-db Service (or deploy the database), or point DB_HOST at the right Service
+  name (kubectl get svc -n pfa-lab).
+fix_keywords: [orders-db, [service, svc]]
+ready_when: {restarts_at_least: 2}
+evidence_must_contain: ["orders-db", "no such host"]

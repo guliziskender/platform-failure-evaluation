@@ -1,0 +1,479 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-11T14:42:42.624468Z",
+  "answered_by": "qwen3:8b",
+  "evidence": "replay",
+  "total": 21,
+  "correct": 18,
+  "type_correct": 21,
+  "cause_correct": 18,
+  "fix_correct": 20,
+  "confident_wrong": 3,
+  "errors": 0,
+  "results": [
+    {
+      "case": "crashloop-bad-command",
+      "expected": "crash_loop_backoff",
+      "answered": "crash_loop_backoff",
+      "confidence": "high",
+      "source": "llm",
+      "type_ok": true,
+      "cause_ok": false,
+      "fix_ok": true,
+      "correct": false,
+      "confident_wrong": true,
+      "missing": [
+        "cause: /app/payment-gateway"
+      ],
+      "error": null,
+      "known_gap": null,
+      "difficulty": "standard",
+      "seconds": 29.54,
+      "cause": "The command \"\\u002Fapp\\u002Fpayment-gateway\" cannot be found in the busybox:1.36 image (exit code 127). Busybox is a minimal image that does not include custom binaries like payment-gateway by default.",
+      "fix": [
+        "Change the image to one that includes the payment-gateway binary (e.g., a custom image with the binary installed)",
+        "Or use a different command that exists in busybox:1.36 like /bin/sh or /bin/cat"
+      ]
+    },
+    {
+      "case": "crashloop-init-migration",
+      "expected": "crash_loop_backoff",
+      "answered": "crash_loop_backoff",
+      "confidence": "high",
+      "source": "llm",
+      "type_ok": true,
+      "cause_ok": true,
+      "fix_ok": true,
+      "correct": true,
+      "confident_wrong": false,
+      "missing": [],
+      "error": null,
+      "known_gap": null,
+      "difficulty": "standard",
+      "seconds": 25.85,
+      "cause": "The migrate init container's script is trying to create a database index 'orders_idx' that already exists, causing it to exit with code 1. Log line: \"ERROR: relation \"orders_idx\" already exists\".",
+      "fix": [
+        "Modify the migration script to check for existing indexes/tables before creation (e.g., using conditional logic in the SQL)",
+        "Verify if the database already contains 'orders_idx' and adjust the migration logic accordingly"
+      ]
+    },
+    {
+      "case": "crashloop-misleading-errors",
+      "expected": "crash_loop_backoff",
+      "answered": "crash_loop_backoff",
+      "confidence": "high",
+      "source": "llm",
+      "type_ok": true,
+      "cause_ok": true,
+      "fix_ok": true,
+      "correct": true,
+      "confident_wrong": false,
+      "missing": [],
+      "error": null,
+      "known_gap": "The crash rule quotes the last error line in the logs. Here that is the statsd flush during shutdown, not the fatal config error before it.",
+      "difficulty": "hard",
+      "seconds": 26.68,
+      "cause": "The application failed to start because MAX_CONNECTIONS was set to \"ten\" (a string) instead of an integer, causing a fatal configuration error. Log line: \"level=fatal msg=\\\"config: MAX_CONNECTIONS=\\\"ten\\\" is not an integer\\\"\"",
+      "fix": [
+        "Update the MAX_CONNECTIONS environment variable to use a numeric value (e.g., 100) in the deployment configuration"
+      ]
+    },
+    {
+      "case": "crashloop-missing-env",
+      "expected": "crash_loop_backoff",
+      "answered": "crash_loop_backoff",
+      "confidence": "high",
+      "source": "llm",
+      "type_ok": true,
+      "cause_ok": true,
+      "fix_ok": true,
+      "correct": true,
+      "confident_wrong": false,
+      "missing": [],
+      "error": null,
+      "known_gap": null,
+      "difficulty": "standard",
+      "seconds": 20.32,
+      "cause": "The application exits with code 1 because the required environment variable DATABASE_URL is not set, as shown in the log line: \"FATAL: required environment variable DATABASE_URL is not set\"",
+      "fix": [
+        "Add DATABASE_URL to the container's environment variables using a Secret (since credentials are often stored this way)",
+        "Redeploy the deployment after updating the environment configuration"
+      ]
+    },
+    {
+      "case": "crashloop-missing-service",
+      "expected": "crash_loop_backoff",
+      "answered": "crash_loop_backoff",
+      "confidence": "high",
+      "source": "llm",
+      "type_ok": true,
+      "cause_ok": true,
+      "fix_ok": true,
+      "correct": true,
+      "confident_wrong": false,
+      "missing": [],
+      "error": null,
+      "known_gap": "The cause quotes the right log line, but no rule recognises a failed DNS lookup of a Service name, so the fix is generic.",
+      "difficulty": "hard",
+      "seconds": 48.61,
+      "cause": "The application failed to resolve the database host \"orders-db\" using DNS (lookup failed on 10.96.0.10:53). The log shows: \"FATAL: db: dial tcp: lookup orders-db on 10.96.0.10:53: no such host\".",
+      "fix": [
+        "Verify the Kubernetes service named \"orders-db\" exists in the same namespace (pfa-lab) as the pod",
+        "Check if the service \"orders-db\" is correctly configured and reachable",
+        "Ensure the DB_HOST environment variable is set to the correct service name or IP address"
+      ]
+    },
+    {
+      "case": "crashloop-two-containers",
+      "expected": "crash_loop_backoff",
+      "answered": "crash_loop_backoff",
+      "confidence": "high",
+      "source": "llm",
+      "type_ok": true,
+      "cause_ok": false,
+      "fix_ok": false,
+      "correct": false,
+      "confident_wrong": true,
+      "missing": [
+        "cause: worker.yaml",
+        "fix: worker.yaml"
+      ],
+      "error": null,
+      "known_gap": "The rules diagnose one container, the most broken one; the worker's failure is never mentioned.",
+      "difficulty": "hard",
+      "seconds": 23.14,
+      "cause": "The application exits with code 1 because required environment variable REDIS_URL is not set (log line: \"FATAL: required environment variable REDIS_URL is not set\")",
+      "fix": [
+        "Add REDIS_URL to container's env (from Secret if containing credentials)",
+        "Roll out updated deployment"
+      ]
+    },
+    {
+      "case": "imagepull-bad-tag",
+      "expected": "image_pull_backoff",
+      "answered": "image_pull_backoff",
+      "confidence": "high",
+      "source": "llm",
+      "type_ok": true,
+      "cause_ok": true,
+      "fix_ok": true,
+      "correct": true,
+      "confident_wrong": false,
+      "missing": [],
+      "error": null,
+      "known_gap": null,
+      "difficulty": "standard",
+      "seconds": 29.15,
+      "cause": "The registry answers 'not found' for image 'busybox:1.36.1-uclbic': the image does not exist. The tag '1.36.1-uclbic' (or repository name) is wrong, or that version was never pushed.",
+      "fix": [
+        "Update the container image tag in the deployment's container specification to a valid tag (e.g., 'busybox:latest' or a correct custom tag)",
+        "Push the correct image version to the registry if it's a private registry"
+      ]
+    },
+    {
+      "case": "imagepull-invalid-name",
+      "expected": "image_pull_backoff",
+      "answered": "image_pull_backoff",
+      "confidence": "high",
+      "source": "llm",
+      "type_ok": true,
+      "cause_ok": true,
+      "fix_ok": true,
+      "correct": true,
+      "confident_wrong": false,
+      "missing": [],
+      "error": null,
+      "known_gap": null,
+      "difficulty": "standard",
+      "seconds": 27.6,
+      "cause": "The image reference 'busybox:1.36:latest' is invalid syntax (multiple colons in tag part). The error message shows: \"couldn't parse image name \"busybox:1.36:latest\": invalid reference format\".",
+      "fix": [
+        "Update the image field in the deployment's container spec to use valid syntax: registry/repository:tag",
+        "Example fix: change 'busybox:1.36:latest' to 'busybox:latest' or 'busybox:1.36'"
+      ]
+    },
+    {
+      "case": "imagepull-secret-red-herring",
+      "expected": "image_pull_backoff",
+      "answered": "image_pull_backoff",
+      "confidence": "high",
+      "source": "llm",
+      "type_ok": true,
+      "cause_ok": true,
+      "fix_ok": true,
+      "correct": true,
+      "confident_wrong": false,
+      "missing": [],
+      "error": null,
+      "known_gap": null,
+      "difficulty": "hard",
+      "seconds": 27.75,
+      "cause": "The registry answers 'not found' for image busybox:1.63: the tag '1.63' (or repository name) is wrong, or that version was never pushed. (evidence: 'docker.io/library/busybox:1.63: not found')",
+      "fix": [
+        "Verify available busybox tags using `crane ls busybox` or registry UI",
+        "Update the container image tag in deployment/admin-portal to a valid version (e.g., 'busybox:latest')",
+        "Apply the change with `kubectl apply -f deployment.yaml`"
+      ]
+    },
+    {
+      "case": "imagepull-unknown-registry",
+      "expected": "image_pull_backoff",
+      "answered": "image_pull_backoff",
+      "confidence": "medium",
+      "source": "llm",
+      "type_ok": true,
+      "cause_ok": true,
+      "fix_ok": true,
+      "correct": true,
+      "confident_wrong": false,
+      "missing": [],
+      "error": null,
+      "known_gap": null,
+      "difficulty": "standard",
+      "seconds": 30.47,
+      "cause": "Image pull failed with 500 Internal Server Error when resolving \"registry.pfa-lab.invalid/billing/ui:3.2.0\" via registry-mirror:1273. The mirror cannot fetch the image, possibly due to unreachable registry or mirror misconfiguration.",
+      "fix": [
+        "Verify registry hostname \"registry.pfa-lab.invalid\" is correct and reachable from registry-mirror:1273",
+        "Check mirror logs for connectivity issues to upstream registry"
+      ]
+    },
+    {
+      "case": "oomkilled-growing-cache",
+      "expected": "oom_killed",
+      "answered": "oom_killed",
+      "confidence": "high",
+      "source": "llm",
+      "type_ok": true,
+      "cause_ok": true,
+      "fix_ok": true,
+      "correct": true,
+      "confident_wrong": false,
+      "missing": [],
+      "error": null,
+      "known_gap": null,
+      "difficulty": "standard",
+      "seconds": 21.72,
+      "cause": "The stress command uses 300M memory (stress --vm-bytes 300M) which exceeds the 200Mi memory limit. The kernel kills the container when it reaches the limit.",
+      "fix": [
+        "resources.limits.memory: 300Mi"
+      ]
+    },
+    {
+      "case": "oomkilled-low-limit",
+      "expected": "oom_killed",
+      "answered": "oom_killed",
+      "confidence": "high",
+      "source": "llm",
+      "type_ok": true,
+      "cause_ok": true,
+      "fix_ok": true,
+      "correct": true,
+      "confident_wrong": false,
+      "missing": [],
+      "error": null,
+      "known_gap": null,
+      "difficulty": "standard",
+      "seconds": 17.49,
+      "cause": "The process needs more memory than its 128Mi memory limit, as evidenced by the \"loading 250MB of order history into memory\" log line. The stress command explicitly uses 250M bytes, exceeding the limit.",
+      "fix": [
+        "resources.limits.memory: 256Mi"
+      ]
+    },
+    {
+      "case": "oomkilled-sidecar",
+      "expected": "oom_killed",
+      "answered": "oom_killed",
+      "confidence": "high",
+      "source": "llm",
+      "type_ok": true,
+      "cause_ok": true,
+      "fix_ok": true,
+      "correct": true,
+      "confident_wrong": false,
+      "missing": [],
+      "error": null,
+      "known_gap": null,
+      "difficulty": "standard",
+      "seconds": 28.12,
+      "cause": "The container's memory limit of 64Mi is insufficient for the stress command's 200MB memory buffer, causing the kernel to kill it repeatedly. The log line \"log-shipper starting, buffering 200MB of logs in memory\" confirms the workload requires more memory than allocated.",
+      "fix": [
+        "Set resources.limits.memory to at least 200Mi in the pod's spec (e.g., 200Mi or 256Mi)."
+      ]
+    },
+    {
+      "case": "pending-cpu-units",
+      "expected": "pending",
+      "answered": "pending",
+      "confidence": "high",
+      "source": "llm",
+      "type_ok": true,
+      "cause_ok": true,
+      "fix_ok": true,
+      "correct": true,
+      "confident_wrong": false,
+      "missing": [],
+      "error": null,
+      "known_gap": null,
+      "difficulty": "standard",
+      "seconds": 23.64,
+      "cause": "The container requests 4000 CPU cores (4k) but nodes only have 1 core available. Kubernetes interprets '4k' as 4000 whole cores, which is impossible for standard nodes.",
+      "fix": [
+        "Update the CPU request to '4000m' (4 cores) in the container's resources section"
+      ]
+    },
+    {
+      "case": "pending-missing-configmap",
+      "expected": "pending",
+      "answered": "pending",
+      "confidence": "high",
+      "source": "llm",
+      "type_ok": true,
+      "cause_ok": true,
+      "fix_ok": true,
+      "correct": true,
+      "confident_wrong": false,
+      "missing": [],
+      "error": null,
+      "known_gap": null,
+      "difficulty": "standard",
+      "seconds": 21.95,
+      "cause": "The pod references a non-existent configmap called \"email-templates\" in the namespace. The event shows \"MountVolume.SetUp failed for volume \"templates\" : configmap \"email-templates\" not found\".",
+      "fix": [
+        "Create the missing configmap: kubectl create configmap email-templates --from-file=path/to/templates -n pfa-lab",
+        "Or verify/fix the configmap name in the pod's volume configuration"
+      ]
+    },
+    {
+      "case": "pending-node-selector",
+      "expected": "pending",
+      "answered": "pending",
+      "confidence": "high",
+      "source": "llm",
+      "type_ok": true,
+      "cause_ok": true,
+      "fix_ok": true,
+      "correct": true,
+      "confident_wrong": false,
+      "missing": [],
+      "error": null,
+      "known_gap": null,
+      "difficulty": "standard",
+      "seconds": 25.53,
+      "cause": "The pod's nodeSelector {'hardware': 'gpu-a100'} matches no nodes in the cluster (node label not found).",
+      "fix": [
+        "kubectl get nodes --show-labels",
+        "Update nodeSelector to match existing node labels or label target nodes with 'hardware=gpu-a100'"
+      ]
+    },
+    {
+      "case": "pending-pvc-storageclass",
+      "expected": "pending",
+      "answered": "pending",
+      "confidence": "high",
+      "source": "llm",
+      "type_ok": true,
+      "cause_ok": false,
+      "fix_ok": true,
+      "correct": false,
+      "confident_wrong": true,
+      "missing": [
+        "cause: fast-ssd"
+      ],
+      "error": null,
+      "known_gap": "pfa reads only the pod's and its owners' events. The reason (StorageClass fast-ssd not found) is on the PersistentVolumeClaim, which pfa cannot read.",
+      "difficulty": "hard",
+      "seconds": 21.62,
+      "cause": "The pod requires PVC 'metrics-data' which is not bound to a PersistentVolume. The error indicates 'pod has unbound immediate PersistentVolumeClaims. not found'.",
+      "fix": [
+        "Create the missing PVC: kubectl apply -f metrics-data-pvc.yaml",
+        "Verify StorageClass exists: kubectl get storageclass",
+        "Check PVC status: kubectl describe pvc metrics-data"
+      ]
+    },
+    {
+      "case": "probe-dependency-down",
+      "expected": "probe_failure",
+      "answered": "probe_failure",
+      "confidence": "medium",
+      "source": "llm",
+      "type_ok": true,
+      "cause_ok": true,
+      "fix_ok": true,
+      "correct": true,
+      "confident_wrong": false,
+      "missing": [],
+      "error": null,
+      "known_gap": "The probe rules use the first failing probe event (connection refused, from before the server started), not the 503 that repeats.",
+      "difficulty": "hard",
+      "seconds": 34.72,
+      "cause": "The app's readiness check (/cgi-bin/ready) returns 503 because it cannot resolve the database host \"inventory-db\" (log line: \"lookup inventory-db: no such host\"). The probe's HTTP GET request to http://10.244.0.35:80/cgi-bin/ready fails with connection refused.",
+      "fix": [
+        "Verify the DB_HOST environment variable is correctly set to the database's DNS name or IP (current value is \"inventory-db\").",
+        "Ensure the database service is running and reachable from the pod's network (check DNS resolution and firewall rules)."
+      ]
+    },
+    {
+      "case": "probe-readiness-404",
+      "expected": "probe_failure",
+      "answered": "probe_failure",
+      "confidence": "high",
+      "source": "llm",
+      "type_ok": true,
+      "cause_ok": true,
+      "fix_ok": true,
+      "correct": true,
+      "confident_wrong": false,
+      "missing": [],
+      "error": null,
+      "known_gap": null,
+      "difficulty": "standard",
+      "seconds": 24.06,
+      "cause": "The readiness probe requests path /ready (as configured in probes.readiness.http_get), but the app only serves health checks at /healthz (log line: \"health at /healthz\")",
+      "fix": [
+        "Update readiness probe path to /healthz: set probes.readiness.http_get to HTTP /healthz port=http"
+      ]
+    },
+    {
+      "case": "probe-slow-start",
+      "expected": "probe_failure",
+      "answered": "probe_failure",
+      "confidence": "medium",
+      "source": "llm",
+      "type_ok": true,
+      "cause_ok": true,
+      "fix_ok": true,
+      "correct": true,
+      "confident_wrong": false,
+      "missing": [],
+      "error": null,
+      "known_gap": null,
+      "difficulty": "standard",
+      "seconds": 37.92,
+      "cause": "The liveness probe checks http://10.244.0.16:80/healthz with initialDelaySeconds=2, but the app only starts listening on :80 after a 45-second delay (from the command: sleep 45). The probe fails before the app is ready.",
+      "fix": [
+        "Set initialDelaySeconds=45 for the liveness probe to match the app's startup time"
+      ]
+    },
+    {
+      "case": "probe-wrong-port",
+      "expected": "probe_failure",
+      "answered": "probe_failure",
+      "confidence": "high",
+      "source": "llm",
+      "type_ok": true,
+      "cause_ok": true,
+      "fix_ok": true,
+      "correct": true,
+      "confident_wrong": false,
+      "missing": [],
+      "error": null,
+      "known_gap": null,
+      "difficulty": "standard",
+      "seconds": 26.97,
+      "cause": "The liveness probe checks port 8080 (http_get: port=8080), but the container only declares http=80/TCP and the app actually listens on port 80. The probe gets 'connection refused' and triggers restarts.",
+      "fix": [
+        "Update the liveness probe's port to 80: http_get: port=80"
+      ]
+    }
+  ]
+}

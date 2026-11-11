@@ -56,9 +56,17 @@ def test_rules_diagnose_lab_case(case_id):
     assert not missing, f"diagnosis lacks {missing}: {d.likely_cause}"
 
 
-def test_three_cases_per_failure_type():
-    counts = Counter(_expected(c)["failure_type"] for c in CASES)
+def test_three_standard_cases_per_failure_type():
+    # Hard cases come on top, so the standard set stays balanced and comparable over time.
+    standard = [c for c in CASES if _expected(c).get("difficulty", "standard") == "standard"]
+    counts = Counter(_expected(c)["failure_type"] for c in standard)
     assert set(counts.values()) == {3}, counts
+
+
+def test_every_hard_case_says_what_the_trap_is():
+    for c in CASES:
+        if _expected(c).get("difficulty") == "hard":
+            assert len(_expected(c).get("trap", "")) > 40, c
 
 
 def test_every_case_is_deployed():

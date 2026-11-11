@@ -1,0 +1,21 @@
+# Ground truth for this broken app, scored by `pfa eval`. A hard case: see `trap`.
+workload: {kind: deployment, name: stock-api}
+failure_type: probe_failure
+difficulty: hard
+known_gap: >-
+  The probe rules use the first failing probe event (connection refused, from before the server started), not the 503 that repeats.
+trap: >-
+  The readiness probe is configured correctly and answers truthfully: the app is not ready
+  because its database is missing. Changing the probe would send traffic to a pod that cannot
+  serve it. The cause is outside the pod.
+symptom: Pod is Running but never Ready; events show Readiness probe failed with status 503.
+root_cause: >-
+  The app's readiness check fails because its database inventory-db cannot be resolved (there is
+  no inventory-db Service), so /cgi-bin/ready answers 503. The probe itself is correct.
+cause_keywords: [inventory-db]
+fix: >-
+  Create the inventory-db Service (or deploy the database), or point the app at the right host.
+  Do not change the probe.
+fix_keywords: [inventory-db]
+ready_when: {pod_condition_reason: ContainersNotReady}
+evidence_must_contain: ["Readiness probe failed", "503", "inventory-db"]

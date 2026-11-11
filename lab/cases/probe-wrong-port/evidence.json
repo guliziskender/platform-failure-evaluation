@@ -20,9 +20,9 @@
           "kind": "statefulset",
           "name": "inventory-api",
           "replicas_desired": 1,
-          "replicas_ready": 0,
+          "replicas_ready": 1,
           "replicas_updated": 1,
-          "replicas_available": 0,
+          "replicas_available": 1,
           "generation": 1,
           "observed_generation": 1
         },
@@ -44,15 +44,11 @@
             },
             {
               "type": "Ready",
-              "status": "False",
-              "reason": "ContainersNotReady",
-              "message": "containers with unready status: [api]"
+              "status": "True"
             },
             {
               "type": "ContainersReady",
-              "status": "False",
-              "reason": "ContainersNotReady",
-              "message": "containers with unready status: [api]"
+              "status": "True"
             },
             {
               "type": "PodScheduled",
@@ -82,21 +78,20 @@
                   "failure_threshold": 2
                 }
               },
-              "ready": false,
-              "started": false,
-              "restart_count": 816,
+              "ready": true,
+              "started": true,
+              "restart_count": 1626,
               "state": {
-                "waiting": {
-                  "reason": "CrashLoopBackOff",
-                  "message": "back-off 5m0s restarting failed container=api pod=inventory-api-0_pfa-lab(1f1a50c2-9c6c-43f5-8ffe-06e3e66f10e9)"
+                "running": {
+                  "started_at": "2026-11-11T14:31:39+00:00"
                 }
               },
               "last_state": {
                 "terminated": {
                   "reason": "Error",
                   "exit_code": 137,
-                  "started_at": "2026-11-02T15:23:11+00:00",
-                  "finished_at": "2026-11-02T15:23:47+00:00"
+                  "started_at": "2026-11-11T14:26:01+00:00",
+                  "finished_at": "2026-11-11T14:26:37+00:00"
                 }
               },
               "image_id": "docker.io/library/busybox@sha256:73aaf090f3d85aa34ee199857f03fa3a95c8ede2ffd4cc2cdb5b94e566b11662"
@@ -106,7 +101,7 @@
       },
       "raw_excerpt": null,
       "error": null,
-      "collected_at": "2026-11-02T15:27:28.543894Z",
+      "collected_at": "2026-11-11T14:31:51.118786Z",
       "redacted": true,
       "redactions": {}
     },
@@ -125,42 +120,42 @@
             "reason": "BackOff",
             "object": "Pod/inventory-api-0",
             "message": "Back-off restarting failed container api in pod inventory-api-0_pfa-lab(1f1a50c2-9c6c-43f5-8ffe-06e3e66f10e9)",
-            "count": 1742,
+            "count": 3506,
             "first_seen": "2026-10-26T14:49:59+00:00",
-            "last_seen": "2026-11-02T15:25:10+00:00"
+            "last_seen": "2026-11-11T14:30:02+00:00"
           },
           {
             "type": "Warning",
             "reason": "Unhealthy",
             "object": "Pod/inventory-api-0",
             "message": "Liveness probe failed: Get \"http://10.244.0.12:8080/healthz\": dial tcp 10.244.0.12:8080: connect: connection refused",
-            "count": 1607,
+            "count": 3247,
             "first_seen": "2026-10-26T14:47:02+00:00",
-            "last_seen": "2026-11-02T14:44:26+00:00"
+            "last_seen": "2026-11-11T14:19:43+00:00"
           },
           {
             "type": "Normal",
             "reason": "Pulled",
             "object": "Pod/inventory-api-0",
             "message": "Container image \"busybox:1.36\" already present on machine and can be accessed by the pod",
-            "count": 816,
+            "count": 1627,
             "first_seen": "2026-10-26T14:46:59+00:00",
-            "last_seen": "2026-11-02T15:22:35+00:00"
+            "last_seen": "2026-11-11T14:31:39+00:00"
           },
           {
             "type": "Normal",
             "reason": "Created",
             "object": "Pod/inventory-api-0",
             "message": "Container created",
-            "count": 812,
+            "count": 1617,
             "first_seen": "2026-10-26T14:46:59+00:00",
-            "last_seen": "2026-11-02T15:09:33+00:00"
+            "last_seen": "2026-11-11T13:37:35+00:00"
           }
         ]
       },
       "raw_excerpt": null,
       "error": null,
-      "collected_at": "2026-11-02T15:27:28.544278Z",
+      "collected_at": "2026-11-11T14:31:51.119246Z",
       "redacted": true,
       "redactions": {}
     },
@@ -179,7 +174,7 @@
       },
       "raw_excerpt": "=== previous container ===\ninventory-api listening on :80\n\n=== current container ===\ninventory-api listening on :80\n",
       "error": null,
-      "collected_at": "2026-11-02T15:27:28.545513Z",
+      "collected_at": "2026-11-11T14:31:51.119808Z",
       "redacted": true,
       "redactions": {}
     }

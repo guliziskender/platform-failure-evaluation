@@ -1,0 +1,39 @@
+# cart-service has two containers and both crash, for unrelated reasons: api has no REDIS_URL,
+# and worker reads a config file that was never mounted.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cart-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: cart-service}
+  template:
+    metadata:
+      labels: {app: cart-service}
+    spec:
+      containers:
+        - name: api
+          image: busybox:1.36
+          command: ["sh", "-c"]
+          args:
+            - |
+              echo "cart-service api 1.12.0 starting"
+              if [ -z "$REDIS_URL" ]; then
+                echo "FATAL: required environment variable REDIS_URL is not set" >&2
+                exit 1
+              fi
+              exec sleep 3600
+          env:
+            - {name: PORT, value: "8080"}
+        - name: worker
+          image: busybox:1.36
+          command: ["sh", "-c"]
+          args:
+            - |
+              echo "cart-service worker 1.12.0 starting, config /etc/cart/worker.yaml"
+              cat /etc/cart/worker.yaml >/dev/null 2>&1 || {
+                echo "error: open /etc/cart/worker.yaml: no such file or directory" >&2
+                exit 2
+              }
+              exec sleep 3600

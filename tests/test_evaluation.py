@@ -7,6 +7,7 @@ import shutil
 from pathlib import Path
 
 import pytest
+import yaml
 from typer.testing import CliRunner
 
 from pfa import cli
@@ -18,6 +19,7 @@ from pfa.evaluation import (
     CaseError,
     EvalCase,
     EvalError,
+    by_difficulty,
     by_failure_type,
     changes,
     live,
@@ -54,10 +56,13 @@ def report():
 
 @pytest.fixture
 def one_miss(tmp_path) -> Path:
-    """A copy of the lab cases where one answer key is deliberately wrong, so tests of misses
-    don't depend on what the rules get wrong today."""
+    """A copy of the standard lab cases where one answer key is deliberately wrong, so tests of
+    misses don't depend on what the rules get wrong today (hard cases have real misses)."""
     cases = tmp_path / "cases"
     shutil.copytree(CASES_DIR, cases)
+    for expected in cases.glob("*/expected.yaml"):
+        if yaml.safe_load(expected.read_text()).get("difficulty") == "hard":
+            shutil.rmtree(expected.parent)
     expected = cases / CRASH / "expected.yaml"
     text = expected.read_text().replace("cause_keywords: [DATABASE_URL]", "cause_keywords: [nope]")
     expected.write_text(text + "known_gap: deliberate, for the test\n")
@@ -295,6 +300,22 @@ def invoke(tmp_path, *args: str, cases: Path = CASES_DIR):
     return CliRunner().invoke(cli.app, [*base, *args])
 
 
+def test_hard_cases_are_counted_apart_from_standard_ones(tmp_path):
+    cases = tmp_path / "cases"
+    shutil.copytree(CASES_DIR, cases)
+    run = run_eval(load_cases(cases), replay(cases))
+    levels = by_difficulty(run)
+    assert list(levels) == ["standard", "hard"]
+    assert levels["standard"][1] == 15
+    assert sum(total for _, total in levels.values()) == run.total
+    assert {r.difficulty for r in run.results if r.case == "crashloop-two-containers"} == {"hard"}
+
+
+def test_breakdown_line_for_difficulty_only_when_there_are_hard_cases(tmp_path, one_miss):
+    assert "standard" not in invoke(tmp_path, "--no-llm", "--no-save", cases=one_miss).stdout
+    assert "standard 15/15 · hard " in invoke(tmp_path, "--no-llm", "--no-save").stdout
+
+
 def test_eval_prints_saves_and_compares(tmp_path, one_miss):
     first = invoke(tmp_path, "--no-llm", cases=one_miss)
     assert first.exit_code == 0, first.output
@@ -310,7 +331,8 @@ def test_eval_prints_saves_and_compares(tmp_path, one_miss):
 def test_eval_json(tmp_path):
     run = json.loads(invoke(tmp_path, "--no-llm", "--no-save", "-o", "json").stdout)
     assert run["schema_version"] == 1
-    assert run["total"] == 15
+    assert run["total"] == len(list(CASES_DIR.glob("*/expected.yaml")))
+    assert {r["difficulty"] for r in run["results"]} == {"standard", "hard"}
 
 
 def test_partial_run_is_not_saved(tmp_path):
@@ -365,7 +387,7 @@ def test_fail_under(tmp_path, one_miss, percent, code):  # 14/15 is 93.3%
 
 def test_run_with_no_answers_is_a_failure_and_never_the_baseline(tmp_path, monkeypatch):
     monkeypatch.setenv("PFA_PROVIDER", "anthropic")
-    down = FakeProvider(*[ProviderError("API down")] * 15)
+    down = FakeProvider(*[ProviderError("API down")] * len(list(CASES_DIR.glob("*/expected.yaml"))))
     monkeypatch.setattr(providers, "make_provider", lambda s: down)
     result = invoke(tmp_path)
     assert result.exit_code == 2

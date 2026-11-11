@@ -1,0 +1,20 @@
+# Ground truth for this broken app, scored by `pfa eval`. A hard case: see `trap`.
+workload: {kind: deployment, name: metrics-store}
+failure_type: pending
+difficulty: hard
+known_gap: >-
+  pfa reads only the pod's and its owners' events. The reason (StorageClass fast-ssd not found) is on the PersistentVolumeClaim, which pfa cannot read.
+trap: >-
+  The pod only says it waits for its volume claim. The reason is on the claim, not the pod:
+  its StorageClass fast-ssd does not exist, so no volume is ever provisioned.
+symptom: Pod stays Pending and is never scheduled.
+root_cause: >-
+  The PersistentVolumeClaim metrics-data asks for storageClassName fast-ssd, which does not
+  exist in the cluster, so the claim stays Pending and the pod cannot be scheduled.
+cause_keywords: [fast-ssd]
+fix: >-
+  Use a StorageClass that exists (kubectl get storageclass; e.g. standard) in the claim, or
+  create fast-ssd. A claim's storageClassName cannot be edited, so recreate the claim.
+fix_keywords: [[fast-ssd, storageclass, storage class]]
+ready_when: {pod_condition_reason: Unschedulable}
+evidence_must_contain: ["metrics-data"]

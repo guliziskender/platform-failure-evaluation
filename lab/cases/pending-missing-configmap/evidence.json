@@ -39,10 +39,10 @@
             },
             {
               "type": "Progressing",
-              "status": "True",
-              "reason": "ReplicaSetUpdated",
-              "message": "ReplicaSet \"email-sender-bdc4d8b75\" is progressing.",
-              "last_update": "2026-11-02T15:26:39+00:00"
+              "status": "False",
+              "reason": "ProgressDeadlineExceeded",
+              "message": "ReplicaSet \"email-sender-bdc4d8b75\" has timed out progressing.",
+              "last_update": "2026-11-02T15:36:39+00:00"
             }
           ]
         },
@@ -101,7 +101,7 @@
       },
       "raw_excerpt": null,
       "error": null,
-      "collected_at": "2026-11-02T15:27:28.512750Z",
+      "collected_at": "2026-11-11T14:31:51.069806Z",
       "redacted": true,
       "redactions": {}
     },
@@ -114,49 +114,22 @@
           "ReplicaSet/email-sender-bdc4d8b75",
           "Deployment/email-sender"
         ],
-        "total": 4,
+        "total": 1,
         "events": [
           {
             "type": "Warning",
             "reason": "FailedMount",
             "object": "Pod/email-sender-bdc4d8b75-rmrvl",
             "message": "MountVolume.SetUp failed for volume \"templates\" : configmap \"email-templates\" not found",
-            "count": 7,
+            "count": 1063,
             "first_seen": "2026-11-02T15:26:39+00:00",
-            "last_seen": "2026-11-02T15:27:11+00:00"
-          },
-          {
-            "type": "Normal",
-            "reason": "Scheduled",
-            "object": "Pod/email-sender-bdc4d8b75-rmrvl",
-            "message": "Successfully assigned pfa-lab/email-sender-bdc4d8b75-rmrvl to desktop-control-plane",
-            "count": 1,
-            "first_seen": "2026-11-02T15:26:39.689341+00:00",
-            "last_seen": "2026-11-02T15:26:39.689341+00:00"
-          },
-          {
-            "type": "Normal",
-            "reason": "SuccessfulCreate",
-            "object": "ReplicaSet/email-sender-bdc4d8b75",
-            "message": "Created pod: email-sender-bdc4d8b75-rmrvl",
-            "count": 1,
-            "first_seen": "2026-11-02T15:26:39+00:00",
-            "last_seen": "2026-11-02T15:26:39+00:00"
-          },
-          {
-            "type": "Normal",
-            "reason": "ScalingReplicaSet",
-            "object": "Deployment/email-sender",
-            "message": "Scaled up replica set email-sender-bdc4d8b75 from 0 to 1",
-            "count": 1,
-            "first_seen": "2026-11-02T15:26:39+00:00",
-            "last_seen": "2026-11-02T15:26:39+00:00"
+            "last_seen": "2026-11-11T14:27:51+00:00"
           }
         ]
       },
       "raw_excerpt": null,
       "error": null,
-      "collected_at": "2026-11-02T15:27:28.514212Z",
+      "collected_at": "2026-11-11T14:31:51.071282Z",
       "redacted": true,
       "redactions": {}
     },
@@ -175,7 +148,7 @@
       },
       "raw_excerpt": null,
       "error": null,
-      "collected_at": "2026-11-02T15:27:28.513143Z",
+      "collected_at": "2026-11-11T14:31:51.070423Z",
       "redacted": true,
       "redactions": {}
     }

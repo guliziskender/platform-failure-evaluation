@@ -39,10 +39,10 @@
             },
             {
               "type": "Progressing",
-              "status": "True",
-              "reason": "ReplicaSetUpdated",
-              "message": "ReplicaSet \"video-encoder-bd66c676c\" is progressing.",
-              "last_update": "2026-11-02T15:26:40+00:00"
+              "status": "False",
+              "reason": "ProgressDeadlineExceeded",
+              "message": "ReplicaSet \"video-encoder-bd66c676c\" has timed out progressing.",
+              "last_update": "2026-11-02T15:36:40+00:00"
             }
           ]
         },
@@ -78,7 +78,7 @@
       },
       "raw_excerpt": null,
       "error": null,
-      "collected_at": "2026-11-02T15:27:28.519926Z",
+      "collected_at": "2026-11-11T14:31:51.077636Z",
       "redacted": true,
       "redactions": {}
     },
@@ -91,40 +91,22 @@
           "ReplicaSet/video-encoder-bd66c676c",
           "Deployment/video-encoder"
         ],
-        "total": 3,
+        "total": 1,
         "events": [
           {
             "type": "Warning",
             "reason": "FailedScheduling",
             "object": "Pod/video-encoder-bd66c676c-488dc",
             "message": "0/1 nodes are available: 1 node(s) didn't match Pod's node affinity/selector. no new claims to deallocate, preemption: 0/1 nodes are available: 1 Preemption is not helpful for scheduling.",
-            "count": 1,
-            "first_seen": "2026-11-02T15:26:40.010363+00:00",
-            "last_seen": "2026-11-02T15:26:40.010363+00:00"
-          },
-          {
-            "type": "Normal",
-            "reason": "SuccessfulCreate",
-            "object": "ReplicaSet/video-encoder-bd66c676c",
-            "message": "Created pod: video-encoder-bd66c676c-488dc",
-            "count": 1,
-            "first_seen": "2026-11-02T15:26:40+00:00",
-            "last_seen": "2026-11-02T15:26:40+00:00"
-          },
-          {
-            "type": "Normal",
-            "reason": "ScalingReplicaSet",
-            "object": "Deployment/video-encoder",
-            "message": "Scaled up replica set video-encoder-bd66c676c from 0 to 1",
-            "count": 1,
-            "first_seen": "2026-11-02T15:26:40+00:00",
-            "last_seen": "2026-11-02T15:26:40+00:00"
+            "count": 120,
+            "first_seen": "2026-11-10T09:20:23.364926+00:00",
+            "last_seen": "2026-11-11T14:27:45.136839+00:00"
           }
         ]
       },
       "raw_excerpt": null,
       "error": null,
-      "collected_at": "2026-11-02T15:27:28.521702Z",
+      "collected_at": "2026-11-11T14:31:51.079008Z",
       "redacted": true,
       "redactions": {}
     },
@@ -145,7 +127,7 @@
       },
       "raw_excerpt": null,
       "error": null,
-      "collected_at": "2026-11-02T15:27:28.520158Z",
+      "collected_at": "2026-11-11T14:31:51.077416Z",
       "redacted": true,
       "redactions": {}
     }

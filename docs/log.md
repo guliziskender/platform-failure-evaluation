@@ -612,3 +612,46 @@ on saved and live evidence, 0 confident and wrong. The image is public (anonymou
   `ghcr.io/guliziskender/pfa:0.1.0` and diagnosed a lab case from inside.
 
 **Not done:** no NetworkPolicy yet. Not yet installed on a real cluster (milestone 4).
+
+## 2026-11-11: Hard eval cases
+
+**Done**
+- Six hard lab cases (`difficulty: hard`, each with a `trap` saying what makes it hard):
+  misleading error lines, two containers failing for unrelated reasons, a missing Service
+  (a real DNS lookup in the pod), a harmless missing pull secret next to a bad tag, a readiness
+  probe that is right because the database is missing, and a PVC whose StorageClass does not
+  exist. Ground truth and keywords were written before any answerer was run, and not changed
+  after.
+- `pfa eval` reports standard and hard apart (`standard 15/15 · hard 1/6`), and each result
+  records its difficulty. "Three per failure type" now applies to the standard set only.
+- The eval tests no longer hard-code 15 cases; `one_miss` copies only the standard cases, so it
+  still holds exactly one miss.
+
+**Results (saved evidence)**
+
+| Answered by | Standard | Hard | Confident and wrong |
+| --- | --- | --- | --- |
+| rules | 15/15 | 1/6 | 3 |
+| claude-opus-5-5 | 15/15 | 5/6 | 1 |
+| qwen3:8b | 14/15 | 4/6 | 3 |
+
+The rules on live evidence: the same 16/21.
+
+**What the misses say**
+- Rules (now `known_gap` in each case):
+  - `crash_log_error` quotes the *last* error line, a shutdown side effect here.
+  - Only one container of two is diagnosed, at high confidence.
+  - The probe rules use the first failing event (connection refused, before httpd started), not
+    the 503 that repeats; medium confidence, wrong cause.
+  - No rule for a DNS failure of a Service name, so the fix is generic.
+  - `pending_pvc` claims high confidence from the symptom alone, against the rule "high only when
+    the evidence pins down the cause".
+- Every answerer misses the PVC case: the cause is on the PersistentVolumeClaim, which pfa does
+  not read. Opus guesses the claim does not exist (it does), at medium confidence.
+- qwen3:8b's standard miss is formatting: it wrote `/app/payment-gateway`, and pfa shows
+  that text as it is. The keyword check is right to fail it; a user would see the escapes too.
+
+**Next (fixes these cases point at)**: rank log errors by fatal/exit position instead of last;
+diagnose every failing container; weight probe events by count and recency; a DNS/Service rule;
+cap `pending_pvc` at medium; read PVCs (one RBAC addition: get on persistentvolumeclaims) so the
+StorageClass is in the evidence; decode JSON escapes in AI answers.

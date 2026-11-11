@@ -39,10 +39,10 @@
             },
             {
               "type": "Progressing",
-              "status": "True",
-              "reason": "ReplicaSetUpdated",
-              "message": "ReplicaSet \"payment-gateway-5b8fc899df\" is progressing.",
-              "last_update": "2026-11-02T15:26:40+00:00"
+              "status": "False",
+              "reason": "ProgressDeadlineExceeded",
+              "message": "ReplicaSet \"payment-gateway-5b8fc899df\" has timed out progressing.",
+              "last_update": "2026-11-02T15:36:40+00:00"
             }
           ]
         },
@@ -89,11 +89,11 @@
               ],
               "ready": false,
               "started": false,
-              "restart_count": 3,
+              "restart_count": 499,
               "state": {
                 "waiting": {
-                  "reason": "RunContainerError",
-                  "message": "failed to create containerd task: failed to create shim task: OCI runtime create failed: runc create failed: unable to start container process: error during container init: exec: \"/app/payment-gateway\": stat /app/payment-gateway: no such file or directory"
+                  "reason": "CrashLoopBackOff",
+                  "message": "back-off 5m0s restarting failed container=gateway pod=payment-gateway-5b8fc899df-cc4kj_pfa-lab(3904ba8b-e76d-40c1-abd5-d09b7d9dba8c)"
                 }
               },
               "last_state": {
@@ -102,7 +102,7 @@
                   "exit_code": 128,
                   "message": "failed to create containerd task: failed to create shim task: OCI runtime create failed: runc create failed: unable to start container process: error during container init: exec: \"/app/payment-gateway\": stat /app/payment-gateway: no such file or directory",
                   "started_at": "1970-01-01T00:00:00+00:00",
-                  "finished_at": "2026-11-02T15:27:18+00:00"
+                  "finished_at": "2026-11-11T14:28:37+00:00"
                 }
               },
               "image_id": "docker.io/library/busybox@sha256:73aaf090f3d85aa34ee199857f03fa3a95c8ede2ffd4cc2cdb5b94e566b11662"
@@ -112,7 +112,7 @@
       },
       "raw_excerpt": null,
       "error": null,
-      "collected_at": "2026-11-02T15:27:28.407981Z",
+      "collected_at": "2026-11-11T14:31:50.935787Z",
       "redacted": true,
       "redactions": {}
     },
@@ -125,76 +125,49 @@
           "ReplicaSet/payment-gateway-5b8fc899df",
           "Deployment/payment-gateway"
         ],
-        "total": 7,
+        "total": 4,
         "events": [
           {
             "type": "Warning",
             "reason": "BackOff",
             "object": "Pod/payment-gateway-5b8fc899df-cc4kj",
             "message": "Back-off restarting failed container gateway in pod payment-gateway-5b8fc899df-cc4kj_pfa-lab(3904ba8b-e76d-40c1-abd5-d09b7d9dba8c)",
-            "count": 3,
+            "count": 1845,
             "first_seen": "2026-11-02T15:26:42+00:00",
-            "last_seen": "2026-11-02T15:27:19+00:00"
+            "last_seen": "2026-11-11T14:27:17+00:00"
           },
           {
             "type": "Warning",
             "reason": "Failed",
             "object": "Pod/payment-gateway-5b8fc899df-cc4kj",
             "message": "Error: failed to create containerd task: failed to create shim task: OCI runtime create failed: runc create failed: unable to start container process: error during container init: exec: \"/app/payment-gateway\": stat /app/payment-gateway: no such file or directory",
-            "count": 4,
+            "count": 495,
             "first_seen": "2026-11-02T15:26:40+00:00",
-            "last_seen": "2026-11-02T15:27:18+00:00"
+            "last_seen": "2026-11-11T13:39:41+00:00"
           },
           {
             "type": "Normal",
             "reason": "Pulled",
             "object": "Pod/payment-gateway-5b8fc899df-cc4kj",
             "message": "Container image \"busybox:1.36\" already present on machine and can be accessed by the pod",
-            "count": 4,
+            "count": 500,
             "first_seen": "2026-11-02T15:26:40+00:00",
-            "last_seen": "2026-11-02T15:27:18+00:00"
+            "last_seen": "2026-11-11T14:28:37+00:00"
           },
           {
             "type": "Normal",
             "reason": "Created",
             "object": "Pod/payment-gateway-5b8fc899df-cc4kj",
             "message": "Container created",
-            "count": 4,
+            "count": 494,
             "first_seen": "2026-11-02T15:26:40+00:00",
-            "last_seen": "2026-11-02T15:27:18+00:00"
-          },
-          {
-            "type": "Normal",
-            "reason": "Scheduled",
-            "object": "Pod/payment-gateway-5b8fc899df-cc4kj",
-            "message": "Successfully assigned pfa-lab/payment-gateway-5b8fc899df-cc4kj to desktop-control-plane",
-            "count": 1,
-            "first_seen": "2026-11-02T15:26:39.911172+00:00",
-            "last_seen": "2026-11-02T15:26:39.911172+00:00"
-          },
-          {
-            "type": "Normal",
-            "reason": "SuccessfulCreate",
-            "object": "ReplicaSet/payment-gateway-5b8fc899df",
-            "message": "Created pod: payment-gateway-5b8fc899df-cc4kj",
-            "count": 1,
-            "first_seen": "2026-11-02T15:26:39+00:00",
-            "last_seen": "2026-11-02T15:26:39+00:00"
-          },
-          {
-            "type": "Normal",
-            "reason": "ScalingReplicaSet",
-            "object": "Deployment/payment-gateway",
-            "message": "Scaled up replica set payment-gateway-5b8fc899df from 0 to 1",
-            "count": 1,
-            "first_seen": "2026-11-02T15:26:39+00:00",
-            "last_seen": "2026-11-02T15:26:39+00:00"
+            "last_seen": "2026-11-11T13:34:38+00:00"
           }
         ]
       },
       "raw_excerpt": null,
       "error": null,
-      "collected_at": "2026-11-02T15:27:28.408549Z",
+      "collected_at": "2026-11-11T14:31:50.935147Z",
       "redacted": true,
       "redactions": {}
     },
@@ -215,7 +188,7 @@
       },
       "raw_excerpt": null,
       "error": null,
-      "collected_at": "2026-11-02T15:27:28.418638Z",
+      "collected_at": "2026-11-11T14:31:50.941653Z",
       "redacted": true,
       "redactions": {}
     }

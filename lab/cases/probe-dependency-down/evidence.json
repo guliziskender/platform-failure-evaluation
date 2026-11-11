@@ -1,0 +1,237 @@
+{
+  "target": {
+    "namespace": "pfa-lab",
+    "name": "stock-api",
+    "kind": "deployment",
+    "pod": "stock-api-7f48c6f579-4xmcr",
+    "container": "api",
+    "owners": [
+      {
+        "kind": "ReplicaSet",
+        "name": "stock-api-7f48c6f579"
+      },
+      {
+        "kind": "Deployment",
+        "name": "stock-api"
+      }
+    ]
+  },
+  "evidence": [
+    {
+      "source": "k8s_state",
+      "summary": {
+        "workload": {
+          "kind": "deployment",
+          "name": "stock-api",
+          "replicas_desired": 1,
+          "replicas_ready": 0,
+          "replicas_updated": 1,
+          "replicas_available": 0,
+          "generation": 1,
+          "observed_generation": 1,
+          "conditions": [
+            {
+              "type": "Available",
+              "status": "False",
+              "reason": "MinimumReplicasUnavailable",
+              "message": "Deployment does not have minimum availability.",
+              "last_update": "2026-11-11T14:31:28+00:00"
+            },
+            {
+              "type": "Progressing",
+              "status": "True",
+              "reason": "ReplicaSetUpdated",
+              "message": "ReplicaSet \"stock-api-7f48c6f579\" is progressing.",
+              "last_update": "2026-11-11T14:31:28+00:00"
+            }
+          ]
+        },
+        "pod": {
+          "name": "stock-api-7f48c6f579-4xmcr",
+          "phase": "Running",
+          "node": "desktop-control-plane",
+          "qos_class": "BestEffort",
+          "created": "2026-11-11T14:31:28+00:00",
+          "started": "2026-11-11T14:31:28+00:00",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "False",
+              "reason": "ContainersNotReady",
+              "message": "containers with unready status: [api]"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "False",
+              "reason": "ContainersNotReady",
+              "message": "containers with unready status: [api]"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "api",
+              "image": "busybox:1.36",
+              "command": [
+                "sh",
+                "-c"
+              ],
+              "args": [
+                "mkdir -p /www/cgi-bin\ncat > /www/cgi-bin/ready <<'SH'\n#!/bin/sh\nif nslookup \"$DB_HOST\" >/dev/null 2>&1; then\n  printf 'Status: 200 OK\\r\\nContent-Type: text/plain\\r\\n\\r\\nready\\n'\nelse\n  echo \"readiness: database $DB_HOST:5432 unreachable: lookup $DB_HOST: no such host\" >&2\n  printf 'Status: 503 Service Unavailable\\r\\nContent-Type: text/plain\\r\\n\\r\\ndb down\\n'\nfi\nSH\nchmod +x /www/cgi-bin/ready\necho \"stock-api 4.1.0 listening on :80 (readiness: /cgi-bin/ready checks $DB_HOST)\"\nexec httpd -f -p 80 -h /www\n"
+              ],
+              "ports": [
+                "http=80/TCP"
+              ],
+              "probes": {
+                "readiness": {
+                  "http_get": "HTTP /cgi-bin/ready port=http",
+                  "period_seconds": 5,
+                  "timeout_seconds": 1,
+                  "failure_threshold": 3
+                }
+              },
+              "env_names": [
+                "DB_HOST"
+              ],
+              "ready": false,
+              "started": true,
+              "restart_count": 0,
+              "state": {
+                "running": {
+                  "started_at": "2026-11-11T14:31:28+00:00"
+                }
+              },
+              "image_id": "docker.io/library/busybox@sha256:73aaf090f3d85aa34ee199857f03fa3a95c8ede2ffd4cc2cdb5b94e566b11662"
+            }
+          ]
+        }
+      },
+      "raw_excerpt": null,
+      "error": null,
+      "collected_at": "2026-11-11T14:31:51.094863Z",
+      "redacted": true,
+      "redactions": {}
+    },
+    {
+      "source": "k8s_events",
+      "summary": {
+        "window_minutes": 60,
+        "objects": [
+          "Pod/stock-api-7f48c6f579-4xmcr",
+          "ReplicaSet/stock-api-7f48c6f579",
+          "Deployment/stock-api"
+        ],
+        "total": 8,
+        "events": [
+          {
+            "type": "Warning",
+            "reason": "Unhealthy",
+            "object": "Pod/stock-api-7f48c6f579-4xmcr",
+            "message": "Readiness probe failed: HTTP probe failed with statuscode: 503",
+            "count": 5,
+            "first_seen": "2026-11-11T14:31:28+00:00",
+            "last_seen": "2026-11-11T14:31:48+00:00"
+          },
+          {
+            "type": "Warning",
+            "reason": "Unhealthy",
+            "object": "Pod/stock-api-7f48c6f579-4xmcr",
+            "message": "Readiness probe failed: Get \"http://10.244.0.35:80/cgi-bin/ready\": dial tcp 10.244.0.35:80: connect: connection refused",
+            "count": 1,
+            "first_seen": "2026-11-11T14:31:28+00:00",
+            "last_seen": "2026-11-11T14:31:28+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "Scheduled",
+            "object": "Pod/stock-api-7f48c6f579-4xmcr",
+            "message": "Successfully assigned pfa-lab/stock-api-7f48c6f579-4xmcr to desktop-control-plane",
+            "count": 1,
+            "first_seen": "2026-11-11T14:31:28.007197+00:00",
+            "last_seen": "2026-11-11T14:31:28.007197+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "Pulled",
+            "object": "Pod/stock-api-7f48c6f579-4xmcr",
+            "message": "Container image \"busybox:1.36\" already present on machine and can be accessed by the pod",
+            "count": 1,
+            "first_seen": "2026-11-11T14:31:28+00:00",
+            "last_seen": "2026-11-11T14:31:28+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "Created",
+            "object": "Pod/stock-api-7f48c6f579-4xmcr",
+            "message": "Container created",
+            "count": 1,
+            "first_seen": "2026-11-11T14:31:28+00:00",
+            "last_seen": "2026-11-11T14:31:28+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "Started",
+            "object": "Pod/stock-api-7f48c6f579-4xmcr",
+            "message": "Container started",
+            "count": 1,
+            "first_seen": "2026-11-11T14:31:28+00:00",
+            "last_seen": "2026-11-11T14:31:28+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "SuccessfulCreate",
+            "object": "ReplicaSet/stock-api-7f48c6f579",
+            "message": "Created pod: stock-api-7f48c6f579-4xmcr",
+            "count": 1,
+            "first_seen": "2026-11-11T14:31:28+00:00",
+            "last_seen": "2026-11-11T14:31:28+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "ScalingReplicaSet",
+            "object": "Deployment/stock-api",
+            "message": "Scaled up replica set stock-api-7f48c6f579 from 0 to 1",
+            "count": 1,
+            "first_seen": "2026-11-11T14:31:28+00:00",
+            "last_seen": "2026-11-11T14:31:28+00:00"
+          }
+        ]
+      },
+      "raw_excerpt": null,
+      "error": null,
+      "collected_at": "2026-11-11T14:31:51.096759Z",
+      "redacted": true,
+      "redactions": {}
+    },
+    {
+      "source": "logs",
+      "summary": {
+        "container": "api",
+        "previous": {
+          "available": false,
+          "note": "previous terminated container \"api\" in pod \"stock-api-7f48c6f579-4xmcr\" not found"
+        },
+        "current": {
+          "available": true,
+          "lines": 6
+        }
+      },
+      "raw_excerpt": "=== current container ===\nstock-api 4.1.0 listening on :80 (readiness: /cgi-bin/ready checks inventory-db)\nreadiness: database inventory-db:5432 unreachable: lookup inventory-db: no such host\nreadiness: database inventory-db:5432 unreachable: lookup inventory-db: no such host\nreadiness: database inventory-db:5432 unreachable: lookup inventory-db: no such host\nreadiness: database inventory-db:5432 unreachable: lookup inventory-db: no such host\nreadiness: database inventory-db:5432 unreachable: lookup inventory-db: no such host\n",
+      "error": null,
+      "collected_at": "2026-11-11T14:31:51.095880Z",
+      "redacted": true,
+      "redactions": {}
+    }
+  ]
+}

@@ -153,8 +153,9 @@ namespace of a local cluster; `make lab-down` removes them. See [lab/README.md](
 
 ## Evaluation
 
-`pfa eval` scores diagnoses against the 15 labelled lab cases (three per pod failure type): is the
-failure type right, does the cause state the key facts, does the fix? It also counts answers that
+`pfa eval` scores diagnoses against 21 labelled lab cases: 15 standard ones (three per pod failure
+type) and 6 hard ones built to mislead (misleading logs, a red-herring event, two failures at once,
+causes outside the pod). Is the failure type right, does the cause state the key facts, does the fix? It also counts answers that
 were confident and wrong, since those do the most damage.
 
 ```bash
@@ -175,23 +176,30 @@ the same answerer on the same evidence names the cases that got fixed or broke. 
 AI or the cluster gave no answer counts as wrong. A run with no answers at all exits 2 and is not
 saved, because it would say the provider is down, not how good the answers are.
 
-Current results (2026-11-10):
+Current results (2026-11-11, saved evidence):
 
-| Answered by | Evidence | Correct | Confident and wrong | Seconds per case |
+| Answered by | Standard (15) | Hard (6) | Confident and wrong | Seconds per case |
 | --- | --- | --- | --- | --- |
-| rules (`--no-llm`) | replay and live | 15/15 | 0 | instant |
-| claude-opus-5-5 | replay and live | 15/15 | 0 | 6 to 14 |
-| qwen3:8b via Ollama (local, Apple M5, 24 GB) | replay and live | 15/15 | 0 | 24 to 94 |
+| rules (`--no-llm`) | 15/15 | 1/6 | 3 | instant |
+| claude-opus-5-5 | 15/15 | 5/6 | 1 | 6 to 11 |
+| qwen3:8b via Ollama (local, Apple M5, 24 GB) | 14/15 | 4/6 | 3 | 18 to 49 |
+
+The hard cases separate the three. The rules quote the last error line, diagnose one container
+of two, and trust the first probe event, so they miss 5 of 6. Opus sees through every trap it has
+the evidence for. Its one miss is `pending-pvc-storageclass`, where the cause sits on the
+PersistentVolumeClaim, which pfa does not read. Every answerer misses it: the rules and qwen3:8b
+stop at "the claim is not bound", and Opus guesses the claim does not exist (it does). That is a
+gap in pfa's evidence, not in the models.
+qwen3:8b also misses the two-container case, and one standard case on formatting: it wrote the
+command path with JSON escapes (`\u002Fapp\u002Fpayment-gateway`).
 
 Earlier lower runs in the history are real records, not noise: an Opus 14/15 came from a
 too-strict answer key, another from a bug in pfa's event collection, and qwen3:8b's 3/15 and 4/15
 were timeouts, not wrong answers (see `docs/log.md`, 2026-11-10).
 
-The local model matches the hosted one on these cases, but is 5 to 10 times slower, and nothing
-leaves the machine. These cases are clear-cut; harder or noisier failures may separate them.
-
-The rules were tuned with these cases in view, so a perfect score here says less than a score on
-cases nobody has tuned against. The model was not tuned on them. Every real failure is a
+The rules were tuned with the standard cases in view, so a perfect score there says less than a
+score on cases nobody has tuned against. The hard cases were written before any answerer saw them,
+and their answer keys were not changed after. The model was not tuned on them. Every real failure is a
 candidate for a new case. Misses show the answer's own words (saved in the run's JSON), so a
 too-strict answer key is easy to spot.
 

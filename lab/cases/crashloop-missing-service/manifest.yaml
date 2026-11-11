@@ -1,0 +1,30 @@
+# shipping-api is fine; the database Service it needs (orders-db) does not exist. The lookup is
+# real: the container asks cluster DNS and reports what it gets back.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shipping-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: shipping-api}
+  template:
+    metadata:
+      labels: {app: shipping-api}
+    spec:
+      containers:
+        - name: api
+          image: busybox:1.36
+          command: ["sh", "-c"]
+          args:
+            - |
+              echo "shipping-api 2.0.3 starting"
+              echo "connecting to postgres at $DB_HOST:5432"
+              if ! nslookup "$DB_HOST" >/dev/null 2>&1; then
+                dns=$(awk '/^nameserver/ {print $2; exit}' /etc/resolv.conf)
+                echo "FATAL: db: dial tcp: lookup $DB_HOST on $dns:53: no such host" >&2
+                exit 1
+              fi
+              exec sleep 3600
+          env:
+            - {name: DB_HOST, value: orders-db}

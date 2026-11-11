@@ -1,0 +1,232 @@
+{
+  "target": {
+    "namespace": "pfa-lab",
+    "name": "admin-portal",
+    "kind": "deployment",
+    "pod": "admin-portal-6d5f44559c-khxnw",
+    "container": "web",
+    "owners": [
+      {
+        "kind": "ReplicaSet",
+        "name": "admin-portal-6d5f44559c"
+      },
+      {
+        "kind": "Deployment",
+        "name": "admin-portal"
+      }
+    ]
+  },
+  "evidence": [
+    {
+      "source": "k8s_state",
+      "summary": {
+        "workload": {
+          "kind": "deployment",
+          "name": "admin-portal",
+          "replicas_desired": 1,
+          "replicas_ready": 0,
+          "replicas_updated": 1,
+          "replicas_available": 0,
+          "generation": 1,
+          "observed_generation": 1,
+          "conditions": [
+            {
+              "type": "Available",
+              "status": "False",
+              "reason": "MinimumReplicasUnavailable",
+              "message": "Deployment does not have minimum availability.",
+              "last_update": "2026-11-11T14:31:27+00:00"
+            },
+            {
+              "type": "Progressing",
+              "status": "True",
+              "reason": "ReplicaSetUpdated",
+              "message": "ReplicaSet \"admin-portal-6d5f44559c\" is progressing.",
+              "last_update": "2026-11-11T14:31:27+00:00"
+            }
+          ]
+        },
+        "pod": {
+          "name": "admin-portal-6d5f44559c-khxnw",
+          "phase": "Pending",
+          "node": "desktop-control-plane",
+          "qos_class": "BestEffort",
+          "created": "2026-11-11T14:31:27+00:00",
+          "started": "2026-11-11T14:31:27+00:00",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "False",
+              "reason": "ContainersNotReady",
+              "message": "containers with unready status: [web]"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "False",
+              "reason": "ContainersNotReady",
+              "message": "containers with unready status: [web]"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "web",
+              "image": "busybox:1.63",
+              "command": [
+                "sleep",
+                "3600"
+              ],
+              "ready": false,
+              "started": false,
+              "restart_count": 0,
+              "state": {
+                "waiting": {
+                  "reason": "ImagePullBackOff",
+                  "message": "Back-off pulling image \"busybox:1.63\": ErrImagePull: rpc error: code = NotFound desc = failed to pull and unpack image \"docker.io/library/busybox:1.63\": failed to resolve reference \"docker.io/library/busybox:1.63\": docker.io/library/busybox:1.63: not found"
+                }
+              }
+            }
+          ],
+          "image_pull_secrets": [
+            "regcred"
+          ]
+        }
+      },
+      "raw_excerpt": null,
+      "error": null,
+      "collected_at": "2026-11-11T14:31:51.014857Z",
+      "redacted": true,
+      "redactions": {}
+    },
+    {
+      "source": "k8s_events",
+      "summary": {
+        "window_minutes": 60,
+        "objects": [
+          "Pod/admin-portal-6d5f44559c-khxnw",
+          "ReplicaSet/admin-portal-6d5f44559c",
+          "Deployment/admin-portal"
+        ],
+        "total": 9,
+        "events": [
+          {
+            "type": "Warning",
+            "reason": "Failed",
+            "object": "Pod/admin-portal-6d5f44559c-khxnw",
+            "message": "Failed to pull image \"busybox:1.63\": rpc error: code = NotFound desc = failed to pull and unpack image \"docker.io/library/busybox:1.63\": failed to resolve reference \"docker.io/library/busybox:1.63\": docker.io/library/busybox:1.63: not found",
+            "count": 2,
+            "first_seen": "2026-11-11T14:31:29+00:00",
+            "last_seen": "2026-11-11T14:31:46+00:00"
+          },
+          {
+            "type": "Warning",
+            "reason": "Failed",
+            "object": "Pod/admin-portal-6d5f44559c-khxnw",
+            "message": "Error: ErrImagePull",
+            "count": 2,
+            "first_seen": "2026-11-11T14:31:29+00:00",
+            "last_seen": "2026-11-11T14:31:46+00:00"
+          },
+          {
+            "type": "Warning",
+            "reason": "FailedToRetrieveImagePullSecret",
+            "object": "Pod/admin-portal-6d5f44559c-khxnw",
+            "message": "Unable to retrieve some image pull secrets (regcred); attempting to pull the image may not succeed.",
+            "count": 3,
+            "first_seen": "2026-11-11T14:31:28+00:00",
+            "last_seen": "2026-11-11T14:31:45+00:00"
+          },
+          {
+            "type": "Warning",
+            "reason": "Failed",
+            "object": "Pod/admin-portal-6d5f44559c-khxnw",
+            "message": "Error: ImagePullBackOff",
+            "count": 1,
+            "first_seen": "2026-11-11T14:31:29+00:00",
+            "last_seen": "2026-11-11T14:31:29+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "Pulling",
+            "object": "Pod/admin-portal-6d5f44559c-khxnw",
+            "message": "Pulling image \"busybox:1.63\"",
+            "count": 2,
+            "first_seen": "2026-11-11T14:31:28+00:00",
+            "last_seen": "2026-11-11T14:31:45+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "BackOff",
+            "object": "Pod/admin-portal-6d5f44559c-khxnw",
+            "message": "Back-off pulling image \"busybox:1.63\"",
+            "count": 1,
+            "first_seen": "2026-11-11T14:31:29+00:00",
+            "last_seen": "2026-11-11T14:31:29+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "Scheduled",
+            "object": "Pod/admin-portal-6d5f44559c-khxnw",
+            "message": "Successfully assigned pfa-lab/admin-portal-6d5f44559c-khxnw to desktop-control-plane",
+            "count": 1,
+            "first_seen": "2026-11-11T14:31:27.834953+00:00",
+            "last_seen": "2026-11-11T14:31:27.834953+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "SuccessfulCreate",
+            "object": "ReplicaSet/admin-portal-6d5f44559c",
+            "message": "Created pod: admin-portal-6d5f44559c-khxnw",
+            "count": 1,
+            "first_seen": "2026-11-11T14:31:27+00:00",
+            "last_seen": "2026-11-11T14:31:27+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "ScalingReplicaSet",
+            "object": "Deployment/admin-portal",
+            "message": "Scaled up replica set admin-portal-6d5f44559c from 0 to 1",
+            "count": 1,
+            "first_seen": "2026-11-11T14:31:27+00:00",
+            "last_seen": "2026-11-11T14:31:27+00:00"
+          }
+        ]
+      },
+      "raw_excerpt": null,
+      "error": null,
+      "collected_at": "2026-11-11T14:31:51.016747Z",
+      "redacted": true,
+      "redactions": {}
+    },
+    {
+      "source": "logs",
+      "summary": {
+        "container": "web",
+        "previous": {
+          "available": false,
+          "note": "previous terminated container \"web\" in pod \"admin-portal-6d5f44559c-khxnw\" not found"
+        },
+        "current": {
+          "available": false,
+          "note": "container \"web\" in pod \"admin-portal-6d5f44559c-khxnw\" is waiting to start: trying and failing to pull image"
+        }
+      },
+      "raw_excerpt": null,
+      "error": null,
+      "collected_at": "2026-11-11T14:31:51.015426Z",
+      "redacted": true,
+      "redactions": {}
+    }
+  ]
+}

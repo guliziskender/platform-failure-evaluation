@@ -39,10 +39,10 @@
             },
             {
               "type": "Progressing",
-              "status": "True",
-              "reason": "ReplicaSetUpdated",
-              "message": "ReplicaSet \"orders-api-67ffc96d6f\" is progressing.",
-              "last_update": "2026-11-02T15:26:40+00:00"
+              "status": "False",
+              "reason": "ProgressDeadlineExceeded",
+              "message": "ReplicaSet \"orders-api-67ffc96d6f\" has timed out progressing.",
+              "last_update": "2026-11-02T15:36:40+00:00"
             }
           ]
         },
@@ -94,21 +94,19 @@
               ],
               "ready": false,
               "started": false,
-              "restart_count": 3,
+              "restart_count": 503,
               "state": {
-                "terminated": {
-                  "reason": "Error",
-                  "exit_code": 1,
-                  "started_at": "2026-11-02T15:27:26+00:00",
-                  "finished_at": "2026-11-02T15:27:26+00:00"
+                "waiting": {
+                  "reason": "CrashLoopBackOff",
+                  "message": "back-off 5m0s restarting failed container=migrate pod=orders-api-67ffc96d6f-g6crp_pfa-lab(5e9a6154-a818-4b93-8b24-2b30299cbf70)"
                 }
               },
               "last_state": {
                 "terminated": {
                   "reason": "Error",
                   "exit_code": 1,
-                  "started_at": "2026-11-02T15:26:56+00:00",
-                  "finished_at": "2026-11-02T15:26:56+00:00"
+                  "started_at": "2026-11-11T14:29:20+00:00",
+                  "finished_at": "2026-11-11T14:29:20+00:00"
                 }
               },
               "image_id": "docker.io/library/busybox@sha256:73aaf090f3d85aa34ee199857f03fa3a95c8ede2ffd4cc2cdb5b94e566b11662"
@@ -136,7 +134,7 @@
       },
       "raw_excerpt": null,
       "error": null,
-      "collected_at": "2026-11-02T15:27:28.431314Z",
+      "collected_at": "2026-11-11T14:31:50.952397Z",
       "redacted": true,
       "redactions": {}
     },
@@ -149,76 +147,31 @@
           "ReplicaSet/orders-api-67ffc96d6f",
           "Deployment/orders-api"
         ],
-        "total": 7,
+        "total": 2,
         "events": [
           {
             "type": "Warning",
             "reason": "BackOff",
             "object": "Pod/orders-api-67ffc96d6f-g6crp",
             "message": "Back-off restarting failed container migrate in pod orders-api-67ffc96d6f-g6crp_pfa-lab(5e9a6154-a818-4b93-8b24-2b30299cbf70)",
-            "count": 3,
+            "count": 1848,
             "first_seen": "2026-11-02T15:26:42+00:00",
-            "last_seen": "2026-11-02T15:27:27+00:00"
+            "last_seen": "2026-11-11T14:26:51+00:00"
           },
           {
             "type": "Normal",
             "reason": "Pulled",
             "object": "Pod/orders-api-67ffc96d6f-g6crp",
             "message": "Container image \"busybox:1.36\" already present on machine and can be accessed by the pod",
-            "count": 4,
+            "count": 504,
             "first_seen": "2026-11-02T15:26:40+00:00",
-            "last_seen": "2026-11-02T15:27:26+00:00"
-          },
-          {
-            "type": "Normal",
-            "reason": "Created",
-            "object": "Pod/orders-api-67ffc96d6f-g6crp",
-            "message": "Container created",
-            "count": 4,
-            "first_seen": "2026-11-02T15:26:40+00:00",
-            "last_seen": "2026-11-02T15:27:26+00:00"
-          },
-          {
-            "type": "Normal",
-            "reason": "Started",
-            "object": "Pod/orders-api-67ffc96d6f-g6crp",
-            "message": "Container started",
-            "count": 4,
-            "first_seen": "2026-11-02T15:26:40+00:00",
-            "last_seen": "2026-11-02T15:27:26+00:00"
-          },
-          {
-            "type": "Normal",
-            "reason": "Scheduled",
-            "object": "Pod/orders-api-67ffc96d6f-g6crp",
-            "message": "Successfully assigned pfa-lab/orders-api-67ffc96d6f-g6crp to desktop-control-plane",
-            "count": 1,
-            "first_seen": "2026-11-02T15:26:39.716511+00:00",
-            "last_seen": "2026-11-02T15:26:39.716511+00:00"
-          },
-          {
-            "type": "Normal",
-            "reason": "SuccessfulCreate",
-            "object": "ReplicaSet/orders-api-67ffc96d6f",
-            "message": "Created pod: orders-api-67ffc96d6f-g6crp",
-            "count": 1,
-            "first_seen": "2026-11-02T15:26:39+00:00",
-            "last_seen": "2026-11-02T15:26:39+00:00"
-          },
-          {
-            "type": "Normal",
-            "reason": "ScalingReplicaSet",
-            "object": "Deployment/orders-api",
-            "message": "Scaled up replica set orders-api-67ffc96d6f from 0 to 1",
-            "count": 1,
-            "first_seen": "2026-11-02T15:26:39+00:00",
-            "last_seen": "2026-11-02T15:26:39+00:00"
+            "last_seen": "2026-11-11T14:29:20+00:00"
           }
         ]
       },
       "raw_excerpt": null,
       "error": null,
-      "collected_at": "2026-11-02T15:27:28.433600Z",
+      "collected_at": "2026-11-11T14:31:50.954217Z",
       "redacted": true,
       "redactions": {}
     },
@@ -227,17 +180,17 @@
       "summary": {
         "container": "migrate",
         "previous": {
-          "available": false,
-          "note": "unable to retrieve container logs for containerd://99432140113a63c752f7327500ba0e5cee35a6c0f30c986b72f9355763957173"
+          "available": true,
+          "lines": 2
         },
         "current": {
           "available": true,
           "lines": 2
         }
       },
-      "raw_excerpt": "=== current container ===\nERROR: relation \"orders_idx\" already exists\napplying migration 0042_add_orders_index\n",
+      "raw_excerpt": "=== previous container ===\napplying migration 0042_add_orders_index\nERROR: relation \"orders_idx\" already exists\n\n=== current container ===\napplying migration 0042_add_orders_index\nERROR: relation \"orders_idx\" already exists\n",
       "error": null,
-      "collected_at": "2026-11-02T15:27:28.432406Z",
+      "collected_at": "2026-11-11T14:31:50.953502Z",
       "redacted": true,
       "redactions": {}
     }

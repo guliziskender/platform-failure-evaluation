@@ -1,0 +1,20 @@
+# admin-portal's image tag does not exist. It also points at a pull secret that was never
+# created; Kubernetes warns about that, but the image is public, so it is not the problem.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: admin-portal
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: admin-portal}
+  template:
+    metadata:
+      labels: {app: admin-portal}
+    spec:
+      imagePullSecrets:
+        - name: regcred
+      containers:
+        - name: web
+          image: busybox:1.63
+          command: ["sleep", "3600"]

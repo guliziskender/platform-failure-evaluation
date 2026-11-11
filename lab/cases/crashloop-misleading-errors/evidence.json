@@ -1,0 +1,230 @@
+{
+  "target": {
+    "namespace": "pfa-lab",
+    "name": "pricing-api",
+    "kind": "deployment",
+    "pod": "pricing-api-8b8ddc7c-5vt69",
+    "container": "api",
+    "owners": [
+      {
+        "kind": "ReplicaSet",
+        "name": "pricing-api-8b8ddc7c"
+      },
+      {
+        "kind": "Deployment",
+        "name": "pricing-api"
+      }
+    ]
+  },
+  "evidence": [
+    {
+      "source": "k8s_state",
+      "summary": {
+        "workload": {
+          "kind": "deployment",
+          "name": "pricing-api",
+          "replicas_desired": 1,
+          "replicas_ready": 0,
+          "replicas_updated": 1,
+          "replicas_available": 0,
+          "generation": 1,
+          "observed_generation": 1,
+          "conditions": [
+            {
+              "type": "Progressing",
+              "status": "True",
+              "reason": "NewReplicaSetAvailable",
+              "message": "ReplicaSet \"pricing-api-8b8ddc7c\" has successfully progressed.",
+              "last_update": "2026-11-11T14:31:28+00:00"
+            },
+            {
+              "type": "Available",
+              "status": "False",
+              "reason": "MinimumReplicasUnavailable",
+              "message": "Deployment does not have minimum availability.",
+              "last_update": "2026-11-11T14:31:40+00:00"
+            }
+          ]
+        },
+        "pod": {
+          "name": "pricing-api-8b8ddc7c-5vt69",
+          "phase": "Running",
+          "node": "desktop-control-plane",
+          "qos_class": "BestEffort",
+          "created": "2026-11-11T14:31:27+00:00",
+          "started": "2026-11-11T14:31:27+00:00",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "False",
+              "reason": "ContainersNotReady",
+              "message": "containers with unready status: [api]"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "False",
+              "reason": "ContainersNotReady",
+              "message": "containers with unready status: [api]"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "containers": [
+            {
+              "name": "api",
+              "image": "busybox:1.36",
+              "command": [
+                "sh",
+                "-c"
+              ],
+              "args": [
+                "echo \"level=info msg=\\\"pricing-api 3.8.0 starting\\\"\"\necho \"level=error msg=\\\"cache: dial tcp redis:6379: connect: connection refused\\\" fallback=in-memory\"\necho \"level=warn msg=\\\"running without shared cache; prices are cached per pod\\\"\"\ncase \"$MAX_CONNECTIONS\" in\n  ''|*[!0-9]*)\n    echo \"level=fatal msg=\\\"config: MAX_CONNECTIONS=\\\\\\\"$MAX_CONNECTIONS\\\\\\\" is not an integer\\\"\"\n    echo \"level=info msg=\\\"shutting down\\\"\"\n    echo \"level=error msg=\\\"metrics: failed to flush 12 points to statsd:8125: connection refused\\\"\"\n    exit 1 ;;\nesac\nexec sleep 3600\n"
+              ],
+              "env_names": [
+                "MAX_CONNECTIONS",
+                "CACHE_URL",
+                "STATSD_ADDR"
+              ],
+              "ready": false,
+              "started": false,
+              "restart_count": 2,
+              "state": {
+                "terminated": {
+                  "reason": "Error",
+                  "exit_code": 1,
+                  "started_at": "2026-11-11T14:31:40+00:00",
+                  "finished_at": "2026-11-11T14:31:40+00:00"
+                }
+              },
+              "last_state": {
+                "terminated": {
+                  "reason": "Error",
+                  "exit_code": 1,
+                  "started_at": "2026-11-11T14:31:28+00:00",
+                  "finished_at": "2026-11-11T14:31:28+00:00"
+                }
+              },
+              "image_id": "docker.io/library/busybox@sha256:73aaf090f3d85aa34ee199857f03fa3a95c8ede2ffd4cc2cdb5b94e566b11662"
+            }
+          ]
+        }
+      },
+      "raw_excerpt": null,
+      "error": null,
+      "collected_at": "2026-11-11T14:31:50.961803Z",
+      "redacted": true,
+      "redactions": {}
+    },
+    {
+      "source": "k8s_events",
+      "summary": {
+        "window_minutes": 60,
+        "objects": [
+          "Pod/pricing-api-8b8ddc7c-5vt69",
+          "ReplicaSet/pricing-api-8b8ddc7c",
+          "Deployment/pricing-api"
+        ],
+        "total": 7,
+        "events": [
+          {
+            "type": "Warning",
+            "reason": "BackOff",
+            "object": "Pod/pricing-api-8b8ddc7c-5vt69",
+            "message": "Back-off restarting failed container api in pod pricing-api-8b8ddc7c-5vt69_pfa-lab(80f55016-4605-4919-bf3a-f5d2561c6f03)",
+            "count": 2,
+            "first_seen": "2026-11-11T14:31:29+00:00",
+            "last_seen": "2026-11-11T14:31:40+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "Pulled",
+            "object": "Pod/pricing-api-8b8ddc7c-5vt69",
+            "message": "Container image \"busybox:1.36\" already present on machine and can be accessed by the pod",
+            "count": 3,
+            "first_seen": "2026-11-11T14:31:28+00:00",
+            "last_seen": "2026-11-11T14:31:40+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "Created",
+            "object": "Pod/pricing-api-8b8ddc7c-5vt69",
+            "message": "Container created",
+            "count": 3,
+            "first_seen": "2026-11-11T14:31:28+00:00",
+            "last_seen": "2026-11-11T14:31:40+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "Started",
+            "object": "Pod/pricing-api-8b8ddc7c-5vt69",
+            "message": "Container started",
+            "count": 3,
+            "first_seen": "2026-11-11T14:31:28+00:00",
+            "last_seen": "2026-11-11T14:31:40+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "Scheduled",
+            "object": "Pod/pricing-api-8b8ddc7c-5vt69",
+            "message": "Successfully assigned pfa-lab/pricing-api-8b8ddc7c-5vt69 to desktop-control-plane",
+            "count": 1,
+            "first_seen": "2026-11-11T14:31:27.970490+00:00",
+            "last_seen": "2026-11-11T14:31:27.970490+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "SuccessfulCreate",
+            "object": "ReplicaSet/pricing-api-8b8ddc7c",
+            "message": "Created pod: pricing-api-8b8ddc7c-5vt69",
+            "count": 1,
+            "first_seen": "2026-11-11T14:31:27+00:00",
+            "last_seen": "2026-11-11T14:31:27+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "ScalingReplicaSet",
+            "object": "Deployment/pricing-api",
+            "message": "Scaled up replica set pricing-api-8b8ddc7c from 0 to 1",
+            "count": 1,
+            "first_seen": "2026-11-11T14:31:27+00:00",
+            "last_seen": "2026-11-11T14:31:27+00:00"
+          }
+        ]
+      },
+      "raw_excerpt": null,
+      "error": null,
+      "collected_at": "2026-11-11T14:31:50.963655Z",
+      "redacted": true,
+      "redactions": {}
+    },
+    {
+      "source": "logs",
+      "summary": {
+        "container": "api",
+        "previous": {
+          "available": false,
+          "note": "unable to retrieve container logs for containerd://b00ed03fa6b54c8523eb2d15731dd0f7179e97b34828e40e66ddb233f0af8ff3"
+        },
+        "current": {
+          "available": true,
+          "lines": 6
+        }
+      },
+      "raw_excerpt": "=== current container ===\nlevel=info msg=\"pricing-api 3.8.0 starting\"\nlevel=error msg=\"cache: dial tcp redis:6379: connect: connection refused\" fallback=in-memory\nlevel=warn msg=\"running without shared cache; prices are cached per pod\"\nlevel=fatal msg=\"config: MAX_CONNECTIONS=\\\"ten\\\" is not an integer\"\nlevel=info msg=\"shutting down\"\nlevel=error msg=\"metrics: failed to flush 12 points to statsd:8125: connection refused\"\n",
+      "error": null,
+      "collected_at": "2026-11-11T14:31:50.962723Z",
+      "redacted": true,
+      "redactions": {}
+    }
+  ]
+}

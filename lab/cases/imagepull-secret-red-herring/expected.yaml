@@ -1,0 +1,17 @@
+# Ground truth for this broken app, scored by `pfa eval`. A hard case: see `trap`.
+workload: {kind: deployment, name: admin-portal}
+failure_type: image_pull_backoff
+difficulty: hard
+trap: >-
+  The pod references a pull secret that does not exist, and the events warn about it. That
+  looks like the cause but is not: the image is public, so the secret is never needed. The tag
+  does not exist.
+symptom: Pod never starts; status is ErrImagePull / ImagePullBackOff.
+root_cause: >-
+  The image tag busybox:1.63 does not exist (likely a typo of 1.36). The missing imagePullSecret
+  regcred only produces a warning; the image is public, so it does not block the pull.
+cause_keywords: ["1.63", [tag, not found]]
+fix: Correct the tag (e.g. busybox:1.36). Remove the stale regcred reference, or create it.
+fix_keywords: [tag]
+ready_when: {waiting_reason: [ErrImagePull, ImagePullBackOff]}
+evidence_must_contain: ["1.63", "regcred"]
