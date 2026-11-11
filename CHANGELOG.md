@@ -3,6 +3,16 @@
 Install a release: `helm install pfa oci://ghcr.io/guliziskender/charts/pfa --version <version>`.
 Image: `ghcr.io/guliziskender/pfa:<version>`. Detail for each change: `docs/log.md`.
 
+## Unreleased
+
+- `pfa diagnose --build-log FILE` (or `-` for stdin) diagnoses a failed `docker build`: the
+  failing step, its Dockerfile line, and the output line that names the cause. BuildKit and the
+  legacy builder. Rules for files excluded by `.dockerignore`, missing base image tags, pinned
+  package versions that do not exist, dependencies with no wheel for the image's Python
+  (naming a floating base tag such as `python:3`), hosts the build cannot resolve, missing
+  commands and apt packages. `pfa collect --build-log` shows the parsed evidence.
+- Five Docker build lab cases with real build logs (`lab.py build-logs`); the eval has 26 cases.
+
 ## 0.2.0 (2026-11-11)
 
 Diagnoses failures that mislead: six new hard lab cases, and the fixes they pointed at.

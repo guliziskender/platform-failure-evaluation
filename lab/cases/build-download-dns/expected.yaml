@@ -1,0 +1,18 @@
+# Ground truth for this broken build, scored by `pfa eval`. A hard case: see `trap`.
+build_log: build.log
+failure_type: docker_build
+difficulty: hard
+rules_confidence: medium
+trap: >-
+  The last two error lines are tar's ("invalid magic", "short read"), and the step's exit code
+  is tar's. They are a side effect: wget could not resolve the artifact host and passed tar
+  nothing. The pipe hides the real failure.
+symptom: docker build fails at a RUN step that downloads and unpacks a tool.
+root_cause: >-
+  The build cannot resolve artifacts.pfa-lab.invalid (wget: bad address), so the download
+  returns nothing and tar fails on empty input.
+cause_keywords: [artifacts.pfa-lab.invalid, [resolve, DNS, bad address]]
+fix: >-
+  Make the artifact host reachable from the build (DNS, VPN, proxy or --network), or vendor the
+  file into the build context. Use set -o pipefail so the real error fails the step.
+fix_keywords: [[DNS, proxy, network, reachable, resolve]]

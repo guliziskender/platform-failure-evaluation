@@ -17,6 +17,10 @@ _BENIGN_WAITING = {"PodInitializing"}
 _RECENT_FAILURE = timedelta(minutes=10)
 
 
+# What a name can be looked up as, in this order. (WorkloadKind.BUILD is a log, not an object.)
+CLUSTER_KINDS = (WorkloadKind.POD, WorkloadKind.DEPLOYMENT, WorkloadKind.STATEFULSET)
+
+
 class TargetNotFound(LookupError):
     pass
 
@@ -25,7 +29,7 @@ def resolve_target(
     clients: KubeClients, name: str, namespace: str, kind: WorkloadKind | None = None
 ) -> Target:
     """Find `name` as a pod, Deployment or StatefulSet (in that order unless `kind` is given)."""
-    for candidate in [kind] if kind else list(WorkloadKind):
+    for candidate in [kind] if kind else CLUSTER_KINDS:
         try:
             if candidate is WorkloadKind.POD:
                 return _resolve_pod(clients, name, namespace)

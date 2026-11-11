@@ -1,0 +1,11 @@
+# Ground truth for this broken build, scored by `pfa eval`. build.log is real `docker build
+# --progress=plain` output (refresh: uv run python lab/lab.py build-logs).
+build_log: build.log
+failure_type: docker_build
+symptom: docker build fails at a COPY step with "not found".
+root_cause: >-
+  COPY config/app.yaml fails because .dockerignore excludes config/, so the file is not in the
+  build context even though it exists in the directory.
+cause_keywords: [config/app.yaml, .dockerignore]
+fix: Stop excluding config/ in .dockerignore (or exclude only what should stay out).
+fix_keywords: [.dockerignore]

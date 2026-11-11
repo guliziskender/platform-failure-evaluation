@@ -14,11 +14,11 @@ from typing import Any
 
 from pfa.ai.prompts import SYSTEM, guidance_for
 from pfa.ai.redact import redact_data, redact_text, require_redacted
-from pfa.models import Evidence, Report
+from pfa.models import Evidence, Report, WorkloadKind
 
 CHARS_PER_TOKEN = 4  # rough, but stable and dependency-free
 MIN_EVENTS = 5
-_HANDLED = ("k8s_state", "k8s_events", "logs")
+_HANDLED = ("k8s_state", "k8s_events", "logs", "docker_build")
 
 
 @dataclass
@@ -39,7 +39,8 @@ def estimate_tokens(text: str) -> int:
 def build_prompt(report: Report, budget_tokens: int = 6000) -> Prompt:
     require_redacted(report.evidence)
     by_source = {e.source: e for e in report.evidence}
-    logs = by_source.get("logs")
+    # A build log's failing-step output is trimmed like container logs: its tail holds the end.
+    logs = by_source.get("logs") or by_source.get("docker_build")
     log_text = (logs.raw_excerpt or "") if logs else ""
     events = list(_summary(by_source.get("k8s_events")).get("events", []))
 
@@ -75,6 +76,9 @@ def _render(
     t, c = report.target, report.classification
     parts: list[str] = []
 
+    if t.kind is WorkloadKind.BUILD:
+        return _render_build(report, by_source, log_text)
+
     target = f"{t.kind.value}/{t.name} in namespace {t.namespace}"
     target += f", pod {t.pod}" if t.pod else ", no pod exists"
     if t.container:
@@ -107,18 +111,37 @@ def _render(
     if errors:
         parts.append(_section("Evidence that could not be collected", _text("\n".join(errors))))
 
-    if report.rule_hits:
-        hits = [
-            f"- [{h.certainty}] {h.rule}: {h.finding}\n  cause: {h.cause}\n"
-            f"  fix: {'; '.join(h.fix)}"
-            for h in report.rule_hits
-        ]
-        parts.append(_section("Rule findings (deterministic hints)", _text("\n".join(hits))))
-    else:
-        parts.append(_section("Rule findings (deterministic hints)", "no rule matched"))
+    parts.append(_rule_section(report))
 
     parts.append("Diagnose this failure. Reply with the JSON object only.")
     return "\n\n".join(parts)
+
+
+def _render_build(report: Report, by_source: dict[str, Evidence], output: str) -> str:
+    c = report.classification
+    build = by_source.get("docker_build")
+    classification = [f"type: {c.failure_type.value}", f"problem: {c.problem}"]
+    classification += [f"signal: {s}" for s in c.signals]
+    parts = [
+        _section("Target", _text(f"docker build log {report.target.name} (no cluster involved)")),
+        _section("Classification (deterministic)", _text("\n".join(classification))),
+        _section("What to look at for this failure type", guidance_for(c.failure_type)),
+        _section("Build summary (failing step, error, base images)", _json(_summary(build))),
+        _section("Failing step output", _text(output) or "(the step printed nothing)"),
+        _rule_section(report),
+        "Diagnose this failure. Reply with the JSON object only.",
+    ]
+    return "\n\n".join(parts)
+
+
+def _rule_section(report: Report) -> str:
+    if not report.rule_hits:
+        return _section("Rule findings (deterministic hints)", "no rule matched")
+    hits = [
+        f"- [{h.certainty}] {h.rule}: {h.finding}\n  cause: {h.cause}\n  fix: {'; '.join(h.fix)}"
+        for h in report.rule_hits
+    ]
+    return _section("Rule findings (deterministic hints)", _text("\n".join(hits)))
 
 
 def _section(title: str, body: str) -> str:

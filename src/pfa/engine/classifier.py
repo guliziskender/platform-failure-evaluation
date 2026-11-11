@@ -20,6 +20,8 @@ KILLED_EXIT_CODES = {137, 143}
 
 
 def classify(view: EvidenceView) -> Classification:
+    if view.build:
+        return _docker_build(view)
     if view.pod is None:
         return _no_pod(view)
     for check in _CHECKS:
@@ -27,6 +29,23 @@ def classify(view: EvidenceView) -> Classification:
         if result is not None:
             return result
     return _unknown(view)
+
+
+def _docker_build(v: EvidenceView) -> Classification:
+    b = v.build
+    step = b.get("failed_step") or {}
+    instruction = step.get("instruction", "")
+    where = f" ({step['dockerfile']})" if step.get("dockerfile") else ""
+    if not step:
+        problem = "docker build failed; the log does not show which step."
+    elif instruction.upper().startswith("FROM") or step.get("stage") == "internal":
+        problem = f"docker build fails before the first step, loading {instruction}{where}."
+    else:
+        code = f", exit code {b['exit_code']}" if b.get("exit_code") is not None else ""
+        problem = f"docker build fails at step {step.get('stage')}: {instruction}{where}{code}."
+    signals = [f"build error: {b['error']}"] if b.get("error") else []
+    signals += [f"build warning: {w}" for w in b.get("warnings", [])]
+    return Classification(failure_type=FailureType.DOCKER_BUILD, problem=problem, signals=signals)
 
 
 # --- checks, in priority order ----------------------------------------------------------

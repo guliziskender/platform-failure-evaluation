@@ -22,6 +22,7 @@ from pfa.engine.orchestrator import (
     answer,
     collect_evidence,
     default_collectors,
+    load_build_log,
     load_evidence,
     run_diagnosis,
 )
@@ -72,10 +73,26 @@ class DiagnosisFormat(StrEnum):
     MARKDOWN = "markdown"  # for tickets, PRs and chat
 
 
+class LookupKind(StrEnum):
+    """What --kind accepts: the kinds pfa can look up in a cluster."""
+
+    POD = "pod"
+    DEPLOYMENT = "deployment"
+    STATEFULSET = "statefulset"
+
+
 NamespaceOpt = Annotated[str, typer.Option("--namespace", "-n")]
 KindOpt = Annotated[
-    WorkloadKind | None,
+    LookupKind | None,
     typer.Option("--kind", "-k", help="Skip auto-detection and look up only this kind."),
+]
+BuildLogOpt = Annotated[
+    str | None,
+    typer.Option(
+        "--build-log",
+        help="Diagnose a failed `docker build` log instead (a file, or - for stdin). "
+        "Best with --progress=plain.",
+    ),
 ]
 ContextOpt = Annotated[
     str | None, typer.Option("--context", help="kubeconfig context (default: current).")
@@ -101,17 +118,23 @@ def main(
 
 @app.command()
 def collect(
-    name: Annotated[str, typer.Argument(help="Pod, Deployment or StatefulSet name.")],
+    name: Annotated[str | None, typer.Argument(help="Pod, Deployment or StatefulSet name.")] = None,
     namespace: NamespaceOpt = "default",
     kind: KindOpt = None,
     context: ContextOpt = None,
     output: OutputOpt = OutputFormat.TEXT,
+    build_log: BuildLogOpt = None,
 ) -> None:
     """Gather the (redacted) evidence a diagnosis would use, without calling any AI."""
-    settings = _settings(kube_context=context)
-    clients, target = _connect_and_resolve(settings, name, namespace, kind)
-    with err.status("Collecting evidence..."):
-        evidence = collect_evidence(target, default_collectors(clients, settings))
+    if (name is None) == (build_log is None):
+        _fail("give either a NAME or --build-log FILE", code=2)
+    if build_log is not None:
+        target, evidence = _read_build_log(build_log)
+    else:
+        settings = _settings(kube_context=context)
+        clients, target = _connect_and_resolve(settings, name, namespace, kind)
+        with err.status("Collecting evidence..."):
+            evidence = collect_evidence(target, default_collectors(clients, settings))
 
     if output is OutputFormat.JSON:
         print(evidence_json(target, evidence))
@@ -160,10 +183,11 @@ def diagnose(
             dir_okay=False,
         ),
     ] = None,
+    build_log: BuildLogOpt = None,
 ) -> None:
-    """Diagnose a failing pod or workload: problem, likely cause, fix and confidence."""
-    if (name is None) == (from_evidence is None):
-        _fail("give either a NAME or --from-evidence FILE", code=2)
+    """Diagnose a failing pod, workload or docker build: problem, likely cause, fix, confidence."""
+    if sum(x is not None for x in (name, from_evidence, build_log)) != 1:
+        _fail("give one of: a NAME, --from-evidence FILE or --build-log FILE", code=2)
 
     settings = _settings(
         kube_context=context, provider=provider_name, model=model, send_data=send_data
@@ -172,7 +196,9 @@ def diagnose(
     if not (no_llm or show_prompt):
         provider, no_ai_reason = _provider(settings)
 
-    if from_evidence is not None:
+    if build_log is not None:
+        report = analyze(*_read_build_log(build_log))
+    elif from_evidence is not None:
         target, evidence = _load_evidence(from_evidence)
         report = analyze(target, evidence)
     else:
@@ -280,7 +306,7 @@ def eval_command(
         cases = load_cases(cases_dir, only)
         if use_live:
             clients = load_clients(settings.kube_context, settings.api_timeout)
-            diagnose = live(clients, settings, namespace)
+            diagnose = live(clients, settings, namespace, cases_dir)
         else:
             diagnose = replay(cases_dir)
         if provider is not None:
@@ -406,12 +432,29 @@ def _with_note(report: Report, note: str) -> Report:
     return report.model_copy(update={"notes": [*report.notes, note]})
 
 
+def _read_build_log(value: str) -> tuple[Target, list[Evidence]]:
+    import sys
+
+    from pfa.collectors.docker_build import BuildLogError
+
+    try:
+        if value == "-":
+            return load_build_log(None, sys.stdin.read())
+        path = Path(value)
+        return load_build_log(path, path.read_text(errors="replace"))
+    except OSError as exc:
+        _fail(f"cannot read the build log: {exc}", code=2)
+    except BuildLogError as exc:
+        _fail(str(exc), code=2)
+
+
 def _connect_and_resolve(
-    settings: Settings, name: str, namespace: str, kind: WorkloadKind | None
+    settings: Settings, name: str, namespace: str, kind: LookupKind | None
 ) -> tuple[KubeClients, Target]:
     try:
         clients = load_clients(settings.kube_context, settings.api_timeout)
-        return clients, resolve_target(clients, name, namespace, kind)
+        workload_kind = WorkloadKind(kind.value) if kind else None
+        return clients, resolve_target(clients, name, namespace, workload_kind)
     except KubeConfigError as exc:
         _fail(str(exc), code=2)
     except TargetNotFound as exc:

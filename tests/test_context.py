@@ -32,7 +32,7 @@ def test_sections_in_fixed_order(failure_type):
 
 
 def test_every_failure_type_has_guidance():
-    assert set(GUIDANCE) == set(FailureType) - {FailureType.DOCKER_BUILD}
+    assert set(GUIDANCE) == set(FailureType)
 
 
 def test_crash_prompt_holds_what_a_diagnosis_needs():

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 import shutil
 from pathlib import Path
 
@@ -56,12 +57,13 @@ def report():
 
 @pytest.fixture
 def one_miss(tmp_path) -> Path:
-    """A copy of the standard lab cases where one answer key is deliberately wrong, so tests of
-    misses don't depend on what the rules get wrong today (hard cases have real misses)."""
+    """A copy of the 15 standard pod cases where one answer key is deliberately wrong, so tests
+    of misses don't depend on what the rules get wrong today, or on how many cases exist."""
     cases = tmp_path / "cases"
     shutil.copytree(CASES_DIR, cases)
     for expected in cases.glob("*/expected.yaml"):
-        if yaml.safe_load(expected.read_text()).get("difficulty") == "hard":
+        data = yaml.safe_load(expected.read_text())
+        if data.get("difficulty") == "hard" or data.get("build_log"):
             shutil.rmtree(expected.parent)
     expected = cases / CRASH / "expected.yaml"
     text = expected.read_text().replace("cause_keywords: [DATABASE_URL]", "cause_keywords: [nope]")
@@ -306,14 +308,19 @@ def test_hard_cases_are_counted_apart_from_standard_ones(tmp_path):
     run = run_eval(load_cases(cases), replay(cases))
     levels = by_difficulty(run)
     assert list(levels) == ["standard", "hard"]
-    assert levels["standard"][1] == 15
+    standard = [
+        p for p in CASES_DIR.glob("*/expected.yaml") if "difficulty: hard" not in p.read_text()
+    ]
+    assert levels["standard"][1] == len(standard)
     assert sum(total for _, total in levels.values()) == run.total
     assert {r.difficulty for r in run.results if r.case == "crashloop-two-containers"} == {"hard"}
 
 
 def test_breakdown_line_for_difficulty_only_when_there_are_hard_cases(tmp_path, one_miss):
     assert "standard" not in invoke(tmp_path, "--no-llm", "--no-save", cases=one_miss).stdout
-    assert "standard 15/15 · hard " in invoke(tmp_path, "--no-llm", "--no-save").stdout
+    assert re.search(
+        r"standard \d+/\d+ · hard \d+/\d+", invoke(tmp_path, "--no-llm", "--no-save").stdout
+    )
 
 
 def test_eval_prints_saves_and_compares(tmp_path, one_miss):
@@ -416,7 +423,7 @@ def test_some_failed_answers_are_still_saved(tmp_path, monkeypatch):
 def test_live_flag_uses_the_cluster_and_is_recorded(tmp_path, monkeypatch):
     calls = []
 
-    def fake_live(clients, settings, namespace):
+    def fake_live(clients, settings, namespace, cases_dir):
         calls.append(namespace)
         return replay(CASES_DIR)
 

@@ -1,0 +1,3 @@
+# keep local config out of images
+config/
+*.log

@@ -64,6 +64,14 @@ GUIDANCE: dict[FailureType, str] = {
         "the container declares and what the logs say the app listens on. A liveness failure "
         "restarts the container with exit code 137 even though the app did not crash."
     ),
+    FailureType.DOCKER_BUILD: (
+        "A docker build failed. Find the failing step and the line in its output that names "
+        "the cause; the last error is often fallout (a pipe's later command, a traceback's "
+        "outer frame, pip's summary). COPY 'not found' means the file is outside the build "
+        "context or excluded by .dockerignore. A source download (.tar.gz) in pip output means "
+        "no wheel for the image's Python: check whether the base image tag floats (python:3, "
+        "latest). Network errors in a build come from the builder's network, not the user's."
+    ),
     FailureType.UNKNOWN: (
         "The failure does not match a common pattern. Work from the events and pod status "
         "message. If the evidence does not support a specific cause, answer 'unsure' and say "

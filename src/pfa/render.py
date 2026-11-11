@@ -14,7 +14,7 @@ from rich.text import Text
 from pfa.ai.context import Prompt
 from pfa.config import OPTIONS, SECRET_OPTIONS, Settings
 from pfa.evaluation import CaseResult, EvalRun, by_difficulty, by_failure_type, changes
-from pfa.models import Diagnosis, Evidence, Report, Target
+from pfa.models import Diagnosis, Evidence, Report, Target, WorkloadKind
 
 _CONFIDENCE_STYLE = {"high": "green", "medium": "yellow", "low": "red", "unsure": "red"}
 
@@ -64,6 +64,9 @@ def _redaction_note(ev: Evidence) -> Text | None:
 
 def _target_line(target: Target) -> Text:
     line = Text()
+    if target.kind is WorkloadKind.BUILD:
+        line.append(f"docker build log {target.name}", style="bold")
+        return line
     line.append(f"{target.kind.value}/{target.name}", style="bold")
     line.append(f"  namespace={target.namespace}")
     if target.pod:
@@ -164,6 +167,8 @@ def report_markdown(report: Report) -> str:
     """For pasting into a ticket, PR or chat. Plain Markdown, no terminal styling."""
     d, t = report.diagnosis, report.target
     where = f"{t.kind.value}/{t.name} in `{t.namespace}`" + (f", pod `{t.pod}`" if t.pod else "")
+    if t.kind is WorkloadKind.BUILD:
+        where = f"docker build log `{t.name}`"
     lines = [
         f"### pfa diagnosis: {where}",
         "",

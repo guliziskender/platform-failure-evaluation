@@ -1,0 +1,45 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 309B done
+#1 WARN: CopyIgnoredFile: Attempting to Copy file "config/app.yaml" that is excluded by .dockerignore (line 6)
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/busybox:1.36
+#2 DONE 0.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 88B done
+#3 DONE 0.0s
+
+#4 [internal] load build context
+#4 transferring context: 83B done
+#4 DONE 0.0s
+
+#5 [1/4] FROM docker.io/library/busybox:1.36@sha256:73aaf090f3d85aa34ee199857f03fa3a95c8ede2ffd4cc2cdb5b94e566b11662
+#5 resolve docker.io/library/busybox:1.36@sha256:73aaf090f3d85aa34ee199857f03fa3a95c8ede2ffd4cc2cdb5b94e566b11662 done
+#5 CACHED
+
+#6 [2/4] WORKDIR /app
+#6 CACHED
+
+#7 [3/4] COPY app.sh /app/app.sh
+#7 CACHED
+
+#8 [4/4] COPY config/app.yaml /app/config/app.yaml
+#8 ERROR: failed to calculate checksum of ref 1d01ksx3s0x20xc3q64yahhuy::j26qey4jdt3un6t51g9mi4jjp: "/config/app.yaml": not found
+------
+ > [4/4] COPY config/app.yaml /app/config/app.yaml:
+------
+
+ [33m1 warning found (use docker --debug to expand):
+[0m - CopyIgnoredFile: Attempting to Copy file "config/app.yaml" that is excluded by .dockerignore (line 6)
+Dockerfile:6
+--------------------
+   4 |     WORKDIR /app
+   5 |     COPY app.sh /app/app.sh
+   6 | >>> COPY config/app.yaml /app/config/app.yaml
+   7 |     CMD ["sh", "/app/app.sh"]
+   8 |     
+--------------------
+ERROR: failed to build: failed to solve: failed to compute cache key: failed to calculate checksum of ref 1d01ksx3s0x20xc3q64yahhuy::j26qey4jdt3un6t51g9mi4jjp: "/config/app.yaml": not found

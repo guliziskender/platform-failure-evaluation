@@ -15,6 +15,8 @@ uv run pfa diagnose <name> -n <ns> --provider ollama  # local model, no send_dat
 uv run pfa diagnose <name> -n <ns> -o markdown        # for tickets / chat
 uv run pfa config [show|init|path]                    # effective settings + their sources
 uv run pfa diagnose --from-evidence lab/cases/<id>/evidence.json --no-llm
+uv run pfa diagnose --build-log build.log --no-llm   # a failed docker build (- = stdin)
+uv run python lab/lab.py build-logs   # re-run the broken Dockerfiles in lab/cases/build-*
 make lab-up / lab-status / lab-down   # broken-pod lab in ns pfa-lab (local clusters only)
 make lab-snapshot                # refresh lab/cases/*/evidence.json after changing collectors
 uv run pytest                    # unit tests (no cluster needed)
@@ -68,7 +70,9 @@ uv run ruff check . && uv run ruff format .
   the two can differ: check both.
 - `src/pfa/view.py`: `EvidenceView`, the accessors classifier and rules use. They work only on
   evidence summaries, never live API objects, so saved evidence replays identically.
-- `src/pfa/collectors/`: deterministic evidence: `k8s_state`, `k8s_events`, `logs`. Events keep
+- `src/pfa/collectors/`: deterministic evidence: `k8s_state`, `k8s_events`, `logs`, and
+  `docker_build` (parses a build log: BuildKit or legacy; facts only, the rules interpret them;
+  a build target has `WorkloadKind.BUILD`, never looked up in a cluster). Events keep
   the target pod's own events at any age; only owner events are cut to the time window.
 - `deploy/helm/pfa/`: Helm chart. Read-only RBAC (`templates/rbac.yaml`), toolbox Deployment
   to `kubectl exec` into, optional diagnose Job. The API key only ever comes from a Secret the
@@ -106,6 +110,8 @@ uv run ruff check . && uv run ruff format .
 - **The AI's answer is validated, never shown raw.** It must parse into `LLMAnswer`;
   `check_answer` lowers confidence that the evidence does not earn. Any AI failure falls back to
   the rules answer with a note saying why.
+- **Build rules are written against real `docker build` output**, captured into
+  `lab/cases/build-*/build.log` by `lab.py build-logs`, never against logs typed from memory.
 - **Collectors never raise.** They run under `run_safely`; failures become `Evidence.error`.
   Every API call passes `_request_timeout=clients.timeout`.
 - Summaries are structured and compact (`drop_none`); raw text only as a trimmed `raw_excerpt`.

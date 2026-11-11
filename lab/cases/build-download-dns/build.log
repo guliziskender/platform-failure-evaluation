@@ -1,0 +1,37 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 382B done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/busybox:1.36
+#2 DONE 0.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [1/2] FROM docker.io/library/busybox:1.36@sha256:73aaf090f3d85aa34ee199857f03fa3a95c8ede2ffd4cc2cdb5b94e566b11662
+#4 resolve docker.io/library/busybox:1.36@sha256:73aaf090f3d85aa34ee199857f03fa3a95c8ede2ffd4cc2cdb5b94e566b11662 done
+#4 CACHED
+
+#5 [2/2] RUN mkdir -p /opt/tools && wget -qO- http://artifacts.pfa-lab.invalid/tools/migrate-2.4.1.tar.gz | tar xz -C /opt/tools
+#5 0.071 wget: bad address 'artifacts.pfa-lab.invalid'
+#5 0.071 tar: invalid magic
+#5 0.071 tar: short read
+#5 ERROR: process "/bin/sh -c mkdir -p /opt/tools && wget -qO- http://artifacts.pfa-lab.invalid/tools/migrate-2.4.1.tar.gz | tar xz -C /opt/tools" did not complete successfully: exit code: 1
+------
+ > [2/2] RUN mkdir -p /opt/tools && wget -qO- http://artifacts.pfa-lab.invalid/tools/migrate-2.4.1.tar.gz | tar xz -C /opt/tools:
+0.071 wget: bad address 'artifacts.pfa-lab.invalid'
+0.071 tar: invalid magic
+0.071 tar: short read
+------
+Dockerfile:4
+--------------------
+   2 |     # The pipe hides wget's failure: the step fails on tar, which got no input.
+   3 |     FROM busybox:1.36
+   4 | >>> RUN mkdir -p /opt/tools && wget -qO- http://artifacts.pfa-lab.invalid/tools/migrate-2.4.1.tar.gz | tar xz -C /opt/tools
+   5 |     CMD ["/opt/tools/migrate", "--help"]
+   6 |     
+--------------------
+ERROR: failed to build: failed to solve: process "/bin/sh -c mkdir -p /opt/tools && wget -qO- http://artifacts.pfa-lab.invalid/tools/migrate-2.4.1.tar.gz | tar xz -C /opt/tools" did not complete successfully: exit code: 1

@@ -1,0 +1,19 @@
+# Ground truth for this broken build, scored by `pfa eval`. A hard case: see `trap`.
+build_log: build.log
+failure_type: docker_build
+difficulty: hard
+rules_confidence: medium
+trap: >-
+  The last error says setuptools.build_meta cannot be imported, which reads like a missing
+  setuptools. Nothing in the Dockerfile changed: the floating base tag python:3 moved to Python
+  3.15, numpy 1.24.4 has no wheel for it (pip downloads the source tarball), and its source build
+  does not work there.
+symptom: docker build fails at RUN pip install with a pip traceback.
+root_cause: >-
+  FROM python:3 now resolves to Python 3.15. numpy==1.24.4 has no wheel for 3.15, so pip tries
+  to build it from source, and that build fails on this Python.
+cause_keywords: [numpy, "3.15", [python:3, base image]]
+fix: >-
+  Pin the base image to a Python the pinned numpy supports (e.g. python:3.11-slim), or upgrade
+  numpy to a release with wheels for the newer Python.
+fix_keywords: [[pin, python:3.11, python:3.12], [numpy, base image]]

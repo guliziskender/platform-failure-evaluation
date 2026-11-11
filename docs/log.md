@@ -724,3 +724,58 @@ honest signal needs new cases written before any fix (or real failures from step
   The check was wrong: it now uses a new `logs_must_contain` field, which searches only the
   collected logs (every line these lab apps print is also in their command, so searching all
   the evidence proves nothing).
+
+## 2026-11-11: Released 0.2.0; Docker build failures (`--build-log`)
+
+**0.2.0** released: versions, docs and a CHANGELOG. Checked as a user: installed 0.1.0 from the
+registry, upgraded to 0.2.0 (the PVC permission went from no to yes), and the published image
+diagnosed the PVC case from inside Docker Desktop's cluster.
+
+**Done: `pfa diagnose --build-log FILE|-`** (and `pfa collect --build-log`)
+- `collectors/docker_build.py` parses BuildKit `--progress=plain` and legacy builder logs: the
+  failing step, its Dockerfile line, the error, exit code, BuildKit warnings, base images, the
+  image's Python version and source downloads. It reads the step's own output, not BuildKit's
+  summary box (that repeats only the last 10 lines; in a pip traceback the useful line is
+  higher). Output is kept as head and tail; facts in long lines (pip lists every version on one
+  line) are read before lines are clipped. Redacted like any evidence.
+- `WorkloadKind.BUILD` targets; `--kind` only offers the cluster kinds, and target lookup skips
+  BUILD. The classifier, prompt (its own sections: build summary, failing step output) and the
+  text/markdown output know builds.
+- Rules: base image missing or private; COPY of a file excluded by `.dockerignore` (high, from
+  BuildKit's CopyIgnoredFile warning) or outside the context (medium); pip version that does not
+  exist (high, names the newest release); a dependency built from source because it has no
+  wheel for the image's Python, with the floating base tag named when there is one (medium);
+  a host the build cannot resolve, naming later errors as fallout (medium); command not found;
+  apt package missing (with or without `apt-get update` in the same step); a fallback that
+  quotes the most severe line (low).
+- Five lab cases with real logs (`lab.py build-logs` re-runs them and fails if one starts to
+  succeed): three standard, two hard (floating `python:3` now 3.15 with numpy 1.24.4, whose
+  last error blames setuptools; a DNS failure hidden by a pipe, whose last errors are tar's).
+
+**What broke / surprised**
+- The real logs differed from what I would have typed: BuildKit's CopyIgnoredFile warning with
+  ANSI colour codes, pip's "ERROR: Ignored the following yanked versions" noise, a 4,000-character
+  versions line, and busybox having no /usr/local/bin (the DNS case first had two real errors;
+  the Dockerfile now extracts to a directory it creates).
+- A unit test caught the apt rule never matching real apt output (a missing space in its
+  pattern). A mutation check caught that the DNS-fallout sentence was untested; it is now.
+- The rules were written while reading these five logs, so their 5/5 shows they work, not how
+  they do on unseen builds. The models were not shown the logs in advance.
+
+**Results (saved evidence, 26 cases)**
+
+| Answered by | Standard | Hard | Builds | Confident and wrong |
+| --- | --- | --- | --- | --- |
+| rules | 18/18 | 8/8 | 5/5 | 0 |
+| claude-opus-5-5 | 17/18 | 8/8 | 5/5 | 1 |
+| qwen3:8b | 18/18 | 8/8 | 5/5 | 0 |
+
+- Both models diagnosed all five builds, including the floating base image and the hidden DNS
+  failure, without having seen the logs.
+- Opus's first run missed `imagepull-bad-tag` on a too-strict key: it wrote "answers NotFound"
+  (the registry's word) where the key wanted "not found". Accepted as an alternative, as with
+  the earlier 14/15. Its re-run then missed `crashloop-init-migration`, which it had passed three
+  times: the answer was right, but the cause called the failing container "the init script" and
+  never named `migrate` (the fix did). That key stays: the cause should say where to look.
+  Widening keys after every miss would empty the score. One run is one sample.
+- The qwen run was wrapped in `caffeinate -i` and took 14 minutes.

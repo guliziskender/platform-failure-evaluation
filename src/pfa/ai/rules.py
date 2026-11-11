@@ -1071,6 +1071,9 @@ _DNS_FAILURE = [
     re.compile(r"UnknownHostException: ([A-Za-z0-9][\w.-]*)"),
     re.compile(r'could not translate host name "([^"]+)" to address'),
     re.compile(r"can't resolve '([^']+)'"),
+    re.compile(r"bad address '([^']+)'"),  # busybox wget
+    re.compile(r"Could not resolve host: ([A-Za-z0-9][\w.-]*)"),  # curl
+    re.compile(r"Temporary failure resolving '([^']+)'"),  # apt
     re.compile(
         r"([A-Za-z0-9][\w.-]*)(?::\d+)?: (?:Name or service not known|nodename nor servname)"
     ),
@@ -1182,6 +1185,326 @@ def crash_missing_file(v: EvidenceView) -> RuleHit | None:
 
 
 # =============================================================================================
+# Docker build failures (collectors/docker_build.py)
+# =============================================================================================
+
+
+def _build_step(v: EvidenceView) -> tuple[str, str]:
+    """(instruction, where) of the failing step, e.g. ("RUN pip install ...", "Dockerfile:5")."""
+    step = v.build.get("failed_step") or {}
+    return step.get("instruction", ""), step.get("dockerfile", "the Dockerfile")
+
+
+@rule
+def build_base_image_missing(v: EvidenceView) -> RuleHit | None:
+    instruction, where = _build_step(v)
+    error = v.build.get("error", "")
+    if not instruction.upper().startswith("FROM") or not re.search(
+        r"not found|manifest unknown|failed to resolve source metadata|pull access denied|"
+        r"unauthorized|denied",
+        error,
+    ):
+        return None
+    image = instruction.split()[1] if len(instruction.split()) > 1 else "the base image"
+    private = re.search(r"pull access denied|unauthorized|denied", error)
+    cause = (
+        f"The base image {image} cannot be pulled: the registry refused access (a private "
+        "repository needs `docker login` on the builder, or the name is wrong)."
+        if private
+        else f"The base image {image} does not exist: the registry has no such tag (or "
+        "repository), so the build stops before its first step."
+    )
+    return _hit(
+        "build_base_image_missing",
+        FailureType.DOCKER_BUILD,
+        finding=f"The base image {image} cannot be resolved.",
+        cause=cause,
+        fix=[
+            f"Correct the FROM line at {where}: check the tag exists (docker pull {image}, or "
+            "the image's tag list on its registry)",
+        ]
+        + (["Log the builder in to the registry, or use a public image"] if private else []),
+        certainty="high",
+        evidence=[f"build error: {error}", f"failing line: {instruction}"],
+    )
+
+
+_COPY_MISSING = re.compile(
+    r'"/?([^"]+)": not found|file not found in build context[^:]*: stat ([^:]+):|'
+    r"lstat [^:]*?/([^/:]+): no such file or directory"
+)
+
+
+@rule
+def build_copy_missing_file(v: EvidenceView) -> RuleHit | None:
+    instruction, where = _build_step(v)
+    error = v.build.get("error", "")
+    if not re.match(r"(COPY|ADD)\b", instruction, re.I):
+        return None
+    m = _COPY_MISSING.search(error)
+    if not m:
+        return None
+    path = next(g for g in m.groups() if g)
+    ignored = [w for w in v.build.get("warnings", []) if w.startswith("CopyIgnoredFile")]
+    if ignored:
+        return _hit(
+            "build_copy_missing_file",
+            FailureType.DOCKER_BUILD,
+            finding=f"{path} is excluded by .dockerignore.",
+            cause=f"{instruction.split()[0]} {path} fails because .dockerignore excludes it, so "
+            "the file is not in the build context even though it exists on disk.",
+            fix=[
+                f"Change .dockerignore so it no longer excludes {path} (or the directory it is "
+                "in), or stop copying it",
+            ],
+            certainty="high",
+            evidence=[f"build error: {error}", f"build warning: {ignored[0]}"],
+        )
+    return _hit(
+        "build_copy_missing_file",
+        FailureType.DOCKER_BUILD,
+        finding=f"{path} is not in the build context.",
+        cause=f"{instruction.split()[0]} {path} fails because the file is not in the build "
+        "context: COPY paths are relative to the context directory given to docker build (not "
+        "to the Dockerfile), and .dockerignore may exclude it.",
+        fix=[
+            f"Check {path} exists under the build context directory, and build from the right "
+            "directory (docker build -f path/Dockerfile <context>)",
+            "Check .dockerignore does not exclude it",
+        ],
+        certainty="medium",
+        evidence=[f"build error: {error}", f"failing line: {instruction} ({where})"],
+    )
+
+
+_PIP_NO_MATCH = re.compile(r"No matching distribution found for (\S+)")
+
+
+@rule
+def build_pip_version_missing(v: EvidenceView) -> RuleHit | None:
+    out = v.build_output
+    m = _PIP_NO_MATCH.search(out)
+    if not m:
+        return None
+    req = m.group(1)
+    package = re.split(r"[=<>!~\[;]", req, maxsplit=1)[0]
+    seen = next((u for u in v.build.get("pip_unavailable", []) if u["requirement"] == req), {})
+    if seen.get("newest"):
+        cause = (
+            f"requirements pin {req}, a version that does not exist on the package index "
+            f"(it lists {seen['versions']} versions of {package}; the newest release is "
+            f"{seen['newest']})."
+        )
+        fix = [
+            f"Change {req} in requirements.txt to an existing version, e.g. "
+            f"{package}=={seen['newest']}",
+        ]
+        certainty: Certainty = "high"
+    else:
+        python = v.build.get("python")
+        cause = (
+            f"pip finds no installable version of {package} at all: the name is wrong, the "
+            "package is on a private index the build cannot reach, or it has no release for "
+            f"this Python{f' ({python})' if python else ''} or platform."
+        )
+        fix = [
+            f"Check the name {package} in requirements.txt",
+            "If it is on a private index, pass --index-url (via a build secret, not an ARG)",
+        ]
+        certainty = "medium"
+    return _hit(
+        "build_pip_version_missing",
+        FailureType.DOCKER_BUILD,
+        finding=f"pip cannot find {req}.",
+        cause=cause,
+        fix=fix,
+        certainty=certainty,
+        evidence=[f"build output: {_line_containing(out, m.group(0))}"],
+    )
+
+
+_SOURCE_BUILD_FAILED = re.compile(
+    r"BackendUnavailable|subprocess-exited-with-error|Failed building wheel|Failed to build|"
+    r"metadata-generation-failed|Getting requirements to build wheel did not run successfully|"
+    r"error: command '[^']*(?:gcc|cc|g\+\+)' failed",
+)
+# A tag that moves: none, "latest", or only a major version ("3", "3-slim", "22-alpine").
+_FLOATING_TAG = re.compile(r"^(latest|\d+(-[a-z]+)?)$")
+
+
+@rule
+def build_dependency_source_build(v: EvidenceView) -> RuleHit | None:
+    """pip fell back to a source download, and building it failed."""
+    out = v.build_output
+    downloads = v.build.get("source_downloads", [])
+    m = _SOURCE_BUILD_FAILED.search(out)
+    if not downloads or not m:
+        return None
+    archive = downloads[0]
+    package, _, version = re.sub(r"\.(tar\.gz|zip|tar\.bz2)$", "", archive).rpartition("-")
+    python = v.build.get("python")
+    on = f"Python {python}" if python else "this Python"
+    images = v.build.get("base_images", [])
+    floating = [
+        i
+        for i in images
+        if ":" not in i.rsplit("/", 1)[-1] or _FLOATING_TAG.match(i.rsplit(":", 1)[1])
+    ]
+    cause = (
+        f"{package} {version} has no prebuilt wheel for {on}, so pip downloads the source "
+        f"({archive}) and building it fails."
+    )
+    fix = [f"Upgrade {package} to a release that ships wheels for {on}"]
+    if floating:
+        cause += (
+            f" The base image {floating[0]} is a floating tag that now gives {on}: nothing in "
+            "the Dockerfile changed, the base image did."
+        )
+        fix = [
+            f"Pin the base image to the Python version {package} {version} supports (e.g. "
+            f"python:3.11-slim) instead of the floating tag {floating[0]}",
+            *fix,
+        ]
+    else:
+        fix.append("Or install the build tools it needs (compiler, headers) before pip install")
+    return _hit(
+        "build_dependency_source_build",
+        FailureType.DOCKER_BUILD,
+        finding=f"Building {package} {version} from source fails.",
+        cause=cause,
+        fix=fix,
+        # The fallback to source and the failure are certain; the build's own error is not
+        # interpreted, so which part of the source build broke is not claimed.
+        certainty="medium",
+        evidence=[
+            f"build output: Downloading {archive}",
+            # The last matching line: in a traceback, the first is an outer frame ("raise X(").
+            f"build output: {_last_line_containing(out, _SOURCE_BUILD_FAILED)}",
+        ]
+        + ([f"base image: {floating[0]} (floating tag)"] if floating else []),
+    )
+
+
+@rule
+def build_network_unreachable(v: EvidenceView) -> RuleHit | None:
+    out = v.build_output
+    failures = dns_failures(out)
+    if not failures:
+        return None
+    host, line = failures[0]
+    instruction, where = _build_step(v)
+    lines = [ln.strip() for ln in out.splitlines() if ln.strip()]
+    # What the step printed after the failed lookup is fallout (tar on empty input, and so on).
+    after = lines[lines.index(line) + 1 :] if line in lines else []
+    cause = (
+        f"The build cannot resolve {host}, so the download in this step gets nothing. Builds "
+        "use the builder's network and DNS, not your shell's (VPN, proxy and internal DNS often "
+        "do not apply)."
+    )
+    if after:
+        cause += f' The errors after it ("{after[-1][:120]}") only follow from that.'
+    fix = [
+        f"Make {host} resolvable and reachable from the build (proxy build args, "
+        "docker build --network, or the builder's DNS)",
+        "Or put the file in the build context and COPY it instead of downloading it",
+    ]
+    if "|" in instruction:
+        fix.append("Add set -o pipefail to piped RUN steps, so the first failure fails the step")
+    return _hit(
+        "build_network_unreachable",
+        FailureType.DOCKER_BUILD,
+        finding=f"The build cannot resolve {host}.",
+        cause=cause,
+        fix=fix,
+        certainty="medium",
+        evidence=[f"build output: {line}", f"failing line: {instruction} ({where})"],
+    )
+
+
+@rule
+def build_command_not_found(v: EvidenceView) -> RuleHit | None:
+    out = v.build_output
+    m = re.search(
+        r"(?:/bin/(?:ba)?sh: (?:\d+: )?(?:line \d+: )?)([\w./-]+): (?:command )?not found", out
+    )
+    if not m or v.build.get("exit_code") not in (127, None):
+        return None
+    command = m.group(1)
+    images = ", ".join(v.build.get("base_images", [])) or "the base image"
+    return _hit(
+        "build_command_not_found",
+        FailureType.DOCKER_BUILD,
+        finding=f"{command} is not installed in the image at this step.",
+        cause=f"The step runs {command}, which is not installed in the image at that point "
+        f"({images}); slim and alpine images leave most tools out.",
+        fix=[
+            f"Install {command} in an earlier RUN step (apt-get install / apk add), or use a "
+            "base image that has it",
+            "In a multi-stage build, check the step runs in the stage that installed it",
+        ],
+        certainty="high",
+        evidence=[f"build output: {_line_containing(out, m.group(0))}"],
+    )
+
+
+@rule
+def build_apt_package_missing(v: EvidenceView) -> RuleHit | None:
+    out = v.build_output
+    m = re.search(r"E: (?:Unable to locate package |Package '?)([\w.+-]+)", out)
+    if not m:
+        return None
+    package = m.group(1)
+    instruction, _ = _build_step(v)
+    if "apt-get update" not in instruction and "apt update" not in instruction:
+        cause = (
+            f"apt cannot find {package} because this RUN step installs without running "
+            "apt-get update first; base images ship without package lists."
+        )
+        fix = ["Run apt-get update && apt-get install -y ... in the same RUN step"]
+        certainty: Certainty = "high"
+    else:
+        cause = (
+            f"apt has no package named {package} for this distribution release: the name is "
+            "wrong or it was renamed in the base image's Debian/Ubuntu version."
+        )
+        fix = [f"Check the package name for this release (apt-cache search {package})"]
+        certainty = "medium"
+    return _hit(
+        "build_apt_package_missing",
+        FailureType.DOCKER_BUILD,
+        finding=f"apt cannot locate {package}.",
+        cause=cause,
+        fix=fix,
+        certainty=certainty,
+        evidence=[f"build output: {_line_containing(out, m.group(0))}"],
+    )
+
+
+@rule
+def build_step_failed(v: EvidenceView) -> RuleHit | None:
+    """Fallback: quote the failing step's most severe output line."""
+    if not v.build:
+        return None
+    instruction, where = _build_step(v)
+    noise = re.compile(r"^\[notice\]|Ignored the following yanked versions")
+    errors = [ln for ln in _error_lines(v.build_output) if not noise.search(ln)]
+    line = errors[-1][:300] if errors else v.build.get("error", "no error line in the log")
+    return _hit(
+        "build_step_failed",
+        FailureType.DOCKER_BUILD,
+        finding=f"The build step {instruction or '?'} fails.",
+        cause=f"The step {instruction or '?'} ({where}) fails. Its most severe output line: "
+        f'"{line}"',
+        fix=[
+            "Fix what that line names, then rebuild",
+            "Rebuild with --progress=plain --no-cache to see the step's full output",
+        ],
+        certainty="low",
+        evidence=[f"build output: {line}"],
+    )
+
+
+# =============================================================================================
 # Workloads without pods
 # =============================================================================================
 
@@ -1232,6 +1555,10 @@ def _who_fails(v: EvidenceView) -> str:
 
 def _hit(rule_id: str, failure_type: FailureType, **kwargs) -> RuleHit:
     return RuleHit(rule=rule_id, failure_type=failure_type, **kwargs)
+
+
+def _last_line_containing(text: str, pattern: re.Pattern[str]) -> str:
+    return next((ln.strip()[:300] for ln in reversed(text.splitlines()) if pattern.search(ln)), "")
 
 
 def _line_containing(text: str, fragment: str) -> str:

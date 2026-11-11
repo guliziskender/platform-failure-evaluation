@@ -1,0 +1,11 @@
+# Ground truth for this broken build, scored by `pfa eval`. build.log is real `docker build
+# --progress=plain` output (refresh: uv run python lab/lab.py build-logs).
+build_log: build.log
+failure_type: docker_build
+symptom: docker build fails before the first step, loading the base image.
+root_cause: >-
+  The FROM line names python:3.12-slimm, a tag that does not exist (typo of 3.12-slim), so the
+  base image cannot be resolved.
+cause_keywords: [3.12-slimm, [not found, does not exist]]
+fix: Correct the FROM tag to python:3.12-slim.
+fix_keywords: [[FROM, tag, base image]]

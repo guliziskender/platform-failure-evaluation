@@ -51,9 +51,12 @@ class Case:
 
 
 def load_cases() -> list[Case]:
+    """The cases deployed to the cluster. Docker build cases have no workload: see build-logs."""
     cases = []
     for path in sorted(CASES_DIR.glob("*/expected.yaml")):
         exp = yaml.safe_load(path.read_text())
+        if exp.get("build_log"):
+            continue
         cases.append(
             Case(
                 id=path.parent.name,
@@ -301,6 +304,34 @@ def cmd_reset(args: argparse.Namespace) -> int:
     return cmd_up(args)
 
 
+def build_cases() -> list[Path]:
+    return sorted(p.parent for p in CASES_DIR.glob("*/Dockerfile"))
+
+
+def cmd_build_logs(_: argparse.Namespace) -> int:
+    """Re-run each broken Docker build and save its real output to cases/<id>/build.log.
+
+    Uses the local docker (no cluster). Every build is expected to fail; one that succeeds no
+    longer shows its case, and is reported. Needs network access for base images and packages.
+    """
+    tag = "pfa-lab-build:broken"
+    failed = 0
+    for case in build_cases():
+        result = subprocess.run(
+            ["docker", "build", "--no-cache", "--progress=plain", "-t", tag, str(case)],
+            capture_output=True,
+            text=True,
+            timeout=900,
+        )
+        if result.returncode == 0:
+            console.print(f"  [red]✗[/] {case.name}: the build succeeded, so it shows nothing")
+            failed += 1
+            continue
+        (case / "build.log").write_text(result.stdout + result.stderr)
+        console.print(f"  [green]✓[/] {(case / 'build.log').relative_to(LAB_DIR.parent)}")
+    return 1 if failed else 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="lab", description=__doc__.split("\n\n")[0])
     sub = parser.add_subparsers(dest="command", required=True)
@@ -319,6 +350,9 @@ def main(argv: list[str] | None = None) -> int:
     sub.add_parser(
         "snapshot", help="save each case's evidence to cases/<id>/evidence.json"
     ).set_defaults(func=cmd_snapshot)
+    sub.add_parser(
+        "build-logs", help="re-run the broken Docker builds, save cases/<id>/build.log"
+    ).set_defaults(func=cmd_build_logs)
     args = parser.parse_args(argv)
     return args.func(args)
 

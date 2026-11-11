@@ -24,10 +24,13 @@ pytestmark = pytest.mark.integration
 
 ROOT = Path(__file__).resolve().parents[2]
 NAMESPACE = "pfa-lab"
+# Pod cases only: Docker build cases (build_log) are not deployed; tests/test_docker_build.py
+# and tests/test_lab_cases.py cover them.
 CASES = {
     p.parent.name: yaml.safe_load(p.read_text())
     for p in sorted((ROOT / "lab" / "cases").glob("*/expected.yaml"))
 }
+CASES = {k: v for k, v in CASES.items() if not v.get("build_log")}
 FAKE_SECRET = "pfa-fake-secret-value"
 
 

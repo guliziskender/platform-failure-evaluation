@@ -43,6 +43,16 @@ class EvidenceView:
         return self.summary("k8s_state").get("pod")
 
     @cached_property
+    def build(self) -> dict[str, Any]:
+        """A Docker build log's summary (collectors/docker_build.py); {} for cluster targets."""
+        return self.summary("docker_build")
+
+    @property
+    def build_output(self) -> str:
+        """The failing build step's output (head and tail)."""
+        return self.excerpt("docker_build")
+
+    @cached_property
     def workload(self) -> dict[str, Any] | None:
         return self.summary("k8s_state").get("workload")
 

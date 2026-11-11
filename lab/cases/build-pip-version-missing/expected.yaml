@@ -1,0 +1,11 @@
+# Ground truth for this broken build, scored by `pfa eval`. build.log is real `docker build
+# --progress=plain` output (refresh: uv run python lab/lab.py build-logs).
+build_log: build.log
+failure_type: docker_build
+symptom: docker build fails at RUN pip install.
+root_cause: >-
+  requirements.txt pins requests==9.99.0, a version that does not exist on PyPI, so pip finds no
+  matching distribution.
+cause_keywords: [requests==9.99.0]
+fix: Pin an existing version of requests in requirements.txt (e.g. the latest 2.x).
+fix_keywords: [requirements.txt, requests]

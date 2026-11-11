@@ -14,6 +14,7 @@ from pfa.ai.providers.base import LLMProvider
 from pfa.ai.redact import redact_all, redact_evidence
 from pfa.ai.rules import answer_from_rules, run_rules
 from pfa.collectors.base import Collector, run_safely
+from pfa.collectors.docker_build import build_evidence
 from pfa.collectors.k8s_events import K8sEventsCollector
 from pfa.collectors.k8s_state import K8sStateCollector
 from pfa.collectors.logs import LogsCollector
@@ -71,6 +72,12 @@ def run_diagnosis(
 def answer(report: Report, provider: LLMProvider | None, budget_tokens: int = 6000) -> Report:
     """The rules answer, or the AI's when a provider is given (falls back to rules on failure)."""
     return explain(report, provider, budget_tokens) if provider else report
+
+
+def load_build_log(path: Path | None, text: str) -> tuple[Target, list[Evidence]]:
+    """A Docker build log as redacted evidence (path None = it came from stdin)."""
+    target, evidence = build_evidence(path, text)
+    return target, redact_all(evidence)
 
 
 def load_evidence(path: Path) -> tuple[Target, list[Evidence]]:

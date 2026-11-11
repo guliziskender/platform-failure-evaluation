@@ -42,7 +42,19 @@ pfa diagnose --from-evidence saved.json --no-llm                # replay `pfa co
 pfa collect memhog -n default
 pfa collect memhog -n default --output json
 pfa collect api --kind statefulset -n prod --context my-cluster
+
+# Diagnose a failed docker build (no cluster involved). Plain progress shows each step's output.
+docker build --progress=plain . 2>&1 | tee build.log
+pfa diagnose --build-log build.log --no-llm
+docker build --progress=plain . 2>&1 | pfa diagnose --build-log - --no-llm   # or from stdin
 ```
+
+For a build, `pfa` finds the failing step, its Dockerfile line and the output line that names
+the cause (often not the last one), and recognises: a file excluded by `.dockerignore` or outside
+the build context, a base image tag that does not exist, a pinned package version that does not
+exist, a dependency with no wheel for the image's Python (and a floating base tag such as
+`python:3` that moved), a host the build cannot resolve, a missing command or apt package.
+BuildKit and the legacy builder are both read.
 
 Example:
 
@@ -149,14 +161,16 @@ statefulsets.
 
 ## Broken-pod lab
 
-`make lab-up` deploys five deliberately broken apps (one per failure type) to the `pfa-lab`
-namespace of a local cluster; `make lab-down` removes them. See [lab/README.md](lab/README.md).
+`make lab-up` deploys 21 deliberately broken apps to the `pfa-lab` namespace of a local cluster;
+`make lab-down` removes them. Five broken Dockerfiles sit next to them, with their real `docker
+build` output (`uv run python lab/lab.py build-logs` re-captures it). See
+[lab/README.md](lab/README.md).
 
 ## Evaluation
 
-`pfa eval` scores diagnoses against 21 labelled lab cases: 15 standard ones (three per pod failure
-type) and 6 hard ones built to mislead (misleading logs, a red-herring event, two failures at once,
-causes outside the pod). Is the failure type right, does the cause state the key facts, does the fix? It also counts answers that
+`pfa eval` scores diagnoses against 26 labelled lab cases: 18 standard ones (three per failure
+type, Docker builds included) and 8 hard ones built to mislead (misleading logs, a red-herring
+event, two failures at once, causes outside the pod or the Dockerfile). Is the failure type right, does the cause state the key facts, does the fix? It also counts answers that
 were confident and wrong, since those do the most damage.
 
 ```bash
@@ -180,11 +194,17 @@ saved, because it would say the provider is down, not how good the answers are.
 
 Current results (2026-11-11, saved evidence):
 
-| Answered by | Standard (15) | Hard (6) | Confident and wrong | Seconds per case |
-| --- | --- | --- | --- | --- |
-| rules (`--no-llm`) | 15/15 | 6/6 | 0 | instant |
-| claude-opus-5-5 | 15/15 | 6/6 | 0 | 6 to 9 |
-| qwen3:8b via Ollama (local, Apple M5, 24 GB) | 15/15 | 6/6 | 0 | 15 to 65 |
+| Answered by | Standard (18) | Hard (8) | Of which Docker builds | Confident and wrong | Seconds per case |
+| --- | --- | --- | --- | --- | --- |
+| rules (`--no-llm`) | 18/18 | 8/8 | 5/5 | 0 | instant |
+| claude-opus-5-5 | 17/18 | 8/8 | 5/5 | 1 | 4 to 19 |
+| qwen3:8b via Ollama (local, Apple M5, 24 GB) | 18/18 | 8/8 | 5/5 | 0 | 19 to 44 |
+
+Opus's one miss is on a pod case it passed in three earlier runs (`crashloop-init-migration`):
+its answer was right, but its cause did not say the failing container is the `migrate` init
+container (its fix did). The answer key asks the cause to name it, and stays as it is. Model
+answers vary between runs; one run is one sample. The rules' build rules were written while
+reading the five build logs, so their 5/5 is not an unseen-case score; the models' is.
 
 The hard cases first scored rules 1/6, Opus 5/6 and qwen3:8b 4/6, with 3, 1 and 3 answers
 confident and wrong. Every miss pointed at something in pfa, not only in the answerers:

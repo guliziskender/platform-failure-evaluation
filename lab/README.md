@@ -37,6 +37,21 @@ and `make lab-status` shows which one. Uses only `busybox:1.36` and `polinux/str
 | `probe-readiness-404` | deployment/catalog-api | Failing probe | Readiness probe asks for `/ready`; app serves `/healthz` |
 | `probe-slow-start` | deployment/ledger-api | Failing probe | App needs 45 s to start; liveness probe kills it after a few seconds |
 
+### Docker build cases (`build_log: build.log`)
+
+A broken `Dockerfile` (with its build context) and `build.log`, the real output of
+`docker build --no-cache --progress=plain`. `uv run python lab/lab.py build-logs` re-runs them
+(needs network for base images and PyPI) and fails if one starts to succeed. Not deployed, and
+no cluster needed: replay and `--live` both diagnose the log.
+
+| Case | Failure | What is actually wrong |
+| --- | --- | --- |
+| `build-missing-context-file` | COPY fails | `.dockerignore` excludes `config/`, so `config/app.yaml` is not in the context |
+| `build-pip-version-missing` | RUN pip install fails | `requests==9.99.0` does not exist |
+| `build-base-image-typo` | FROM fails | Tag `python:3.12-slimm` does not exist |
+| `build-floating-base-image` (hard) | RUN pip install fails | `python:3` moved to 3.15; `numpy==1.24.4` has no wheel for it and its source build fails. The last error blames setuptools |
+| `build-download-dns` (hard) | RUN fails | `wget` cannot resolve the artifact host; the last errors are `tar`'s, on empty input |
+
 ### Hard cases (`difficulty: hard`)
 
 Each one has a trap, written down in its `expected.yaml` (`trap`). `pfa eval` scores them
@@ -74,6 +89,7 @@ cases/<case-id>/
 
 | Field | Used by |
 | --- | --- |
+| `build_log` | a Docker build case: the log file in the case folder (instead of `workload`) |
 | `workload`, `failure_type` | which app to diagnose and what failure it is |
 | `root_cause`, `fix` | the right answer, in words, for people reading the case |
 | `cause_keywords`, `fix_keywords` | what `pfa eval` looks for in the answer's cause and fix. A nested list accepts any of its alternatives |

@@ -24,6 +24,7 @@ class WorkloadKind(StrEnum):
     POD = "pod"
     DEPLOYMENT = "deployment"
     STATEFULSET = "statefulset"
+    BUILD = "build"  # a Docker build log, not a cluster object
 
 
 class OwnerRef(BaseModel):

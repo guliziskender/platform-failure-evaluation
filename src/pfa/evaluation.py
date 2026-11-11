@@ -28,6 +28,7 @@ from pfa.engine.orchestrator import (
     analyze,
     answer,
     default_collectors,
+    load_build_log,
     load_evidence,
     run_diagnosis,
 )
@@ -69,6 +70,9 @@ class EvalCase(BaseModel):
     fix_keywords: Keywords
     known_gap: str | None = None  # why the rules are expected to miss this case
     difficulty: Difficulty = "standard"
+    # A Docker build case: its log (real `docker build --progress=plain` output) is the
+    # evidence, in both modes. No cluster is involved, so live mode reads the same file.
+    build_log: str | None = None
 
 
 class CaseResult(BaseModel):
@@ -145,6 +149,8 @@ def replay(cases_dir: Path) -> Callable[[EvalCase], Report]:
     """Diagnose from each case's saved evidence: repeatable, and identical for every model."""
 
     def diagnose(case: EvalCase) -> Report:
+        if case.build_log:
+            return _from_build_log(cases_dir, case)
         try:
             return analyze(*load_evidence(cases_dir / case.id / "evidence.json"))
         except (OSError, ValueError, KeyError, TypeError, ValidationError) as exc:
@@ -153,10 +159,22 @@ def replay(cases_dir: Path) -> Callable[[EvalCase], Report]:
     return diagnose
 
 
-def live(clients: KubeClients, settings: Settings, namespace: str) -> Callable[[EvalCase], Report]:
+def _from_build_log(cases_dir: Path, case: EvalCase) -> Report:
+    path = cases_dir / case.id / (case.build_log or "build.log")
+    try:
+        return analyze(*load_build_log(path, path.read_text()))
+    except (OSError, ValueError) as exc:
+        raise EvalError(f"{case.id}: no usable build log ({exc})") from exc
+
+
+def live(
+    clients: KubeClients, settings: Settings, namespace: str, cases_dir: Path = Path("lab/cases")
+) -> Callable[[EvalCase], Report]:
     """Diagnose from the running lab: also exercises target selection and the collectors."""
 
     def diagnose(case: EvalCase) -> Report:
+        if case.build_log:
+            return _from_build_log(cases_dir, case)
         if case.workload is None:
             raise CaseError("expected.yaml names no workload")
         try:
