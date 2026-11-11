@@ -82,6 +82,7 @@ cases/<case-id>/
 | `rules_confidence` | optional: the confidence the rules should reach (default `high`) |
 | `ready_when` | `lab.py`: when the case counts as broken (`restarts_at_least`, `waiting_reason`, `last_terminated_reason`, `pod_condition_reason`) |
 | `evidence_must_contain` | integration tests: strings `pfa collect` output must contain, or the evidence is not enough to diagnose the case |
+| `logs_must_contain` | optional, integration tests: strings that must be in the collected logs themselves (a container's command often echoes the same text) |
 
 ## Adding a case
 

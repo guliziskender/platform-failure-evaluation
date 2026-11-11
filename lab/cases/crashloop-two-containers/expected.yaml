@@ -16,5 +16,8 @@ fix: >-
   worker.yaml at /etc/cart).
 fix_keywords: [REDIS_URL, worker.yaml]
 ready_when: {restarts_at_least: 2}
-# Both containers' logs, whichever of the two pfa picks first (it depends on which crashed last).
-evidence_must_contain: ["REDIS_URL", "worker.yaml", ": previous container ==="]
+evidence_must_contain: ["REDIS_URL", "worker.yaml"]
+# Both containers' crash output, read from the logs. Which container pfa picks first depends on
+# which crashed last, and whether a crash is under "previous" or "current" depends on timing.
+logs_must_contain:
+  ["REDIS_URL is not set", "open /etc/cart/worker.yaml: no such file or directory"]

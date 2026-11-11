@@ -717,3 +717,10 @@ it (pmset log); every request was still 15 to 65 s, and none timed out. Long loc
 
 **Next:** the hard cases are all passing now, so they no longer find weaknesses. The next
 honest signal needs new cases written before any fix (or real failures from step 4).
+- CI's kind run failed the two-container evidence check twice. First it assumed api is picked
+  before worker (it depends on which crashed last). Then it required a "previous" log section,
+  but on kind the worker had just exited and its previous instance was already gone, so its crash
+  was under "current". Reproduced on the local kind cluster; pfa's evidence was right both times.
+  The check was wrong: it now uses a new `logs_must_contain` field, which searches only the
+  collected logs (every line these lab apps print is also in their command, so searching all
+  the evidence proves nothing).

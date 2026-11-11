@@ -75,6 +75,11 @@ def test_collect_finds_the_evidence(case_id):
     text = json.dumps(out)
     missing = [s for s in expected["evidence_must_contain"] if s not in text]
     assert not missing, f"evidence for {case_id} lacks {missing}"
+    # Strings that must be in the collected logs: a container's spec often holds the same text
+    # (its command echoes it), so searching all the evidence would not prove logs were read.
+    logs = "".join(e.get("raw_excerpt") or "" for e in out["evidence"] if e["source"] == "logs")
+    missing = [s for s in expected.get("logs_must_contain", []) if s not in logs]
+    assert not missing, f"logs for {case_id} lack {missing}"
     assert FAKE_SECRET not in text
 
 
