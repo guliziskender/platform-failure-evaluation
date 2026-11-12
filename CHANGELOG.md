@@ -3,6 +3,14 @@
 Install a release: `helm install pfa oci://ghcr.io/guliziskender/charts/pfa --version <version>`.
 Image: `ghcr.io/guliziskender/pfa:<version>`. Detail for each change: `docs/log.md`.
 
+## 0.3.1 (2026-11-12)
+
+- Fix: upgrading an existing install to 0.3.0 with `helm upgrade --reuse-values` (as the guide
+  said) failed with "nil pointer evaluating ... networkPolicy", even with the policy off:
+  `--reuse-values` keeps the old release's values, which have no `networkPolicy`, and does not
+  apply the new chart's defaults. The chart now fills them in. The guide now upgrades with
+  `--reset-then-reuse-values` (Helm 3.14+). Fresh installs of 0.3.0 were not affected.
+
 ## 0.3.0 (2026-11-12)
 
 - `pfa diagnose --build-log FILE` (or `-` for stdin) diagnoses a failed `docker build`: the

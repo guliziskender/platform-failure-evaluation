@@ -803,3 +803,12 @@ diagnosed the PVC case from inside Docker Desktop's cluster.
 **What broke / surprised**
 - Running `make test-helm` twice in a row failed: teardown deletes the namespace without
   waiting, and the next install hit it while it terminated. Setup now waits for it.
+
+**0.3.0 had an upgrade bug; fixed in 0.3.1.** The release check (install 0.2.0 from the
+registry, upgrade as the guide says) failed: `--reuse-values` keeps the old release's values
+and skips the new chart's defaults, so `networkPolicy` was nil and the templates (and the
+validation helper) failed on it, policy enabled or not. The 0.1.0 -> 0.2.0 upgrade only worked
+because 0.2.0 added no values. Now the templates read the policy through a helper that merges
+defaults (`pfa.networkPolicy`); a test renders with those values missing and compares the result
+with the full defaults; the guide uses `--reset-then-reuse-values`. Lesson: every new chart
+value is an upgrade risk, and the release check must upgrade, not just install.

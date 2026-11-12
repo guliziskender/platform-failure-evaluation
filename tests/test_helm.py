@@ -278,3 +278,16 @@ def test_network_policy_opens_the_ai_provider_port():
     )
     (policy,) = kinds(ollama, "NetworkPolicy")
     assert _egress_ports(policy)[-1] == {8080}
+
+
+def test_an_upgrade_that_reuses_old_values_still_renders():
+    # `helm upgrade --reuse-values` from a release before 0.3.0 has no networkPolicy values at
+    # all: the 0.3.0 chart failed on exactly that ("nil pointer evaluating ...enabled").
+    docs = render("networkPolicy=null")
+    assert kinds(docs, "Deployment") and not kinds(docs, "NetworkPolicy")
+    # Enabling it on such a release: only what the user passes, every other key missing.
+    missing = ("dns", "apiServer.ports", "aiTo", "extraEgress")
+    nulls = [f"networkPolicy.{key}=null" for key in missing]
+    (old_values,) = kinds(render(*nulls, *_NP), "NetworkPolicy")
+    (new_values,) = kinds(render(*_NP), "NetworkPolicy")
+    assert old_values == new_values  # the template's defaults match values.yaml

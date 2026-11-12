@@ -27,6 +27,28 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end -}}
 {{- end -}}
 
+{{/*
+networkPolicy values with defaults filled in. `helm upgrade --reuse-values` keeps the old
+release's values without the new chart's defaults, so a release from before 0.3.0 has no
+networkPolicy at all; templates read it through here. Must match values.yaml (tests/test_helm.py).
+*/}}
+{{- define "pfa.networkPolicyDefaults" -}}
+enabled: false
+apiServer:
+  cidrs: []
+  ports: [443, 6443]
+dns:
+  namespaceSelector: {kubernetes.io/metadata.name: kube-system}
+  podSelector: {k8s-app: kube-dns}
+aiTo: []
+extraEgress: []
+{{- end -}}
+
+{{- define "pfa.networkPolicy" -}}
+{{- $defaults := include "pfa.networkPolicyDefaults" . | fromYaml -}}
+{{- toYaml (mergeOverwrite $defaults (deepCopy (.Values.networkPolicy | default dict))) -}}
+{{- end -}}
+
 {{- define "pfa.validate" -}}
 {{- $provider := .Values.ai.provider -}}
 {{- if not (has $provider (list "none" "anthropic" "ollama")) -}}
@@ -41,7 +63,8 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- if and (eq .Values.rbac.scope "namespaces") (not .Values.rbac.namespaces) -}}
 {{- fail "rbac.scope=namespaces needs rbac.namespaces: the namespaces pfa may read" -}}
 {{- end -}}
-{{- if and .Values.networkPolicy.enabled (not .Values.networkPolicy.apiServer.cidrs) -}}
+{{- $np := include "pfa.networkPolicy" . | fromYaml -}}
+{{- if and $np.enabled (not $np.apiServer.cidrs) -}}
 {{- fail "networkPolicy.enabled needs networkPolicy.apiServer.cidrs, the API server's real addresses: kubectl get endpointslice -n default -l kubernetes.io/service-name=kubernetes -o jsonpath='{.items[0].endpoints[*].addresses[*]}'" -}}
 {{- end -}}
 {{- end -}}

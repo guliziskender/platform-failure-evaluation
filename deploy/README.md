@@ -23,7 +23,9 @@ escalation, all Linux capabilities dropped, and the runtime's default seccomp pr
 
 ## Prerequisites
 
-- Kubernetes 1.25 or later, and Helm 3.8 or later.
+- Kubernetes 1.25 or later, and Helm 3.14 or later. Upgrades below use
+  `--reset-then-reuse-values`: it keeps your settings and applies the new chart's defaults.
+  (`--reuse-values` keeps only the old ones; it works with pfa's chart from 0.3.1 on.)
 - Nothing else: the chart and the image are published on GitHub's registry by CI
   (`.github/workflows/ci.yml`) for every release tag, after the tests, a Helm install and a
   live eval have passed on a kind cluster:
@@ -35,8 +37,8 @@ escalation, all Linux capabilities dropped, and the runtime's default seccomp pr
   `--set image.repository=registry.example.com/platform/pfa`:
 
   ```bash
-  docker build -t registry.example.com/platform/pfa:0.3.0 .
-  docker push registry.example.com/platform/pfa:0.3.0
+  docker build -t registry.example.com/platform/pfa:0.3.1 .
+  docker push registry.example.com/platform/pfa:0.3.1
   ```
 
   From a checkout, `deploy/helm/pfa` works wherever the commands below say
@@ -47,7 +49,7 @@ escalation, all Linux capabilities dropped, and the runtime's default seccomp pr
 ## Install (rules only: nothing leaves the cluster)
 
 ```bash
-helm install pfa oci://ghcr.io/guliziskender/charts/pfa --version 0.3.0 -n pfa --create-namespace
+helm install pfa oci://ghcr.io/guliziskender/charts/pfa --version 0.3.1 -n pfa --create-namespace
 ```
 
 Diagnose a workload from the small toolbox pod the chart runs:
@@ -60,7 +62,7 @@ kubectl -n pfa exec deploy/pfa -- pfa diagnose checkout-api -n shop -o markdown
 Or run one diagnosis as a Job and read its output:
 
 ```bash
-helm upgrade pfa oci://ghcr.io/guliziskender/charts/pfa --version 0.3.0 -n pfa --reuse-values \
+helm upgrade pfa oci://ghcr.io/guliziskender/charts/pfa --version 0.3.1 -n pfa --reset-then-reuse-values \
   --set diagnose.name=checkout-api --set diagnose.namespace=shop
 kubectl -n pfa logs -l app.kubernetes.io/instance=pfa --tail=-1
 ```
@@ -71,7 +73,7 @@ For teams that do not grant cluster-wide read access: a Role and RoleBinding in 
 namespace, and no ClusterRole.
 
 ```bash
-helm install pfa oci://ghcr.io/guliziskender/charts/pfa --version 0.3.0 -n pfa --create-namespace \
+helm install pfa oci://ghcr.io/guliziskender/charts/pfa --version 0.3.1 -n pfa --create-namespace \
   --set rbac.scope=namespaces --set 'rbac.namespaces={shop,payments}'
 ```
 
@@ -88,7 +90,7 @@ the key into the pod's environment.
 
 ```bash
 kubectl -n pfa create secret generic pfa-anthropic --from-literal=ANTHROPIC_API_KEY=sk-ant-...
-helm upgrade pfa oci://ghcr.io/guliziskender/charts/pfa --version 0.3.0 -n pfa --reuse-values \
+helm upgrade pfa oci://ghcr.io/guliziskender/charts/pfa --version 0.3.1 -n pfa --reset-then-reuse-values \
   --set ai.provider=anthropic --set ai.existingSecret=pfa-anthropic --set ai.sendData=true
 ```
 
@@ -97,7 +99,7 @@ Without `ai.sendData=true`, pfa refuses to send anything and answers from its ru
 ### Ollama in your cluster (the model also runs in your cluster)
 
 ```bash
-helm upgrade pfa oci://ghcr.io/guliziskender/charts/pfa --version 0.3.0 -n pfa --reuse-values \
+helm upgrade pfa oci://ghcr.io/guliziskender/charts/pfa --version 0.3.1 -n pfa --reset-then-reuse-values \
   --set ai.provider=ollama --set ai.ollamaUrl=http://ollama.ollama.svc:11434 \
   --set ai.model=qwen3:8b --set ai.sendData=true
 ```
@@ -116,7 +118,7 @@ server's real addresses: policies see those, not the `kubernetes` Service IP.
 ```bash
 kubectl get endpointslice -n default -l kubernetes.io/service-name=kubernetes \
   -o jsonpath='{.items[0].endpoints[*].addresses[*]}'      # e.g. 172.18.0.3
-helm upgrade pfa oci://ghcr.io/guliziskender/charts/pfa --version 0.3.0 -n pfa --reuse-values \
+helm upgrade pfa oci://ghcr.io/guliziskender/charts/pfa --version 0.3.1 -n pfa --reset-then-reuse-values \
   --set networkPolicy.enabled=true --set 'networkPolicy.apiServer.cidrs={172.18.0.3/32}'
 ```
 

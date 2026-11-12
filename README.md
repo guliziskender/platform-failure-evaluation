@@ -18,7 +18,7 @@ pfa --help
 ## Run in a cluster (Helm)
 
 ```bash
-helm install pfa oci://ghcr.io/guliziskender/charts/pfa --version 0.3.0 -n pfa --create-namespace
+helm install pfa oci://ghcr.io/guliziskender/charts/pfa --version 0.3.1 -n pfa --create-namespace
 kubectl -n pfa exec deploy/pfa -- pfa diagnose checkout-api -n shop
 ```
 
