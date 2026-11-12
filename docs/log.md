@@ -779,3 +779,27 @@ diagnosed the PVC case from inside Docker Desktop's cluster.
   never named `migrate` (the fix did). That key stays: the cause should say where to look.
   Widening keys after every miss would empty the score. One run is one sample.
 - The qwen run was wrapped in `caffeinate -i` and took 14 minutes.
+
+## 2026-11-12: NetworkPolicy; released 0.3.0
+
+**Done**
+- `templates/networkpolicy.yaml` (off by default): no ingress; egress to kube-dns on 53, the API
+  server's real addresses on 443/6443, and the AI provider (443 for anthropic, the port in
+  `ai.ollamaUrl` for ollama; `networkPolicy.aiTo` narrows where to). Enabling it without
+  `networkPolicy.apiServer.cidrs` fails with the command that finds them.
+- Render tests for each rule; a live test in `make test-helm`: with the policy, pfa diagnoses
+  a lab case and resolves `kubernetes.default.svc`, and a connection to 1.1.1.1:443 is blocked,
+  after checking it is open without the policy (else a block would prove nothing). A plugin
+  that does not enforce policies skips locally and fails in CI. Mutation-checked live: with
+  DNS on port 54 the test fails.
+- Released 0.3.0: `--build-log` and the NetworkPolicy.
+
+**Decisions**
+- Off by default: the API server's address cannot be found by the chart (policies apply after
+  the kubernetes Service is translated to it), and a wrong value breaks pfa.
+- No hostname filtering for Anthropic: NetworkPolicy has none. Said so in the guide, with
+  `aiTo` for an egress proxy or fixed ranges.
+
+**What broke / surprised**
+- Running `make test-helm` twice in a row failed: teardown deletes the namespace without
+  waiting, and the next install hit it while it terminated. Setup now waits for it.

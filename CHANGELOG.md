@@ -3,7 +3,7 @@
 Install a release: `helm install pfa oci://ghcr.io/guliziskender/charts/pfa --version <version>`.
 Image: `ghcr.io/guliziskender/pfa:<version>`. Detail for each change: `docs/log.md`.
 
-## Unreleased
+## 0.3.0 (2026-11-12)
 
 - `pfa diagnose --build-log FILE` (or `-` for stdin) diagnoses a failed `docker build`: the
   failing step, its Dockerfile line, and the output line that names the cause. BuildKit and the
@@ -12,6 +12,12 @@ Image: `ghcr.io/guliziskender/pfa:<version>`. Detail for each change: `docs/log.
   (naming a floating base tag such as `python:3`), hosts the build cannot resolve, missing
   commands and apt packages. `pfa collect --build-log` shows the parsed evidence.
 - Five Docker build lab cases with real build logs (`lab.py build-logs`); the eval has 26 cases.
+  Rules, claude-opus-5-5 and qwen3:8b: 26/26, 25/26 and 26/26.
+- Helm: optional NetworkPolicy (`networkPolicy.enabled`): no inbound traffic; outbound only to
+  DNS, the API server and the configured AI provider. `make test-helm` checks a live cluster
+  enforces it.
+
+**Upgrading from 0.2.0:** nothing to do; the NetworkPolicy is off unless enabled.
 
 ## 0.2.0 (2026-11-11)
 

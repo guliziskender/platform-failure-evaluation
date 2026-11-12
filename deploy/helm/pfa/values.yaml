@@ -47,6 +47,27 @@ diagnose:
   noLlm: false
   ttlSecondsAfterFinished: 3600
 
+# Optional NetworkPolicy for pfa's pods: no inbound traffic at all (pfa serves nothing), and
+# outbound only to DNS, the Kubernetes API server and, if a provider is set, the AI provider.
+# Needs a network plugin that enforces NetworkPolicy (Calico, Cilium, recent kindnet, ...).
+networkPolicy:
+  enabled: false
+  apiServer:
+    # Required when enabled. Policies see the API server's real address, not the kubernetes
+    # Service IP:
+    #   kubectl get endpointslice -n default -l kubernetes.io/service-name=kubernetes \
+    #     -o jsonpath='{.items[0].endpoints[*].addresses[*]}'
+    cidrs: []  # e.g. [172.18.0.3/32]
+    ports: [443, 6443]
+  dns:
+    namespaceSelector: {kubernetes.io/metadata.name: kube-system}
+    podSelector: {k8s-app: kube-dns}
+  # Where AI traffic may go. NetworkPolicy cannot filter by hostname, so the default for
+  # anthropic is any address on 443; narrow it with ipBlocks or an egress proxy's selector.
+  # For ollama: the port in ai.ollamaUrl, to any address unless set here.
+  aiTo: []
+  extraEgress: []  # more egress rules, as written in a NetworkPolicy
+
 resources:
   requests: {cpu: 10m, memory: 96Mi}
   limits: {memory: 256Mi}

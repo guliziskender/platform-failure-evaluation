@@ -24,7 +24,7 @@ Send them `deploy/README.md` ("What pfa can access" and "What data leaves the cl
 ```bash
 kubectl config current-context        # the right cluster?
 kubectl auth can-i create clusterrole # or ask the owner to run the install
-helm install pfa oci://ghcr.io/guliziskender/charts/pfa --version 0.2.0 -n pfa --create-namespace
+helm install pfa oci://ghcr.io/guliziskender/charts/pfa --version 0.3.0 -n pfa --create-namespace
 #   only some namespaces: --set rbac.scope=namespaces --set 'rbac.namespaces={team-a,team-b}'
 #   own registry:         --set image.repository=<registry>/pfa
 kubectl -n pfa rollout status deploy/pfa

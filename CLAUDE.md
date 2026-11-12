@@ -76,7 +76,8 @@ uv run ruff check . && uv run ruff format .
   a build target has `WorkloadKind.BUILD`, never looked up in a cluster). Events keep
   the target pod's own events at any age; only owner events are cut to the time window.
 - `deploy/helm/pfa/`: Helm chart. Read-only RBAC (`templates/rbac.yaml`), toolbox Deployment
-  to `kubectl exec` into, optional diagnose Job. The API key only ever comes from a Secret the
+  to `kubectl exec` into, optional diagnose Job, optional NetworkPolicy (`networkpolicy.yaml`:
+  no ingress; egress to DNS, the API server's real addresses, the AI provider). The API key only ever comes from a Secret the
   user creates. `tests/test_helm.py` checks the RBAC equals the API calls in `src/`.
   `deploy/README.md` is the install guide. `Dockerfile` at the root: non-root, read-only rootfs.
 - `.github/workflows/ci.yml`: `checks` (lint, unit tests, chart tests, rules eval

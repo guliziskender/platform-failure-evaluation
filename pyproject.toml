@@ -1,6 +1,6 @@
 [project]
 name = "platform-failure-assistant"
-version = "0.2.0"
+version = "0.3.0"
 description = "Diagnose Kubernetes and Docker failures in plain language"
 readme = "README.md"
 requires-python = ">=3.12"

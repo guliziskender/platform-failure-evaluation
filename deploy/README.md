@@ -35,8 +35,8 @@ escalation, all Linux capabilities dropped, and the runtime's default seccomp pr
   `--set image.repository=registry.example.com/platform/pfa`:
 
   ```bash
-  docker build -t registry.example.com/platform/pfa:0.2.0 .
-  docker push registry.example.com/platform/pfa:0.2.0
+  docker build -t registry.example.com/platform/pfa:0.3.0 .
+  docker push registry.example.com/platform/pfa:0.3.0
   ```
 
   From a checkout, `deploy/helm/pfa` works wherever the commands below say
@@ -47,7 +47,7 @@ escalation, all Linux capabilities dropped, and the runtime's default seccomp pr
 ## Install (rules only: nothing leaves the cluster)
 
 ```bash
-helm install pfa oci://ghcr.io/guliziskender/charts/pfa --version 0.2.0 -n pfa --create-namespace
+helm install pfa oci://ghcr.io/guliziskender/charts/pfa --version 0.3.0 -n pfa --create-namespace
 ```
 
 Diagnose a workload from the small toolbox pod the chart runs:
@@ -60,7 +60,7 @@ kubectl -n pfa exec deploy/pfa -- pfa diagnose checkout-api -n shop -o markdown
 Or run one diagnosis as a Job and read its output:
 
 ```bash
-helm upgrade pfa oci://ghcr.io/guliziskender/charts/pfa --version 0.2.0 -n pfa --reuse-values \
+helm upgrade pfa oci://ghcr.io/guliziskender/charts/pfa --version 0.3.0 -n pfa --reuse-values \
   --set diagnose.name=checkout-api --set diagnose.namespace=shop
 kubectl -n pfa logs -l app.kubernetes.io/instance=pfa --tail=-1
 ```
@@ -71,7 +71,7 @@ For teams that do not grant cluster-wide read access: a Role and RoleBinding in 
 namespace, and no ClusterRole.
 
 ```bash
-helm install pfa oci://ghcr.io/guliziskender/charts/pfa --version 0.2.0 -n pfa --create-namespace \
+helm install pfa oci://ghcr.io/guliziskender/charts/pfa --version 0.3.0 -n pfa --create-namespace \
   --set rbac.scope=namespaces --set 'rbac.namespaces={shop,payments}'
 ```
 
@@ -88,7 +88,7 @@ the key into the pod's environment.
 
 ```bash
 kubectl -n pfa create secret generic pfa-anthropic --from-literal=ANTHROPIC_API_KEY=sk-ant-...
-helm upgrade pfa oci://ghcr.io/guliziskender/charts/pfa --version 0.2.0 -n pfa --reuse-values \
+helm upgrade pfa oci://ghcr.io/guliziskender/charts/pfa --version 0.3.0 -n pfa --reuse-values \
   --set ai.provider=anthropic --set ai.existingSecret=pfa-anthropic --set ai.sendData=true
 ```
 
@@ -97,7 +97,7 @@ Without `ai.sendData=true`, pfa refuses to send anything and answers from its ru
 ### Ollama in your cluster (the model also runs in your cluster)
 
 ```bash
-helm upgrade pfa oci://ghcr.io/guliziskender/charts/pfa --version 0.2.0 -n pfa --reuse-values \
+helm upgrade pfa oci://ghcr.io/guliziskender/charts/pfa --version 0.3.0 -n pfa --reuse-values \
   --set ai.provider=ollama --set ai.ollamaUrl=http://ollama.ollama.svc:11434 \
   --set ai.model=qwen3:8b --set ai.sendData=true
 ```
@@ -105,6 +105,27 @@ helm upgrade pfa oci://ghcr.io/guliziskender/charts/pfa --version 0.2.0 -n pfa -
 `sendData` is still required: the evidence leaves pfa's pod for another service, and pfa cannot
 verify where a URL leads, so it only treats `localhost` as local. An 8B model on CPU is slow:
 raise `ai.timeoutSeconds` if diagnoses fall back to the rules with "did not answer within".
+
+## Limit pfa's network traffic (optional)
+
+A NetworkPolicy that allows no inbound traffic at all and outbound only to DNS, the Kubernetes
+API server and, when a provider is set, the AI provider. It needs a network plugin that enforces
+NetworkPolicy (Calico, Cilium, recent kindnet and most managed clusters' options), and the API
+server's real addresses: policies see those, not the `kubernetes` Service IP.
+
+```bash
+kubectl get endpointslice -n default -l kubernetes.io/service-name=kubernetes \
+  -o jsonpath='{.items[0].endpoints[*].addresses[*]}'      # e.g. 172.18.0.3
+helm upgrade pfa oci://ghcr.io/guliziskender/charts/pfa --version 0.3.0 -n pfa --reuse-values \
+  --set networkPolicy.enabled=true --set 'networkPolicy.apiServer.cidrs={172.18.0.3/32}'
+```
+
+- DNS goes to `kube-dns` pods in `kube-system` (`networkPolicy.dns.*` to change).
+- Anthropic: port 443 to any address, because NetworkPolicy cannot filter by hostname. To pin
+  it to an egress proxy or fixed ranges, set `networkPolicy.aiTo` (NetworkPolicy peers).
+- Ollama: the port in `ai.ollamaUrl`; `networkPolicy.aiTo` can name its namespace.
+- `make test-helm` checks it on a live cluster: pfa still diagnoses and resolves names, and a
+  connection to an outside address is blocked (and was open without the policy).
 
 ## What data leaves the cluster, and when
 

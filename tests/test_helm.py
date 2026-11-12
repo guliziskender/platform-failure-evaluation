@@ -213,6 +213,7 @@ def test_job_runs_the_diagnosis_and_is_named_after_it():
         (("ai.provider=gemini",), "must be none, anthropic or ollama"),
         (("rbac.scope=namespaces",), "needs rbac.namespaces"),
         (("rbac.scope=everything",), "must be cluster or namespaces"),
+        (("networkPolicy.enabled=true",), "needs networkPolicy.apiServer.cidrs"),
     ],
 )
 def test_bad_values_fail_with_a_clear_message(sets, message):
@@ -232,3 +233,48 @@ def test_versions_agree_and_the_default_image_is_the_published_one():
     assert chart["version"] == chart["appVersion"] == project
     (spec,) = pod_specs(render())
     assert spec["containers"][0]["image"] == f"ghcr.io/guliziskender/pfa:{project}"
+
+
+# --- network policy -------------------------------------------------------------------------
+
+_NP = ("networkPolicy.enabled=true", "networkPolicy.apiServer.cidrs={172.18.0.3/32}")
+
+
+def _egress_ports(policy: dict) -> list[set[int]]:
+    return [{p["port"] for p in rule["ports"]} for rule in policy["spec"]["egress"]]
+
+
+def test_no_network_policy_unless_enabled():
+    assert not kinds(render(), "NetworkPolicy")
+
+
+def test_network_policy_denies_ingress_and_allows_only_dns_and_the_api_server():
+    (policy,) = kinds(render(*_NP), "NetworkPolicy")
+    spec = policy["spec"]
+    assert spec["policyTypes"] == ["Ingress", "Egress"] and spec["ingress"] == []
+    assert spec["podSelector"]["matchLabels"] == {
+        "app.kubernetes.io/name": "pfa",
+        "app.kubernetes.io/instance": "t",
+    }
+    assert _egress_ports(policy) == [{53}, {443, 6443}]  # no AI provider: nothing else
+    assert spec["egress"][1]["to"] == [{"ipBlock": {"cidr": "172.18.0.3/32"}}]
+    # It selects the pods it is meant for, toolbox and Job alike.
+    docs = render(*_NP, "diagnose.name=x")
+    labels = [
+        d["spec"]["template"]["metadata"]["labels"]
+        for d in docs
+        if d["kind"] in ("Deployment", "Job")
+    ]
+    assert all(spec["podSelector"]["matchLabels"].items() <= lbl.items() for lbl in labels)
+
+
+def test_network_policy_opens_the_ai_provider_port():
+    anthropic = render(*_NP, "ai.provider=anthropic", "ai.existingSecret=k", "ai.sendData=true")
+    (policy,) = kinds(anthropic, "NetworkPolicy")
+    assert _egress_ports(policy)[-1] == {443}
+    assert "to" not in policy["spec"]["egress"][-1]  # any address: no hostname filtering
+    ollama = render(
+        *_NP, "ai.provider=ollama", "ai.ollamaUrl=http://ollama.ai.svc:8080", "ai.sendData=true"
+    )
+    (policy,) = kinds(ollama, "NetworkPolicy")
+    assert _egress_ports(policy)[-1] == {8080}

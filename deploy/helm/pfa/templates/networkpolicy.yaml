@@ -1,0 +1,57 @@
+{{- /*
+Optional (networkPolicy.enabled). No ingress; egress only to DNS, the API server and the AI
+provider. tests/test_helm.py checks the rules; make test-helm checks a live plugin enforces them.
+*/ -}}
+{{- if .Values.networkPolicy.enabled }}
+{{- include "pfa.validate" . }}
+{{- $np := .Values.networkPolicy }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "pfa.fullname" . }}
+  labels:
+    {{- include "pfa.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "pfa.selectorLabels" . | nindent 6 }}
+  policyTypes: [Ingress, Egress]
+  ingress: []
+  egress:
+    # DNS
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              {{- toYaml $np.dns.namespaceSelector | nindent 14 }}
+          podSelector:
+            matchLabels:
+              {{- toYaml $np.dns.podSelector | nindent 14 }}
+      ports:
+        - {protocol: UDP, port: 53}
+        - {protocol: TCP, port: 53}
+    # Kubernetes API server
+    - to:
+        {{- range $np.apiServer.cidrs }}
+        - ipBlock: {cidr: {{ . | quote }}}
+        {{- end }}
+      ports:
+        {{- range $np.apiServer.ports }}
+        - {protocol: TCP, port: {{ . }}}
+        {{- end }}
+    {{- if ne .Values.ai.provider "none" }}
+    # AI provider ({{ .Values.ai.provider }})
+    {{- $port := 443 }}
+    {{- if eq .Values.ai.provider "ollama" }}
+    {{- $port = (regexFind ":[0-9]+" (.Values.ai.ollamaUrl | trimPrefix "http://" | trimPrefix "https://") | trimPrefix ":" | default "11434") }}
+    {{- end }}
+    - ports:
+        - {protocol: TCP, port: {{ $port }}}
+      {{- with $np.aiTo }}
+      to:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- end }}
+    {{- with $np.extraEgress }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+{{- end }}

@@ -41,6 +41,9 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- if and (eq .Values.rbac.scope "namespaces") (not .Values.rbac.namespaces) -}}
 {{- fail "rbac.scope=namespaces needs rbac.namespaces: the namespaces pfa may read" -}}
 {{- end -}}
+{{- if and .Values.networkPolicy.enabled (not .Values.networkPolicy.apiServer.cidrs) -}}
+{{- fail "networkPolicy.enabled needs networkPolicy.apiServer.cidrs, the API server's real addresses: kubectl get endpointslice -n default -l kubernetes.io/service-name=kubernetes -o jsonpath='{.items[0].endpoints[*].addresses[*]}'" -}}
+{{- end -}}
 {{- end -}}
 
 {{/* The pod spec shared by the toolbox Deployment and the diagnose Job. */}}

@@ -18,13 +18,14 @@ pfa --help
 ## Run in a cluster (Helm)
 
 ```bash
-helm install pfa oci://ghcr.io/guliziskender/charts/pfa --version 0.2.0 -n pfa --create-namespace
+helm install pfa oci://ghcr.io/guliziskender/charts/pfa --version 0.3.0 -n pfa --create-namespace
 kubectl -n pfa exec deploy/pfa -- pfa diagnose checkout-api -n shop
 ```
 
 Read-only by design: get/list/watch on `pods`, `pods/log`, `events`, `persistentvolumeclaims`,
 `deployments`, `replicasets` and `statefulsets`, and nothing else (no Secrets, no writes). A per-namespace
-variant is one flag. The chart and a multi-arch image are published to ghcr.io by CI for
+variant is one flag, and an optional NetworkPolicy limits pfa to DNS, the API server and the AI
+provider. The chart and a multi-arch image are published to ghcr.io by CI for
 every release, after the tests pass on a kind cluster. Nothing leaves the cluster unless you set a provider and `ai.sendData=true`.
 Full guide, including the data table and uninstall: [deploy/README.md](deploy/README.md).
 
