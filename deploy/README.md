@@ -46,6 +46,11 @@ escalation, all Linux capabilities dropped, and the runtime's default seccomp pr
   minikube), `make image` builds `pfa:dev` and loads it into the cluster directly; then install
   with `--set image.repository=pfa --set image.tag=dev --set image.pullPolicy=Never`.
 
+Before installing on a cluster you do not run, `deploy/preflight.sh` (from a checkout) checks
+it read-only: whether you may create what the chart creates, Pod Security levels and policy
+engines, whether NetworkPolicy is enforced and the API server's addresses, and which pods are
+failing. It changes nothing. The chart meets Pod Security "restricted".
+
 ## Install (rules only: nothing leaves the cluster)
 
 ```bash

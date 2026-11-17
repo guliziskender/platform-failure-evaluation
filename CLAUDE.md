@@ -2,7 +2,8 @@
 
 CLI that diagnoses Kubernetes and Docker failures in plain language. Full plan: `implementation.md`
 (design) and `docs/plan.md` (summary). Build log: `docs/log.md`, so add an entry when a task lands.
-Milestone 4 (first install on a cluster I do not control): `docs/field-test.md`.
+Milestone 4 (first install on a cluster I do not control): `docs/field-test.md`, results in
+`docs/field-test-results.md`, read-only checks first with `deploy/preflight.sh`.
 
 ## Commands
 

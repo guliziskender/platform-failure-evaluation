@@ -812,3 +812,26 @@ because 0.2.0 added no values. Now the templates read the policy through a helpe
 defaults (`pfa.networkPolicy`); a test renders with those values missing and compares the result
 with the full defaults; the guide uses `--reset-then-reuse-values`. Lesson: every new chart
 value is an upgrade risk, and the release check must upgrade, not just install.
+
+## 2026-11-17: Ready for the field test on a cloud cluster
+
+The field test will be on a cloud cluster (EKS, GKE or AKS), not a local one.
+
+**Done**
+- `deploy/preflight.sh`: read-only checks before installing: context, cloud (from the node's
+  providerID), node architectures, `auth can-i` for everything the chart creates and for
+  `pods/exec`, Pod Security labels, policy-engine webhooks, quotas, a NetworkPolicy enforcer in
+  kube-system, the API server's addresses (with each cloud's caveat), and pods failing now.
+  Each check survives a "forbidden": a guest often cannot list nodes or webhooks.
+- Installed the published 0.3.1 chart into a namespace enforcing Pod Security "restricted" on
+  Docker Desktop: Running, no warnings. Most managed clusters' policies start from that level.
+- `docs/field-test.md`: a message to send the owner, a cloud table (credentials,
+  NetworkPolicy enforcement, API server addresses, ghcr.io pulls behind private subnets), and
+  a can-i check that also expects "no" for ConfigMaps. `docs/field-test-results.md`: the sheet.
+
+**Decisions**
+- The NetworkPolicy is left out of the first install: on EKS the API server's addresses change
+  on control-plane updates and on AKS it may be reached through a tunnel, so a /32 that works
+  today can cut pfa off later. Added only if the owner asks, with the subnet CIDR.
+- The pre-flight is a shell script, not a `pfa` command: it runs before pfa is installed, with
+  the guest's own rights, and asks about write permissions pfa itself never has.
