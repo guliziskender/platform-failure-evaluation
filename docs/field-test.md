@@ -58,11 +58,11 @@ egress locked down.
 ## 3. Install (10 minutes)
 
 ```bash
-helm install pfa oci://ghcr.io/guliziskender/charts/pfa --version 0.3.1 -n pfa --create-namespace --wait
+helm install pfa oci://ghcr.io/guliziskender/charts/pfa --version 0.3.2 -n pfa --create-namespace --wait
 #   only some namespaces: --set rbac.scope=namespaces --set 'rbac.namespaces={team-a,team-b}'
 #   own registry:         --set image.repository=<registry>/pfa
 kubectl -n pfa get pods
-kubectl -n pfa exec deploy/pfa -- pfa --version     # pfa 0.3.1
+kubectl -n pfa exec deploy/pfa -- pfa --version     # pfa 0.3.2
 ```
 
 If the pod is not Running: `kubectl -n pfa describe pod -l app.kubernetes.io/name=pfa` and

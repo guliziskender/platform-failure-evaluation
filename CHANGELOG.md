@@ -3,6 +3,26 @@
 Install a release: `helm install pfa oci://ghcr.io/guliziskender/charts/pfa --version <version>`.
 Image: `ghcr.io/guliziskender/pfa:<version>`. Detail for each change: `docs/log.md`.
 
+## 0.3.2 (2026-11-18)
+
+Fixes from the first run on a cloud cluster (GKE Autopilot 1.36):
+
+- A Pending pod on an autoscaling cluster: pfa now reads the cluster autoscaler's events. A
+  failed scale-up is the cause ("GCE quota exceeded" names the quota to check, per cloud),
+  even while a new attempt runs; a scale-up with no failure says wait. It used to answer "no
+  node has enough free cpu, memory", true of the current nodes but not the cause.
+- A cluster with no nodes ("no nodes available to schedule pods") is diagnosed as that (high),
+  not blamed on the pod.
+- A pod that is scheduled now is no longer called Pending because of older FailedScheduling
+  events; a FailedCreate followed by a successful create is no longer blamed.
+- A workload that does not exist: the error says to look at the `kubectl apply` / `helm
+  install` output, since one refused by an admission policy leaves nothing in the cluster.
+- `deploy/preflight.sh`: read-only checks before installing on someone else's cluster.
+- Docs: Autopilot notes in the install guide; the can-i check in `docs/field-test.md` now works
+  in zsh.
+
+No chart changes; upgrade with `--reset-then-reuse-values` as before.
+
 ## 0.3.1 (2026-11-12)
 
 - Fix: upgrading an existing install to 0.3.0 with `helm upgrade --reuse-values` (as the guide
