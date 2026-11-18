@@ -22,19 +22,24 @@ echo "  context  $ctx"
 echo "  server   $server"
 version=$(kubectl version -o json 2>/dev/null | sed -n 's/.*"gitVersion": "\(v[^"]*\)".*/\1/p' | tail -1)
 if [[ -n "$version" ]]; then echo "  version  $version"; else bad "cannot reach the API server"; fi
-provider=$(kubectl get nodes -o jsonpath='{.items[0].spec.providerID}' 2>/dev/null)
-case "$provider" in
-  aws://*)   cloud=eks ;;
-  gce://*)   cloud=gke ;;
-  azure://*) cloud=aks ;;
-  "")        cloud=unknown ;;
-  *)         cloud=other ;;
+# A new autoscaling cluster (GKE Autopilot) can have no nodes yet: an empty list, not an error.
+nodes_ok=1
+nodes=$(kubectl get nodes -o jsonpath='{range .items[*]}{.spec.providerID} {.status.nodeInfo.architecture}{"\n"}{end}' \
+  2>/dev/null) || nodes_ok=0
+provider=$(head -1 <<<"$nodes" | cut -d' ' -f1)
+case "$provider:$version" in
+  aws://*|*-eks-*)   cloud=eks ;;
+  gce://*|*-gke.*)   cloud=gke ;;
+  azure://*)         cloud=aks ;;
+  :*)                cloud=unknown ;;
+  *)                 cloud=other ;;
 esac
 echo "  cloud    $cloud${provider:+ ($provider)}" | cut -c1-100
-arches=$(kubectl get nodes -o jsonpath='{.items[*].status.nodeInfo.architecture}' 2>/dev/null \
-  | tr ' ' '\n' | sort -u | tr '\n' ' ')
-if [[ -z "$arches" ]]; then
+arches=$(awk 'NF {print $2}' <<<"$nodes" | sort -u | tr '\n' ' ')
+if (( ! nodes_ok )); then
   warn "cannot list nodes (fine for pfa, which never reads nodes)"
+elif [[ -z "$arches" ]]; then
+  warn "no nodes yet: an autoscaling cluster adds them when pods need them (a few minutes)"
 elif [[ "$arches" =~ ^((amd64|arm64)\ )+$ ]]; then
   ok "node architectures: $arches(the image has amd64 and arm64)"
 else

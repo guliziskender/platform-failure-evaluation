@@ -652,3 +652,89 @@ def test_answer_with_the_same_cause_twice_names_it_once():
     hit = _crash_hit("Same cause.", "high")
     d = rules.answer_from_rules(cls, [hit], "container api", [("container worker", hit)])
     assert d.likely_cause == "Same cause."
+
+
+# --- found on real clusters (tests/fixtures/field) ------------------------------------------
+
+
+def _replay(name: str):
+    from pathlib import Path
+
+    from pfa.engine.orchestrator import analyze, load_evidence
+
+    return analyze(*load_evidence(Path(__file__).parent / "fixtures" / "field" / name))
+
+
+def test_gke_autopilot_without_nodes_blames_the_missing_nodes_not_the_passed_quota_error():
+    report = _replay("gke_autopilot_no_nodes.json")
+    assert report.diagnosis.failure_type is FailureType.PENDING
+    assert report.diagnosis.confidence == "high"
+    assert "the cluster has no nodes" in report.diagnosis.likely_cause
+    assert "workload_failed_create" not in [h.rule for h in report.rule_hits]
+
+
+def test_no_nodes_with_a_scale_up_says_wait():
+    view = make_view(
+        pod={"phase": "Pending"},
+        events=[
+            {"reason": "FailedScheduling", "message": "no nodes available to schedule pods"},
+            {
+                "type": "Normal",
+                "reason": "TriggeredScaleUp",
+                "message": "pod triggered scale-up: [{pool-1 0->1 (max: 3)}]",
+            },
+        ],
+    )
+    hit = rules.pending_no_nodes(view)
+    assert hit.certainty == "high"
+    assert hit.fix[0].startswith("Wait a few minutes")
+    assert any("pool-1 0->1" in e for e in hit.evidence)
+
+
+def test_nodes_that_exist_but_do_not_fit_are_not_no_nodes():
+    view = make_view(
+        pod={"phase": "Pending"},
+        events=[
+            {
+                "reason": "FailedScheduling",
+                "message": "0/3 nodes are available: 3 node(s) were unschedulable.",
+            }
+        ],
+    )
+    assert rules.pending_no_nodes(view) is None
+
+
+def _failed_create(last_seen: str) -> dict:
+    return {
+        "reason": "FailedCreate",
+        "object": "ReplicaSet/app-1",
+        "message": "Error creating: insufficient quota to match these scopes",
+        "last_seen": last_seen,
+    }
+
+
+def _created(last_seen: str) -> dict:
+    return {
+        "type": "Normal",
+        "reason": "SuccessfulCreate",
+        "object": "ReplicaSet/app-1",
+        "message": "Created pod: app-1-x",
+        "last_seen": last_seen,
+    }
+
+
+def test_failed_create_followed_by_a_pod_is_not_the_cause():
+    view = make_view(
+        has_pod=False,
+        events=[_failed_create("2026-11-18T13:27:49+00:00"), _created("2026-11-18T13:27:50+00:00")],
+    )
+    assert rules.workload_failed_create(view) is None
+
+
+def test_failed_create_after_a_pod_was_created_still_counts():
+    # e.g. replica 1 created, then the quota ran out for replica 2
+    view = make_view(
+        has_pod=False,
+        events=[_failed_create("2026-11-18T13:30:00+00:00"), _created("2026-11-18T13:27:50+00:00")],
+    )
+    assert rules.workload_failed_create(view).rule == "workload_failed_create"

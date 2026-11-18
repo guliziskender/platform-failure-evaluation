@@ -835,3 +835,34 @@ The field test will be on a cloud cluster (EKS, GKE or AKS), not a local one.
   today can cut pfa off later. Added only if the owner asks, with the subnet CIDR.
 - The pre-flight is a shell script, not a `pfa` command: it runs before pfa is installed, with
   the guest's own rights, and asks about write permissions pfa itself never has.
+
+## 2026-11-18: Rehearsal on GKE Autopilot: the first real-cluster miss
+
+A cluster I created myself (GKE Autopilot 1.36, europe-west1), so a rehearsal for milestone 4,
+not the milestone. The first pod pfa looked at, two minutes after the cluster was created, it
+got wrong.
+
+**The miss.** A new Autopilot cluster has no nodes until pods need them, so every system pod
+was Pending. pfa diagnosed kube-dns as "the controller cannot create pods: insufficient quota"
+(medium). The events said otherwise: the ReplicaSet's 8 FailedCreate (13:27:47-49) were GKE's
+`gcp-critical-pods` quota being set up at the same moment, and at 13:27:50 the same ReplicaSet
+created this very pod. Since then, only "no nodes available to schedule pods".
+
+**Fixes**
+- `workload_failed_create` skips a FailedCreate followed by a SuccessfulCreate from the same
+  controller (`_created_since`); one after the last success still counts (quota running out at
+  replica 2).
+- New `pending_no_nodes` (high): kube-scheduler says "no nodes available to schedule pods" only
+  when the node list is empty (NotReady, tainted or cordoned nodes still give "0/N nodes are
+  available"), so the message pins the cause. The fix says wait only with a TriggeredScaleUp
+  event; otherwise it says check the nodes, and that an autoscaling cluster takes minutes.
+- The evidence is a fixture (`tests/fixtures/field/`, project ID replaced), replayed in
+  `tests/test_rules.py`. Mutation-checked: removing either fix fails its tests.
+- `deploy/preflight.sh` said "cannot list nodes" for an empty node list and "cloud unknown";
+  it now tells the two apart, and reads the cloud from the server version (`-gke.`, `-eks-`)
+  when there is no node.
+
+**Lessons**
+- An event about a pod's owner can describe an earlier attempt, not this pod. Rules that read
+  owner events should check whether a later event undid them.
+- No lab case: kind cannot run with zero nodes. Field fixtures cover shapes the lab cannot make.

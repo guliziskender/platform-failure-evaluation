@@ -372,6 +372,41 @@ def _total_request(v: EvidenceView, resource: str) -> tuple[float, list[str]]:
 
 
 @rule
+def pending_no_nodes(v: EvidenceView) -> RuleHit | None:
+    # kube-scheduler says exactly this only when the node list is empty: NotReady, tainted or
+    # cordoned nodes are still listed and give "0/N nodes are available: ..." instead.
+    message = _scheduler_message(v)
+    if "no nodes available to schedule pods" not in message:
+        return None
+    evidence = [f"scheduler: {message}"]
+    if scale_up := v.events_where("TriggeredScaleUp"):
+        evidence.append(f"event TriggeredScaleUp: {scale_up[0]['message']}")
+        fix = [
+            "Wait a few minutes: the cluster autoscaler is adding a node for this pod "
+            "(event TriggeredScaleUp)",
+            "If the pod stays Pending, check the new node: kubectl get nodes, and the "
+            "autoscaler's events",
+        ]
+    else:
+        fix = [
+            "Check the nodes: kubectl get nodes",
+            "On an autoscaling cluster (GKE Autopilot, Karpenter, the cluster autoscaler) the "
+            "first node takes a few minutes: wait, then run pfa again",
+            "Otherwise add nodes or a node pool",
+        ]
+    return _hit(
+        "pending_no_nodes",
+        FailureType.PENDING,
+        finding="The cluster has no nodes to schedule pods on.",
+        cause=f'The scheduler has no node at all to place pods on ("{message}"): the cluster '
+        "has no nodes. Every pod waits, not just this one; the pod itself is not the problem.",
+        fix=fix,
+        certainty="high",
+        evidence=evidence,
+    )
+
+
+@rule
 def pending_insufficient_resources(v: EvidenceView) -> RuleHit | None:
     message = _scheduler_message(v)
     # Resource names may contain dots (nvidia.com/gpu); the sentence's full stop must not stick.
@@ -1512,7 +1547,7 @@ def build_step_failed(v: EvidenceView) -> RuleHit | None:
 @rule
 def workload_failed_create(v: EvidenceView) -> RuleHit | None:
     events = v.events_where("FailedCreate")
-    if not events:
+    if not events or _created_since(v, events[0]):
         return None
     message = events[0]["message"]
     if "exceeded quota" in message:
@@ -1542,6 +1577,19 @@ def workload_failed_create(v: EvidenceView) -> RuleHit | None:
 
 
 # --- helpers ------------------------------------------------------------------------------
+
+
+def _created_since(v: EvidenceView, failed: dict) -> bool:
+    """The same controller created a pod after this FailedCreate: the error has passed.
+
+    Seen on a new GKE Autopilot cluster: ReplicaSets fail on a quota that is still being set
+    up, then create the pod two seconds later. That pod is the one being diagnosed.
+    """
+    failed_at = failed.get("last_seen")
+    return bool(failed_at) and any(
+        e.get("object") == failed.get("object") and (e.get("last_seen") or "") > failed_at
+        for e in v.events_where("SuccessfulCreate")
+    )
 
 
 def _who_fails(v: EvidenceView) -> str:
