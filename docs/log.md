@@ -910,3 +910,12 @@ of the three nodes, but not the cause on an autoscaling cluster.
   autoscaler's view on top.
 - State moves while pfa reads it. Two runs a minute apart gave different answers; the rule has
   to be right at every moment in between, so tests take the in-between states from real logs.
+
+### Same day: the two cases GKE refused
+
+`pfa diagnose` on a workload that does not exist now says where to look: if `kubectl apply`
+or `helm install` failed, the reason is in that command's output ("denied the request": an
+admission policy). A Deployment refused at admission leaves no object, pod or event, so this
+is all pfa can say from the cluster. Reading the apply output itself (`--apply-log`, like
+`--build-log`) is a candidate for the integrations step. `lab/README.md` notes which cases
+behave differently on Autopilot.

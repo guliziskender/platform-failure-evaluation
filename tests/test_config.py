@@ -276,3 +276,4 @@ def test_not_found_names_the_kube_context(monkeypatch):
     result = invoke("diagnose", "memhog", "--context", "kind-pfa-dev", "--no-llm")
     assert result.exit_code == 1
     assert "(kube context: kind-pfa-dev)" in result.output
+    assert "denied the request" in result.output  # a workload refused at admission never exists

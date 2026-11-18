@@ -458,7 +458,15 @@ def _connect_and_resolve(
     except KubeConfigError as exc:
         _fail(str(exc), code=2)
     except TargetNotFound as exc:
-        _fail(f"{exc} (kube context: {_context_name(settings)})", code=1)
+        # Seen on GKE Autopilot: an admission webhook refused the Deployment itself, so there is
+        # no object, no pod and no event in the cluster; the reason is only in apply's output.
+        _fail(
+            f"{exc} (kube context: {_context_name(settings)}). If `kubectl apply` or "
+            "`helm install` failed for it, the reason is in that command's output, not in the "
+            'cluster: look for "denied the request" (an admission policy, e.g. GKE Autopilot, '
+            "Pod Security, Kyverno or Gatekeeper refused it).",
+            code=1,
+        )
     except ApiException as exc:
         if exc.status == 403:
             _fail(

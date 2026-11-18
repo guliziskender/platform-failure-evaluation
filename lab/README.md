@@ -108,3 +108,17 @@ cases/<case-id>/
    picked up automatically, and `make eval` scores it.
 
 Every real failure you meet in the wild is a candidate for a new case.
+
+## On a cloud cluster
+
+The lab is written for kind and Docker Desktop. On GKE Autopilot (tried on 1.36, with
+`PFA_LAB_ALLOW_CONTEXT=1` on a throwaway cluster), two cases are refused at `kubectl apply` by
+GKE's admission webhook, so they never exist in the cluster:
+
+- `pending-cpu-units`: Autopilot first raises memory to match 4000 cores (4000Gi), then refuses
+  a pod larger than any node it can create.
+- `pending-node-selector`: Autopilot creates the nodes and allows only its own node-selector
+  keys; `hardware` can never match.
+
+`oomkilled-sidecar` may stay Pending there instead of being OOM-killed, if the project's quota
+stops the autoscaler from adding a node. Its answer key does not apply then.
