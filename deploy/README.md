@@ -51,6 +51,12 @@ it read-only: whether you may create what the chart creates, Pod Security levels
 engines, whether NetworkPolicy is enforced and the API server's addresses, and which pods are
 failing. It changes nothing. The chart meets Pod Security "restricted".
 
+On GKE Autopilot (tested on 1.36): the install warns that Autopilot raised the CPU request
+(to 50m, its minimum); that is expected. On a new cluster with no workloads yet there are no
+nodes, so pfa's pod waits 2 to 5 minutes for Autopilot to add one (`kubectl -n pfa get events`
+shows TriggeredScaleUp). Autopilot also counts each node's boot disk against the project's
+SSD_TOTAL_GB quota; a new project's 500 GB fills at about three nodes.
+
 ## Install (rules only: nothing leaves the cluster)
 
 ```bash

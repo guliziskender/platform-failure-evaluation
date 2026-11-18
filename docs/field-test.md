@@ -71,10 +71,18 @@ If the pod is not Running: `kubectl -n pfa describe pod -l app.kubernetes.io/nam
 Check it is as read-only as promised, with the API server's own answer:
 
 ```bash
-SA=system:serviceaccount:pfa:pfa
-for v in "get pods" "get pods/log" "list events" "get secrets" "get configmaps" "delete pods" "create pods/exec"; do
-  echo "$v: $(kubectl auth can-i $v -n default --as $SA)"
-done
+# one check per line; works in bash and zsh (zsh does not split "$v" into words)
+while read -r verb res; do
+  echo "$verb $res: $(kubectl auth can-i "$verb" "$res" -n default --as system:serviceaccount:pfa:pfa)"
+done <<'EOF'
+get pods
+get pods/log
+list events
+get secrets
+get configmaps
+delete pods
+create pods/exec
+EOF
 # yes, yes, yes, no, no, no, no
 ```
 

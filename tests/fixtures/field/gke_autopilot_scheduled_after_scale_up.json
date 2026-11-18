@@ -1,0 +1,407 @@
+{
+  "target": {
+    "namespace": "kube-system",
+    "name": "kube-dns",
+    "kind": "deployment",
+    "pod": "kube-dns-644bdc699b-bdp7d",
+    "container": "kubedns",
+    "also_failing": [],
+    "owners": [
+      {
+        "kind": "ReplicaSet",
+        "name": "kube-dns-644bdc699b"
+      },
+      {
+        "kind": "Deployment",
+        "name": "kube-dns"
+      }
+    ]
+  },
+  "evidence": [
+    {
+      "source": "k8s_state",
+      "summary": {
+        "workload": {
+          "kind": "deployment",
+          "name": "kube-dns",
+          "replicas_desired": 1,
+          "replicas_ready": 1,
+          "replicas_updated": 1,
+          "replicas_available": 1,
+          "generation": 1,
+          "observed_generation": 1,
+          "conditions": [
+            {
+              "type": "Available",
+              "status": "True",
+              "reason": "MinimumReplicasAvailable",
+              "message": "Deployment has minimum availability.",
+              "last_update": "2026-11-18T13:38:52+00:00"
+            },
+            {
+              "type": "Progressing",
+              "status": "True",
+              "reason": "NewReplicaSetAvailable",
+              "message": "ReplicaSet \"kube-dns-644bdc699b\" has successfully progressed.",
+              "last_update": "2026-11-18T13:38:52+00:00"
+            }
+          ]
+        },
+        "pod": {
+          "name": "kube-dns-644bdc699b-bdp7d",
+          "phase": "Running",
+          "node": "gk3-pfa-test-nap-1xw6b70k-1b39104c-h659",
+          "qos_class": "Burstable",
+          "created": "2026-11-18T13:27:50+00:00",
+          "started": "2026-11-18T13:38:19+00:00",
+          "conditions": [
+            {
+              "type": "PodReadyToStartContainers",
+              "status": "True"
+            },
+            {
+              "type": "Initialized",
+              "status": "True"
+            },
+            {
+              "type": "Ready",
+              "status": "True"
+            },
+            {
+              "type": "ContainersReady",
+              "status": "True"
+            },
+            {
+              "type": "PodScheduled",
+              "status": "True"
+            }
+          ],
+          "init_containers": [
+            {
+              "name": "token-broker-adc-init",
+              "image": "europe-west1-artifactregistry.gcr.io/gke-release/gke-release/node_token_broker/init:gke_node_token_broker_init_20260806.00_p0@sha256:cad0ef7ed512d508cb5c77d8603c5b4182a9389375907472746165433bb42d70",
+              "command": [
+                "/node_token_broker_init",
+                "--audience=https://container.googleapis.com/v1/projects/95377944283/locations/europe-west1/clusters/pfa-test/generateClusterNodeAgentToken",
+                "--token_url=<REDACTED:token>",
+                "--token_file=<REDACTED:token>",
+                "--output_path=/var/run/token_broker/adc/google-application-credentials.json",
+                "--project_id=example-project"
+              ],
+              "mounts": [
+                "/var/run/token_broker/adc",
+                "/var/run/secrets/kubernetes.io/serviceaccount"
+              ],
+              "ready": true,
+              "started": false,
+              "restart_count": 0,
+              "state": {
+                "terminated": {
+                  "reason": "Completed",
+                  "exit_code": 0,
+                  "started_at": "2026-11-18T13:38:37+00:00",
+                  "finished_at": "2026-11-18T13:38:37+00:00"
+                }
+              },
+              "image_id": "europe-west1-artifactregistry.gcr.io/gke-release/gke-release/node_token_broker/init@sha256:cad0ef7ed512d508cb5c77d8603c5b4182a9389375907472746165433bb42d70"
+            }
+          ],
+          "containers": [
+            {
+              "name": "kubedns",
+              "image": "europe-west1-artifactregistry.gcr.io/gke-release/gke-release/kubedns:v0.0.7-gke.1@sha256:b2e9370c81891c5a932adf441d050b88e9aa3491b5d9eb178db08656c1a431c6",
+              "args": [
+                "--basecorefile=/etc/coredns/Corefile.base",
+                "--conf=/etc/Corefile",
+                "--corefile=/etc/Corefile",
+                "--kubednscm=/kube-dns-config"
+              ],
+              "ports": [
+                "dns=53/UDP",
+                "dns-tcp=53/TCP"
+              ],
+              "resources": {
+                "requests": {
+                  "cpu": "100m",
+                  "memory": "70Mi"
+                },
+                "limits": {
+                  "memory": "210Mi"
+                }
+              },
+              "probes": {
+                "liveness": {
+                  "http_get": "HTTP /health port=8080",
+                  "initial_delay_seconds": 60,
+                  "period_seconds": 10,
+                  "timeout_seconds": 5,
+                  "failure_threshold": 5
+                },
+                "readiness": {
+                  "http_get": "HTTP /ready port=8181",
+                  "initial_delay_seconds": 3,
+                  "period_seconds": 10,
+                  "timeout_seconds": 5,
+                  "failure_threshold": 3
+                }
+              },
+              "mounts": [
+                "/kube-dns-config",
+                "/etc/coredns",
+                "/var/run/secrets/kubernetes.io/serviceaccount"
+              ],
+              "ready": true,
+              "started": true,
+              "restart_count": 0,
+              "state": {
+                "running": {
+                  "started_at": "2026-11-18T13:38:47+00:00"
+                }
+              },
+              "image_id": "europe-west1-artifactregistry.gcr.io/gke-release/gke-release/kubedns@sha256:b2e9370c81891c5a932adf441d050b88e9aa3491b5d9eb178db08656c1a431c6"
+            },
+            {
+              "name": "kubedns-metrics-collector",
+              "image": "europe-west1-artifactregistry.gcr.io/gke-release/gke-release/gke-metrics-collector:20260806_2300_RC0@sha256:b136d6d8eb587ac10f657cbcca539dd82bb6dd8b76bc91cd1a2c3f08fafe07b8",
+              "resources": {
+                "requests": {
+                  "cpu": "10m",
+                  "memory": "45Mi"
+                },
+                "limits": {
+                  "cpu": "1",
+                  "memory": "45Mi"
+                }
+              },
+              "env_names": [
+                "GOMAXPROCS",
+                "COLLECTOR_CONFIG_PATH",
+                "SPLIT_GAUGE_BUFFER",
+                "PROJECT_NUMBER",
+                "LOCATION",
+                "CLUSTER_NAME",
+                "POD_NAMESPACE",
+                "NODE_NAME",
+                "POD_NAME",
+                "CONTAINER_NAME",
+                "COMPONENT_VERSION",
+                "COMPONENT_NAME",
+                "TOKEN_SOURCE_MODE",
+                "GKE_NODE_SYSTEM_WORKLOAD_CREDENTIALS",
+                "GKE_HOSTNAME"
+              ],
+              "mounts": [
+                "/conf",
+                "/var/run/token_broker/ksa",
+                "/var/run/token_broker/adc",
+                "/var/run/secrets/kubernetes.io/serviceaccount"
+              ],
+              "ready": true,
+              "started": true,
+              "restart_count": 0,
+              "state": {
+                "running": {
+                  "started_at": "2026-11-18T13:38:52+00:00"
+                }
+              },
+              "image_id": "europe-west1-artifactregistry.gcr.io/gke-release/gke-release/gke-metrics-collector@sha256:b136d6d8eb587ac10f657cbcca539dd82bb6dd8b76bc91cd1a2c3f08fafe07b8"
+            }
+          ],
+          "scheduling": {
+            "node_selector": {
+              "kubernetes.io/os": "linux"
+            },
+            "tolerations": [
+              {
+                "key": "CriticalAddonsOnly",
+                "operator": "Exists"
+              },
+              {
+                "key": "components.gke.io/gke-managed-components",
+                "operator": "Exists"
+              },
+              {
+                "key": "kubernetes.io/arch",
+                "operator": "Equal",
+                "effect": "NoSchedule"
+              }
+            ],
+            "has_affinity": true,
+            "priority_class": "system-cluster-critical"
+          }
+        }
+      },
+      "raw_excerpt": null,
+      "error": null,
+      "collected_at": "2026-11-18T13:39:50.835988Z",
+      "redacted": true,
+      "redactions": {
+        "token": 2
+      }
+    },
+    {
+      "source": "k8s_events",
+      "summary": {
+        "window_minutes": 60,
+        "objects": [
+          "Pod/kube-dns-644bdc699b-bdp7d",
+          "ReplicaSet/kube-dns-644bdc699b",
+          "Deployment/kube-dns"
+        ],
+        "total": 14,
+        "events": [
+          {
+            "type": "Warning",
+            "reason": "FailedScheduling",
+            "object": "Pod/kube-dns-644bdc699b-bdp7d",
+            "message": "no nodes available to schedule pods",
+            "count": 58,
+            "first_seen": "2026-11-18T13:27:50+00:00",
+            "last_seen": "2026-11-18T13:37:52+00:00"
+          },
+          {
+            "type": "Warning",
+            "reason": "FailedCreate",
+            "object": "ReplicaSet/kube-dns-644bdc699b",
+            "message": "Error creating: insufficient quota to match these scopes: [{PriorityClass In [system-node-critical system-cluster-critical]}]",
+            "count": 8,
+            "first_seen": "2026-11-18T13:27:47+00:00",
+            "last_seen": "2026-11-18T13:27:49+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "Started",
+            "object": "Pod/kube-dns-644bdc699b-bdp7d",
+            "message": "Container started",
+            "count": 3,
+            "first_seen": "2026-11-18T13:38:37+00:00",
+            "last_seen": "2026-11-18T13:38:52+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "Created",
+            "object": "Pod/kube-dns-644bdc699b-bdp7d",
+            "message": "Container created",
+            "count": 3,
+            "first_seen": "2026-11-18T13:38:36+00:00",
+            "last_seen": "2026-11-18T13:38:51+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "Pulled",
+            "object": "Pod/kube-dns-644bdc699b-bdp7d",
+            "message": "Successfully pulled image \"europe-west1-artifactregistry.gcr.io/gke-release/gke-release/gke-metrics-collector:20260806_2300_RC0@sha256:b136d6d8eb587ac10f657cbcca539dd82bb6dd8b76bc91cd1a2c3f08fafe07b8\" in 1.582s (3.258s including waiting). Image size: 38334119 bytes.",
+            "count": 1,
+            "first_seen": "2026-11-18T13:38:51+00:00",
+            "last_seen": "2026-11-18T13:38:51+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "Pulling",
+            "object": "Pod/kube-dns-644bdc699b-bdp7d",
+            "message": "Pulling image \"europe-west1-artifactregistry.gcr.io/gke-release/gke-release/gke-metrics-collector:20260806_2300_RC0@sha256:b136d6d8eb587ac10f657cbcca539dd82bb6dd8b76bc91cd1a2c3f08fafe07b8\"",
+            "count": 1,
+            "first_seen": "2026-11-18T13:38:48+00:00",
+            "last_seen": "2026-11-18T13:38:48+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "Pulled",
+            "object": "Pod/kube-dns-644bdc699b-bdp7d",
+            "message": "Successfully pulled image \"europe-west1-artifactregistry.gcr.io/gke-release/gke-release/kubedns:v0.0.7-gke.1@sha256:b2e9370c81891c5a932adf441d050b88e9aa3491b5d9eb178db08656c1a431c6\" in 958ms (6.086s including waiting). Image size: 36086709 bytes.",
+            "count": 1,
+            "first_seen": "2026-11-18T13:38:47+00:00",
+            "last_seen": "2026-11-18T13:38:47+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "Pulling",
+            "object": "Pod/kube-dns-644bdc699b-bdp7d",
+            "message": "Pulling image \"europe-west1-artifactregistry.gcr.io/gke-release/gke-release/kubedns:v0.0.7-gke.1@sha256:b2e9370c81891c5a932adf441d050b88e9aa3491b5d9eb178db08656c1a431c6\"",
+            "count": 1,
+            "first_seen": "2026-11-18T13:38:40+00:00",
+            "last_seen": "2026-11-18T13:38:40+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "Pulled",
+            "object": "Pod/kube-dns-644bdc699b-bdp7d",
+            "message": "Successfully pulled image \"europe-west1-artifactregistry.gcr.io/gke-release/gke-release/node_token_broker/init:gke_node_token_broker_init_20260806.00_p0@sha256:cad0ef7ed512d508cb5c77d8603c5b4182a9389375907472746165433bb42d70\" in 422ms (12.967s including waiting). Image size: 3303824 bytes.",
+            "count": 1,
+            "first_seen": "2026-11-18T13:38:36+00:00",
+            "last_seen": "2026-11-18T13:38:36+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "Pulling",
+            "object": "Pod/kube-dns-644bdc699b-bdp7d",
+            "message": "Pulling image \"europe-west1-artifactregistry.gcr.io/gke-release/gke-release/node_token_broker/init:gke_node_token_broker_init_20260806.00_p0@sha256:cad0ef7ed512d508cb5c77d8603c5b4182a9389375907472746165433bb42d70\"",
+            "count": 1,
+            "first_seen": "2026-11-18T13:38:23+00:00",
+            "last_seen": "2026-11-18T13:38:23+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "Scheduled",
+            "object": "Pod/kube-dns-644bdc699b-bdp7d",
+            "message": "Successfully assigned kube-system/kube-dns-644bdc699b-bdp7d to gk3-pfa-test-nap-1xw6b70k-1b39104c-h659",
+            "count": 1,
+            "first_seen": "2026-11-18T13:38:19+00:00",
+            "last_seen": "2026-11-18T13:38:19+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "TriggeredScaleUp",
+            "object": "Pod/kube-dns-644bdc699b-bdp7d",
+            "message": "Pod triggered scale-up: [{https://www.googleapis.com/compute/v1/projects/example-project/zones/europe-west1-d/instanceGroups/nap-1xw6b70k-temporary-mig-idj4vr8y-async-0 0->1 (max: 1000)}]",
+            "count": 1,
+            "first_seen": "2026-11-18T13:37:24+00:00",
+            "last_seen": "2026-11-18T13:37:24+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "SuccessfulCreate",
+            "object": "ReplicaSet/kube-dns-644bdc699b",
+            "message": "Created pod: kube-dns-644bdc699b-bdp7d",
+            "count": 1,
+            "first_seen": "2026-11-18T13:27:50+00:00",
+            "last_seen": "2026-11-18T13:27:50+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "ScalingReplicaSet",
+            "object": "Deployment/kube-dns",
+            "message": "Scaled up replica set kube-dns-644bdc699b from 0 to 1",
+            "count": 1,
+            "first_seen": "2026-11-18T13:27:47+00:00",
+            "last_seen": "2026-11-18T13:27:47+00:00"
+          }
+        ]
+      },
+      "raw_excerpt": null,
+      "error": null,
+      "collected_at": "2026-11-18T13:39:50.842043Z",
+      "redacted": true,
+      "redactions": {}
+    },
+    {
+      "source": "logs",
+      "summary": {
+        "container": "kubedns",
+        "previous": {
+          "available": false,
+          "note": "previous terminated container \"kubedns\" in pod \"kube-dns-644bdc699b-bdp7d\" not found"
+        },
+        "current": {
+          "available": true,
+          "lines": 64
+        }
+      },
+      "raw_excerpt": "=== current container ===\n2026/11/18 13:38:49 [INFO] Starting KubeOnCoreDNSApp image: UNKNOWN\n2026/11/18 13:38:49 [INFO] Updated Corefile with 0 custom stubdomains and upstream servers /etc/resolv.conf\n2026/11/18 13:38:49 [INFO] Using config file:\n.:53 {\n  errors\n  health :8080 {\n      lameduck 5s\n  }\n  ready :8181\n  kubernetes cluster.local in-addr.arpa ip6.arpa {\n      pods insecure\n      fallthrough in-addr.arpa ip6.arpa\n      ttl 30\n  }\n  \n  forward . /etc/resolv.conf {\n      force_tcp\n      max_concurrent 1500\n      expire 1s\n  }\n  prometheus :9153\n  cache {\n    success 1000 30\n    denial 1000 5\n    disable denial cluster.local\n  }\n  loop\n  loadbalance\n  reload\n}\n2026/11/18 13:38:49 [INFO] Updated Corefile with 0 custom stubdomains and upstream servers /etc/resolv.conf\n2026/11/18 13:38:49 [INFO] Using config file:\n.:53 {\n  errors\n  health :8080 {\n      lameduck 5s\n  }\n  ready :8181\n  kubernetes cluster.local in-addr.arpa ip6.arpa {\n      pods insecure\n      fallthrough in-addr.arpa ip6.arpa\n      ttl 30\n  }\n  \n  forward . /etc/resolv.conf {\n      force_tcp\n      max_concurrent 1500\n      expire 1s\n  }\n  prometheus :9153\n  cache {\n    success 1000 30\n    denial 1000 5\n    disable denial cluster.local\n  }\n  loop\n  loadbalance\n  reload\n}\nmaxprocs: Leaving GOMAXPROCS=2: CPU quota undefined\n.:53\n[INFO] plugin/reload: Running configuration SHA512 = 31d3305112a5d13a488c3df774967eea086e8f6ef9793d447a5a5c7e633bf2d6184f612fd4432ef12e178074aa6a830eaf1ea1d307a63f9c8e0565b5c5ee8c6d\nCoreDNS-1.14.3\nlinux/amd64, go1.25.11 X:boringcrypto, \n",
+      "error": null,
+      "collected_at": "2026-11-18T13:39:50.779811Z",
+      "redacted": true,
+      "redactions": {}
+    }
+  ]
+}

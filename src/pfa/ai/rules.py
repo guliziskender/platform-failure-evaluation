@@ -355,6 +355,10 @@ def invalid_image_name(v: EvidenceView) -> RuleHit | None:
 
 def _scheduler_message(v: EvidenceView) -> str:
     scheduled = v.condition("PodScheduled")
+    if scheduled and scheduled["status"] == "True":
+        # Placed since: FailedScheduling events from before are history. Seen on GKE Autopilot,
+        # where every pod waits for the first node and the events stay for an hour.
+        return ""
     if scheduled and scheduled["status"] == "False" and scheduled.get("message"):
         return scheduled["message"]
     events = v.events_where("FailedScheduling")
@@ -406,6 +410,97 @@ def pending_no_nodes(v: EvidenceView) -> RuleHit | None:
     )
 
 
+_AUTOSCALER_REASONS = ("TriggeredScaleUp", "FailedScaleUp", "NotTriggerScaleUp")
+
+
+@rule
+def pending_autoscaler(v: EvidenceView) -> RuleHit | None:
+    """On an autoscaling cluster, "no node has room" is not the cause: why no node was added is.
+
+    Read from the cluster-autoscaler's events on the pod (GKE, EKS and AKS all run it; Karpenter
+    uses other reasons). A failed scale-up is the cause even when a newer attempt has started:
+    on GKE the retry failed on the same quota 19 seconds later.
+    """
+    if not _scheduler_message(v):
+        return None
+    events = [e for e in v.events if e.get("reason") in _AUTOSCALER_REASONS]
+    if not events:
+        return None
+    latest = max(events, key=lambda e: e.get("last_seen") or "")
+    failed = [e for e in events if e["reason"] == "FailedScaleUp"]
+    if failed:
+        failure = max(failed, key=lambda e: e.get("last_seen") or "")
+        message = failure["message"]
+        evidence = [f"event FailedScaleUp x{failure.get('count', 1)}: {message}"]
+        if latest is not failure:
+            evidence.append(
+                f"event {latest['reason']} x{latest.get('count', 1)}: {latest['message']}"
+            )
+        if "quota" in message.lower():
+            cause = (
+                "The cluster autoscaler tried to add a node for this pod and the cloud refused: "
+                f'the project\'s quota is used up ("{message}"). The pod itself is fine.'
+            )
+            fix = [
+                "Find the quota at its limit: GKE: gcloud compute regions describe <region> "
+                "(CPUS, SSD_TOTAL_GB, IN_USE_ADDRESSES); EKS: Service Quotas for EC2; AKS: az vm "
+                "list-usage --location <region>",
+                "Ask the cloud provider for a higher quota, or free some: delete unused disks, "
+                "nodes or clusters",
+                "Or lower the pod's requests so it fits on a node that already exists",
+            ]
+        else:
+            cause = (
+                "The cluster autoscaler tried to add a node for this pod and failed "
+                f'("{message}"). The pod itself is fine.'
+            )
+            fix = [
+                'Fix what the FailedScaleUp message names (for "out of resources": allow '
+                "other zones or machine types)",
+                "Or lower the pod's requests so it fits on a node that already exists",
+            ]
+        certainty: Certainty = "high"
+        if latest["reason"] == "TriggeredScaleUp":
+            cause = (
+                "The cluster autoscaler is trying again to add a node (TriggeredScaleUp) after a "
+                f"failed attempt. If it fails the same way, this is the cause: {cause}"
+            )
+            fix = [*fix, "Run pfa again in a few minutes to see whether the new attempt worked"]
+            certainty = "medium"
+    elif latest["reason"] == "TriggeredScaleUp":
+        evidence = [f"event TriggeredScaleUp: {latest['message']}"]
+        cause = (
+            "No node has room for this pod yet, and the cluster autoscaler is adding one "
+            "(TriggeredScaleUp). The pod should start once the node is ready."
+        )
+        fix = [
+            "Wait a few minutes, then run pfa again",
+            "If it stays Pending, look for FailedScaleUp events: kubectl describe pod <pod>",
+        ]
+        certainty = "high"
+    else:
+        evidence = [f"event NotTriggerScaleUp x{latest.get('count', 1)}: {latest['message']}"]
+        cause = (
+            "No node has room for this pod, and the cluster autoscaler will not add one: "
+            f'"{latest["message"]}".'
+        )
+        fix = [
+            "Read the reason: max node group size reached = raise the node pool's maximum; "
+            "Insufficient <resource> = no machine type the autoscaler may use is big enough",
+            "Or lower the pod's requests",
+        ]
+        certainty = "medium"
+    return _hit(
+        "pending_autoscaler",
+        FailureType.PENDING,
+        finding="The cluster autoscaler's events explain why no node is available.",
+        cause=cause,
+        fix=fix,
+        certainty=certainty,
+        evidence=[f"scheduler: {_scheduler_message(v)}", *evidence],
+    )
+
+
 @rule
 def pending_insufficient_resources(v: EvidenceView) -> RuleHit | None:
     message = _scheduler_message(v)
@@ -434,6 +529,9 @@ def pending_insufficient_resources(v: EvidenceView) -> RuleHit | None:
                 certainty="high",
                 evidence=evidence,
             )
+
+    if any(e.get("reason") in _AUTOSCALER_REASONS for e in v.events):
+        return None  # an autoscaling cluster: pending_autoscaler says why no node was added
 
     asked = []
     for res in resources:

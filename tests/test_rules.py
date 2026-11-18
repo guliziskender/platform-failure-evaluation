@@ -738,3 +738,101 @@ def test_failed_create_after_a_pod_was_created_still_counts():
         events=[_failed_create("2026-11-18T13:30:00+00:00"), _created("2026-11-18T13:27:50+00:00")],
     )
     assert rules.workload_failed_create(view).rule == "workload_failed_create"
+
+
+def test_gke_autopilot_scale_up_says_wait_and_cites_it():
+    report = _replay("gke_autopilot_scale_up.json")
+    assert report.diagnosis.confidence == "high"
+    assert report.diagnosis.fix[0].startswith("Wait a few minutes")
+    assert any("TriggeredScaleUp" in e for e in report.diagnosis.evidence_used)
+
+
+def test_a_pod_scheduled_since_is_healthy_despite_old_scheduling_events():
+    # kube-dns once the node arrived: Running and ready, but the hour-old events remain.
+    report = _replay("gke_autopilot_scheduled_after_scale_up.json")
+    assert report.diagnosis.failure_type is FailureType.NONE
+    assert report.rule_hits == []
+
+
+def test_old_failed_scheduling_is_ignored_once_the_pod_is_scheduled():
+    view = make_view(
+        pod={"phase": "Pending", "conditions": [{"type": "PodScheduled", "status": "True"}]},
+        events=[
+            {"reason": "FailedScheduling", "message": "0/3 nodes are available: Insufficient cpu"}
+        ],
+    )
+    assert rules.pending_insufficient_resources(view) is None
+
+
+def test_gke_scale_up_blocked_by_quota_names_the_quota_not_the_node_size():
+    # lab case oomkilled-sidecar on Autopilot: never started, the project's SSD quota was full
+    report = _replay("gke_scale_up_quota_exceeded.json")
+    assert report.diagnosis.failure_type is FailureType.PENDING
+    assert report.rule_hits[0].rule == "pending_autoscaler"
+    assert "GCE quota exceeded" in report.diagnosis.likely_cause
+    assert "SSD_TOTAL_GB" in report.diagnosis.fix[0]
+
+
+def _awaiting_node(*events):
+    return make_view(
+        pod={
+            "phase": "Pending",
+            "conditions": [
+                {
+                    "type": "PodScheduled",
+                    "status": "False",
+                    "message": "0/2 nodes are available: 2 Insufficient memory.",
+                }
+            ],
+        },
+        events=[{"type": "Normal", "count": 1, **e} for e in events],
+    )
+
+
+def test_a_scale_up_after_a_failure_still_names_the_failure():
+    # GKE: the retry at 13:53:47 failed on the same quota at 13:54:06.
+    view = _awaiting_node(
+        {"reason": "FailedScaleUp", "message": "GCE quota exceeded", "last_seen": "T10"},
+        {"reason": "TriggeredScaleUp", "message": "pod triggered scale-up", "last_seen": "T20"},
+    )
+    hit = rules.pending_autoscaler(view)
+    assert hit.certainty == "medium"
+    assert "trying again" in hit.cause and "quota is used up" in hit.cause
+    assert rules.run_rules(view, classify(view))[0].rule == "pending_autoscaler"
+
+
+def test_a_scale_up_without_a_failure_says_wait():
+    view = _awaiting_node(
+        {"reason": "TriggeredScaleUp", "message": "pod triggered scale-up", "last_seen": "T20"},
+    )
+    hit = rules.pending_autoscaler(view)
+    assert (hit.certainty, hit.fix[0]) == ("high", "Wait a few minutes, then run pfa again")
+    assert rules.run_rules(view, classify(view))[0].rule == "pending_autoscaler"
+
+
+def test_failed_scale_up_other_than_quota():
+    view = _awaiting_node(
+        {"reason": "FailedScaleUp", "message": "GCE out of resources", "last_seen": "T10"}
+    )
+    hit = rules.pending_autoscaler(view)
+    assert (hit.certainty, "GCE out of resources" in hit.cause) == ("high", True)
+    assert "quota" not in hit.cause
+
+
+def test_autoscaler_refusing_to_scale_is_medium_and_quoted():
+    view = _awaiting_node(
+        {
+            "reason": "NotTriggerScaleUp",
+            "message": "pod didn't trigger scale-up: 1 max node group size reached",
+            "last_seen": "T10",
+        }
+    )
+    hit = rules.pending_autoscaler(view)
+    assert hit.certainty == "medium"
+    assert "max node group size reached" in hit.cause
+
+
+def test_without_autoscaler_events_the_node_size_rule_answers():
+    view = _awaiting_node()
+    assert rules.pending_autoscaler(view) is None
+    assert rules.run_rules(view, classify(view))[0].rule == "pending_insufficient_resources"

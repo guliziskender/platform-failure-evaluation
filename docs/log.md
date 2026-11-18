@@ -866,3 +866,47 @@ created this very pod. Since then, only "no nodes available to schedule pods".
 - An event about a pod's owner can describe an earlier attempt, not this pod. Rules that read
   owner events should check whether a later event undid them.
 - No lab case: kind cannot run with zero nodes. Field fixtures cover shapes the lab cannot make.
+
+### Same day: pfa installed on GKE, and the lab run there
+
+**Done**
+- Installed the published 0.3.1 chart from ghcr.io: Running once a node existed, `pfa 0.3.1`.
+  Autopilot raised the CPU request from 10m to 50m (a warning at install). The service
+  account's can-i, checked against the API server: get pods, pods/log, events, PVCs = yes;
+  Secrets, ConfigMaps, delete pods, pods/exec, nodes = no.
+- Autopilot added the first node only once a user workload (pfa) arrived; the 14 system pods
+  alone had waited 10 minutes with "autoscaledNodesTarget: 0" in the autoscaler's log.
+- The lab on GKE (`PFA_LAB_ALLOW_CONTEXT=1`, my own test cluster): GKE Warden rejected two
+  cases at `kubectl apply`: pending-cpu-units (4000 cores, over Autopilot's maximum) and
+  pending-node-selector (Autopilot allows only its own node-selector keys). On Autopilot those
+  mistakes never become a Pending pod, so there is nothing for pfa to read.
+- Live rules eval on GKE: 23/26, hard 8/8. The two rejected cases, and oomkilled-sidecar.
+
+**oomkilled-sidecar never started on GKE**, so its answer key (OOM) does not apply there. The
+pod was Pending: the cluster autoscaler's scale-up failed with "GCE quota exceeded" (the
+project's SSD_TOTAL_GB, 489 of 500 GB: each Autopilot node's boot disk counts), then 72 x
+NotTriggerScaleUp "in backoff". pfa answered "no node has enough free cpu, memory" (high): true
+of the three nodes, but not the cause on an autoscaling cluster.
+
+**Fixes**
+- New `pending_autoscaler`: reads TriggeredScaleUp / FailedScaleUp / NotTriggerScaleUp on the
+  pod. A FailedScaleUp is the cause (high; quota gets a fix per cloud). A TriggeredScaleUp
+  after a failure is a retry, not good news: medium, naming the failure. The first version
+  said "wait" there, and the live eval caught it: it read the cluster between the retry
+  (13:53:47) and its failure on the same quota (13:54:06). A scale-up with no failure says
+  wait; NotTriggerScaleUp alone is medium and quoted.
+- `pending_insufficient_resources` steps aside when the autoscaler has spoken, except for
+  the CPU unit typo, which stays the cause.
+- `_scheduler_message` ignores FailedScheduling events once the pod is scheduled: with the
+  node up, kube-dns was Running and ready and master's pfa said "pending: no nodes" from the
+  hour-old events (the new rule made an old gap visible).
+- The can-i loop in `docs/field-test.md` printed nothing on macOS: zsh does not split `$v`,
+  so "get pods" reached kubectl as one argument. Now one check per line, read with `read`.
+- Fixtures for all four shapes in `tests/fixtures/field/`; each fix mutation-checked.
+
+**Lessons**
+- A cloud cluster changes which failures exist: admission rejects some outright, autoscaling
+  turns "too big for the nodes" into "why was no node added". Rules written on kind need the
+  autoscaler's view on top.
+- State moves while pfa reads it. Two runs a minute apart gave different answers; the rule has
+  to be right at every moment in between, so tests take the in-between states from real logs.

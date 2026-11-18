@@ -1,0 +1,186 @@
+{
+  "target": {
+    "namespace": "pfa",
+    "name": "pfa",
+    "kind": "deployment",
+    "pod": "pfa-59bb596576-zcv96",
+    "container": "pfa",
+    "also_failing": [],
+    "owners": [
+      {
+        "kind": "ReplicaSet",
+        "name": "pfa-59bb596576"
+      },
+      {
+        "kind": "Deployment",
+        "name": "pfa"
+      }
+    ]
+  },
+  "evidence": [
+    {
+      "source": "k8s_state",
+      "summary": {
+        "workload": {
+          "kind": "deployment",
+          "name": "pfa",
+          "replicas_desired": 1,
+          "replicas_ready": 0,
+          "replicas_updated": 1,
+          "replicas_available": 0,
+          "generation": 1,
+          "observed_generation": 1,
+          "conditions": [
+            {
+              "type": "Available",
+              "status": "False",
+              "reason": "MinimumReplicasUnavailable",
+              "message": "Deployment does not have minimum availability.",
+              "last_update": "2026-11-18T13:37:20+00:00"
+            },
+            {
+              "type": "Progressing",
+              "status": "True",
+              "reason": "ReplicaSetUpdated",
+              "message": "ReplicaSet \"pfa-59bb596576\" is progressing.",
+              "last_update": "2026-11-18T13:37:20+00:00"
+            }
+          ]
+        },
+        "pod": {
+          "name": "pfa-59bb596576-zcv96",
+          "phase": "Pending",
+          "qos_class": "Burstable",
+          "created": "2026-11-18T13:37:20+00:00",
+          "conditions": [
+            {
+              "type": "PodScheduled",
+              "status": "False",
+              "reason": "Unschedulable",
+              "message": "no nodes available to schedule pods"
+            }
+          ],
+          "containers": [
+            {
+              "name": "pfa",
+              "image": "ghcr.io/guliziskender/pfa:0.3.1",
+              "command": [
+                "sleep",
+                "infinity"
+              ],
+              "resources": {
+                "requests": {
+                  "cpu": "50m",
+                  "ephemeral-storage": "1Gi",
+                  "memory": "96Mi"
+                },
+                "limits": {
+                  "ephemeral-storage": "1Gi",
+                  "memory": "256Mi"
+                }
+              },
+              "env_names": [
+                "PFA_CONFIG"
+              ],
+              "mounts": [
+                "/etc/pfa",
+                "/tmp",
+                "/var/run/secrets/kubernetes.io/serviceaccount"
+              ]
+            }
+          ],
+          "scheduling": {
+            "tolerations": [
+              {
+                "key": "kubernetes.io/arch",
+                "operator": "Equal",
+                "effect": "NoSchedule"
+              }
+            ]
+          }
+        }
+      },
+      "raw_excerpt": null,
+      "error": null,
+      "collected_at": "2026-11-18T13:37:52.264175Z",
+      "redacted": true,
+      "redactions": {}
+    },
+    {
+      "source": "k8s_events",
+      "summary": {
+        "window_minutes": 60,
+        "objects": [
+          "Pod/pfa-59bb596576-zcv96",
+          "ReplicaSet/pfa-59bb596576",
+          "Deployment/pfa"
+        ],
+        "total": 4,
+        "events": [
+          {
+            "type": "Warning",
+            "reason": "FailedScheduling",
+            "object": "Pod/pfa-59bb596576-zcv96",
+            "message": "no nodes available to schedule pods",
+            "count": 6,
+            "first_seen": "2026-11-18T13:37:20+00:00",
+            "last_seen": "2026-11-18T13:37:50+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "TriggeredScaleUp",
+            "object": "Pod/pfa-59bb596576-zcv96",
+            "message": "Pod triggered scale-up: [{https://www.googleapis.com/compute/v1/projects/example-project/zones/europe-west1-d/instanceGroups/nap-1xw6b70k-temporary-mig-idj4vr8y-async-0 0->1 (max: 1000)}]",
+            "count": 1,
+            "first_seen": "2026-11-18T13:37:24+00:00",
+            "last_seen": "2026-11-18T13:37:24+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "SuccessfulCreate",
+            "object": "ReplicaSet/pfa-59bb596576",
+            "message": "Created pod: pfa-59bb596576-zcv96",
+            "count": 1,
+            "first_seen": "2026-11-18T13:37:20+00:00",
+            "last_seen": "2026-11-18T13:37:20+00:00"
+          },
+          {
+            "type": "Normal",
+            "reason": "ScalingReplicaSet",
+            "object": "Deployment/pfa",
+            "message": "Scaled up replica set pfa-59bb596576 from 0 to 1",
+            "count": 1,
+            "first_seen": "2026-11-18T13:37:20+00:00",
+            "last_seen": "2026-11-18T13:37:20+00:00"
+          }
+        ]
+      },
+      "raw_excerpt": null,
+      "error": null,
+      "collected_at": "2026-11-18T13:37:52.409226Z",
+      "redacted": true,
+      "redactions": {}
+    },
+    {
+      "source": "logs",
+      "summary": {
+        "container": "pfa",
+        "previous": {
+          "available": true,
+          "lines": 0,
+          "empty": true
+        },
+        "current": {
+          "available": true,
+          "lines": 0,
+          "empty": true
+        }
+      },
+      "raw_excerpt": null,
+      "error": null,
+      "collected_at": "2026-11-18T13:37:52.056712Z",
+      "redacted": true,
+      "redactions": {}
+    }
+  ]
+}
